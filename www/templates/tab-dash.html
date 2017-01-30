@@ -1,0 +1,17 @@
+<ion-view view-title="Dashboard">
+  <ion-content class="padding">
+    <h2>Welcome to Ionic {{user.email}}</h2>
+    <div class='row'>
+      <div class='col-md-9'>
+          <ion-list>
+              <ion-item ng-repeat="item in mensajeria.messageLog">
+                  {{item}}
+              </ion-item>
+          </ion-list>
+      </div>
+    </div>
+    <div class='row'>
+      &nbsp;
+    </div>
+  </ion-content>
+</ion-view>
