@@ -1,0 +1,16 @@
+<ion-view view-title="Usuarios">
+  <ion-content>
+      <div id="map" data-tap-disabled="true"></div>
+    <ion-list>
+      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="user in users | filter: {_id:'!'+$root.user._id}" type="item-text-wrap" href="#/tab/users/{{user._id}}">
+        <h2>{{user.name}}</h2>
+        <p>{{user.email}}</p>
+        <i class="icon ion-chevron-right icon-accessory"></i>
+
+        <ion-option-button class="button-assertive" ng-click="remove(user)">
+          Delete
+        </ion-option-button>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
