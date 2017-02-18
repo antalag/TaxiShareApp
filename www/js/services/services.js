@@ -1,25 +1,28 @@
 angular.module('starter.services', ['ngResource','constants.server'])
  .factory('Users', [
     '$resource','server', function($resource,server) {
-      return $resource('http://'+server.host()+':'+server.port+'/api/users/:_id', {
-        _id: '@_id'
+      return $resource('http://'+server.host()+':'+server.port+'/user/', {
+        id: '@id'
       },{
-          'update': { method:'PUT' },
+          'update': { 
+              method:'PUT',
+            url:'http://'+server.host()+':'+server.port+'/user/:id',
+          },
       getNear:{
           method:'get',
-          url:'http://'+server.host()+':'+server.port+'/api/users/near/:lat/:lng',
+          url:'http://'+server.host()+':'+server.port+'/user/near/',
           params: {lat:'@lat',lng:'@lng'},
           isArray: true
       },
       login:{
           method:'get',
-          url:'http://'+server.host()+':'+server.port+'/api/users/login/:email/:password',
+          url:'http://'+server.host()+':'+server.port+'/user/login/:email/:password',
           params: {email:'@email',password:'@password'},
           isArray: false
       },
       googleLogin:{
           method:'post',
-          url:'http://'+server.host()+':'+server.port+'/api/users/googleLogin/:email',
+          url:'http://'+server.host()+':'+server.port+'/user/googleLogin/',
           params:{
               email:'@email',
           },
@@ -40,7 +43,7 @@ angular.module('starter.services', ['ngResource','constants.server'])
 //
 //  // Some fake testing data
 //  '$resource', function($resource) {
-//      return $resource('http://blog.agresebe.com/api/users/:username', {
+//      return $resource('http://blog.agresebe.com/user/:username', {
 //        username: '@username'
 //      });
 //        }

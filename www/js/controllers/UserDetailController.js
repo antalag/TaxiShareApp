@@ -1,7 +1,7 @@
 app.controller('UserDetailCtrl', function ($scope, $stateParams, Users,$log,chatSocket,$rootScope) {
     _loadUser = function () {
         $scope.user = {};
-        Users.get({_id: $stateParams.userId}).$promise.then(function (ActualUser) {
+        Users.get({id: $stateParams.userId}).$promise.then(function (ActualUser) {
             $scope.ActualUser = ActualUser;
         });
         console.log($scope);

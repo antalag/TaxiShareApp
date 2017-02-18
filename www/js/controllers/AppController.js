@@ -7,13 +7,13 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
         if (!window.localStorage.userTaxi && !$rootScope.user) {
             $state.go('login');
         } else if (!$rootScope.user) {
-
-            $ionicPush.register().then(function (t) {
-                return $ionicPush.saveToken(t);
-            }).then(function (t) {
-                console.log('Token saved:', t.token);
-            });
-            $rootScope.user = Users.get({_id: localStorage.userTaxi}, function () {
+            
+//            $ionicPush.register().then(function (t) {
+//                return $ionicPush.saveToken(t);
+//            }).then(function (t) {
+//                console.log('Token saved:', t.token);
+//            });
+            $rootScope.user = Users.get({id: localStorage.userTaxi}, function () {
                 _updatePosition();
                 _initListen();
             });
@@ -27,7 +27,7 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
     _updatePosition = function () {
         $cordovaGeolocation.getCurrentPosition().then(function (pos) {
             $rootScope.user.location = [pos.coords.longitude, pos.coords.latitude]
-            Users.update({_id: $rootScope.user._id}, $rootScope.user);
+            Users.update({id: $rootScope.user.id}, $rootScope.user);
         });
     }
     _initListen = function () {

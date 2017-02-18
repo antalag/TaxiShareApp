@@ -89,72 +89,6 @@ app.run(function ($ionicPlatform) {
 
         });
 
-//import {Geolocation} from 'ionic-native';
-
-angular.module('starter.controllers', ['ngCordova'])
-
-        .controller('DashCtrl', function ($scope) {})
-        .controller('loginCtrl', function ($scope) {
-            $scope.data={email:'',password:''}
-            $scope.login = function(){
-                console.log($scope.data)
-            }
-        })
-
-        .controller('UsersCtrl', function ($scope, $cordovaGeolocation, Users) {
-            $scope.users = [];
-            $scope.loadUsers = function () {
-                $cordovaGeolocation.getCurrentPosition().then(pos => {
-                    var latLng = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-
-                    var mapOptions = {
-                        center: latLng,
-                        zoom: 15,
-                        mapTypeId: google.maps.MapTypeId.ROADMAP
-                    };
-
-                    $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-
-                    Users.getNear({lat: pos.coords.latitude, lng: pos.coords.longitude}).$promise.then(function (results) {
-                        $scope.users = results;
-                        results.forEach(function(user){
-                            var marker = new google.maps.Marker({
-                                position: { lat: user.location[1], lng: user.location[0] },
-                                label: user.name,
-                                map: $scope.map,
-                                url:'#/tab/users/'+user._id
-                            });
-                            google.maps.event.addListener(marker, 'click', function() {
-                                window.location.href = this.url;
-                            });
-                        });
-                    });
-                });
-            };
-//  $scope.users = Users.all();
-            $scope.remove = function (user) {
-                console.debug(user)
-                return user.$delete().then($scope.loadUsers);
-            };
-            return $scope.loadUsers();
-        })
-
-        .controller('UserDetailCtrl', function ($scope, $stateParams, Users) {
-            $scope.loadUser = function () {
-                $scope.user = {};
-                return Users.get({_id: $stateParams.userId}).$promise.then(function (user) {
-                    return $scope.user = user;
-                });
-            }
-            return $scope.loadUser();
-        })
-
-        .controller('AccountCtrl', function ($scope) {
-            $scope.settings = {
-                enableFriends: true
-            };
-        });
-
 /*!
  * ngCordova
  * v0.1.27-alpha
@@ -175,7 +109,7 @@ angular.module('constants.server', [])
                 } else
                     return '192.168.0.12';
             },
-            port: '9615'
+            port: '1337'
         })
 app.controller('AccountCtrl', function ($scope) {
     $scope.settings = {
@@ -192,13 +126,13 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
         if (!window.localStorage.userTaxi && !$rootScope.user) {
             $state.go('login');
         } else if (!$rootScope.user) {
-
-            $ionicPush.register().then(function (t) {
-                return $ionicPush.saveToken(t);
-            }).then(function (t) {
-                console.log('Token saved:', t.token);
-            });
-            $rootScope.user = Users.get({_id: localStorage.userTaxi}, function () {
+            
+//            $ionicPush.register().then(function (t) {
+//                return $ionicPush.saveToken(t);
+//            }).then(function (t) {
+//                console.log('Token saved:', t.token);
+//            });
+            $rootScope.user = Users.get({id: localStorage.userTaxi}, function () {
                 _updatePosition();
                 _initListen();
             });
@@ -212,7 +146,7 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
     _updatePosition = function () {
         $cordovaGeolocation.getCurrentPosition().then(function (pos) {
             $rootScope.user.location = [pos.coords.longitude, pos.coords.latitude]
-            Users.update({_id: $rootScope.user._id}, $rootScope.user);
+            Users.update({id: $rootScope.user.id}, $rootScope.user);
         });
     }
     _initListen = function () {
@@ -270,7 +204,7 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
     $scope.login = function (form) {
         if (form.$valid) {
             Users.login($scope.data).$promise.then(function (user) {
-                localStorage.setItem('userTaxi', user._id);
+                localStorage.setItem('userTaxi', user.id);
                 $state.go('app.dash')
             }, function (error) {
                 var alertPopup = $ionicPopup.alert({
@@ -292,7 +226,7 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
             image: profile.getImageUrl(),
             ID: profile.getId()
         }).$promise.then(function (user) {
-            localStorage.setItem('userTaxi', user._id);
+            localStorage.setItem('userTaxi', user.id);
             $state.go('app.dash')
         }, function (error) {
             var alertPopup = $ionicPopup.alert({
@@ -324,7 +258,7 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
                     image: profile.getImageUrl(),
                     ID: profile.getId()
                 }).$promise.then(function (user) {
-                    localStorage.setItem('userTaxi', user._id);
+                    localStorage.setItem('userTaxi', user.id);
                     $state.go('app.dash')
                 }, function (error) {
                     var alertPopup = $ionicPopup.alert({
@@ -339,7 +273,7 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
 app.controller('UserDetailCtrl', function ($scope, $stateParams, Users,$log,chatSocket,$rootScope) {
     _loadUser = function () {
         $scope.user = {};
-        Users.get({_id: $stateParams.userId}).$promise.then(function (ActualUser) {
+        Users.get({id: $stateParams.userId}).$promise.then(function (ActualUser) {
             $scope.ActualUser = ActualUser;
         });
         console.log($scope);
@@ -366,14 +300,15 @@ app.controller('UsersCtrl', function ($rootScope,$ionicNavBarDelegate, $scope, $
             $scope.map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 
             Users.getNear({lat: pos.coords.latitude, lng: pos.coords.longitude}).$promise.then(function (results) {
-                $scope.users = results;
                 results.forEach(function (user) {
-                    if (user._id != $rootScope.user._id) {
+                    user=user.obj;
+                    if (user._id != $rootScope.user.id) {
+                        $scope.users.push(user);
                         var marker = new google.maps.Marker({
                             position: {lat: user.location[1], lng: user.location[0]},
                             label: user.name,
                             map: $scope.map,
-                            url: '#/app/users/' + user._id
+                            url: '#/app/users/' + user.id
                         });
                         google.maps.event.addListener(marker, 'click', function () {
                             window.location.href = this.url;
@@ -470,25 +405,28 @@ angular.module('directive.g+signin', []).
 angular.module('starter.services', ['ngResource','constants.server'])
  .factory('Users', [
     '$resource','server', function($resource,server) {
-      return $resource('http://'+server.host()+':'+server.port+'/api/users/:_id', {
-        _id: '@_id'
+      return $resource('http://'+server.host()+':'+server.port+'/user/', {
+        id: '@id'
       },{
-          'update': { method:'PUT' },
+          'update': { 
+              method:'PUT',
+            url:'http://'+server.host()+':'+server.port+'/user/:id',
+          },
       getNear:{
           method:'get',
-          url:'http://'+server.host()+':'+server.port+'/api/users/near/:lat/:lng',
+          url:'http://'+server.host()+':'+server.port+'/user/near/',
           params: {lat:'@lat',lng:'@lng'},
           isArray: true
       },
       login:{
           method:'get',
-          url:'http://'+server.host()+':'+server.port+'/api/users/login/:email/:password',
+          url:'http://'+server.host()+':'+server.port+'/user/login/:email/:password',
           params: {email:'@email',password:'@password'},
           isArray: false
       },
       googleLogin:{
           method:'post',
-          url:'http://'+server.host()+':'+server.port+'/api/users/googleLogin/:email',
+          url:'http://'+server.host()+':'+server.port+'/user/googleLogin/',
           params:{
               email:'@email',
           },
@@ -509,7 +447,7 @@ angular.module('starter.services', ['ngResource','constants.server'])
 //
 //  // Some fake testing data
 //  '$resource', function($resource) {
-//      return $resource('http://blog.agresebe.com/api/users/:username', {
+//      return $resource('http://blog.agresebe.com/user/:username', {
 //        username: '@username'
 //      });
 //        }
@@ -537,7 +475,7 @@ angular.module('starter.services', ['ngResource','constants.server'])
 app.factory('chatSocket', function (socketFactory, $rootScope, server) {
     return socketFactory(
             {
-                ioSocket: io.connect('http://' + server.host() + ':9615'),
+                ioSocket: io.connect('http://' + server.host() + ':1337'),
                 prefix: 'broadcast'
             }
     )

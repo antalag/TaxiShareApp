@@ -9,5 +9,5 @@ angular.module('constants.server', [])
                 } else
                     return '192.168.0.12';
             },
-            port: '9615'
+            port: '1337'
         })

@@ -14,14 +14,15 @@ app.controller('UsersCtrl', function ($rootScope,$ionicNavBarDelegate, $scope, $
             $scope.map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 
             Users.getNear({lat: pos.coords.latitude, lng: pos.coords.longitude}).$promise.then(function (results) {
-                $scope.users = results;
                 results.forEach(function (user) {
-                    if (user._id != $rootScope.user._id) {
+                    user=user.obj;
+                    if (user._id != $rootScope.user.id) {
+                        $scope.users.push(user);
                         var marker = new google.maps.Marker({
                             position: {lat: user.location[1], lng: user.location[0]},
                             label: user.name,
                             map: $scope.map,
-                            url: '#/app/users/' + user._id
+                            url: '#/app/users/' + user.id
                         });
                         google.maps.event.addListener(marker, 'click', function () {
                             window.location.href = this.url;

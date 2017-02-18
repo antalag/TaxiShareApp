@@ -4,7 +4,7 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
     $scope.login = function (form) {
         if (form.$valid) {
             Users.login($scope.data).$promise.then(function (user) {
-                localStorage.setItem('userTaxi', user._id);
+                localStorage.setItem('userTaxi', user.id);
                 $state.go('app.dash')
             }, function (error) {
                 var alertPopup = $ionicPopup.alert({
@@ -26,7 +26,7 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
             image: profile.getImageUrl(),
             ID: profile.getId()
         }).$promise.then(function (user) {
-            localStorage.setItem('userTaxi', user._id);
+            localStorage.setItem('userTaxi', user.id);
             $state.go('app.dash')
         }, function (error) {
             var alertPopup = $ionicPopup.alert({
@@ -58,7 +58,7 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
                     image: profile.getImageUrl(),
                     ID: profile.getId()
                 }).$promise.then(function (user) {
-                    localStorage.setItem('userTaxi', user._id);
+                    localStorage.setItem('userTaxi', user.id);
                     $state.go('app.dash')
                 }, function (error) {
                     var alertPopup = $ionicPopup.alert({
