@@ -1,22 +1,35 @@
-angular.module('starter.services', ['ngResource'])
+angular.module('starter.services', ['ngResource','constants.server'])
  .factory('Users', [
-    '$resource', function($resource) {
-      return $resource('http://localhost:9615/api/users/:_id', {
+    '$resource','server', function($resource,server) {
+      return $resource('http://'+server.host()+':'+server.port+'/api/users/:_id', {
         _id: '@_id'
       },{
           'update': { method:'PUT' },
       getNear:{
           method:'get',
-          url:'http://localhost:9615/api/users/near/:lat/:lng',
+          url:'http://'+server.host()+':'+server.port+'/api/users/near/:lat/:lng',
           params: {lat:'@lat',lng:'@lng'},
           isArray: true
       },
       login:{
           method:'get',
-          url:'http://localhost:9615/api/users/login/:email/:password',
+          url:'http://'+server.host()+':'+server.port+'/api/users/login/:email/:password',
           params: {email:'@email',password:'@password'},
           isArray: false
-      }
+      },
+      googleLogin:{
+          method:'post',
+          url:'http://'+server.host()+':'+server.port+'/api/users/googleLogin/:email',
+          params:{
+              email:'@email',
+          },
+          data: {
+              name:'@name',
+              image:'@image',
+              ID:'@ID'
+          },
+          isArray: false
+      },
   });
     }
   ]

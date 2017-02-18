@@ -3,7 +3,37 @@
     height: 100%;
 }
  .peo{}
-#map {
+#map_canvas {
     width: 100%;
     height: 70%;
+}
+.button .abcRioButtonLightBlue{
+    background: transparent;
+    color: #fff;
+	float: none;
+	display: inline-block;
+	border: none;
+	box-shadow: none;
+}
+.button .abcRioButtonLightBlue{
+    float: none;
+    display: inline-block;
+}
+.button .abcRioButtonLightBlue .abcRioButtonSvg{
+    display: inline;
+}
+.button .abcRioButtonLightBlue .abcRioButtonContents{
+    font-family: inherit;
+    font-size: inherit;
+}
+ion-header-bar .item-avatar-left .icon{
+    font-size: 45px;
+    color:#666;
+    background: #fff;
+    border-radius: 50px;
+    display: block;
+    text-align: center;
+}
+.popup-container .popup{
+    width: 300px;
 }

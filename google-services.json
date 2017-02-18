@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "129724507560",
+    "project_id": "taxishare-154415"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129724507560:android:c0281763c7b992bc",
+        "android_client_info": {
+          "package_name": "com.angel.taxishare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "129724507560-o2s375gqu9do2m8c2p5uus31vcub7cog.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.angel.taxishare",
+            "certificate_hash": "F070402CA8C64F33C6098ADADC2D9C7A05B76666"
+          }
+        },
+        {
+          "client_id": "129724507560-59g6g7k81ml4f4fhvdv5m5bm1cejlkt2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWq6-u9ReVeHZk1cOP-1ck4pu_C47eIKk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,39 @@
+<ion-side-menus enable-menu-with-back-views="true">
+    <ion-side-menu-content>
+        <ion-nav-bar class="bar-assertive-900" ng-class="{expanded: isExpanded, 'has-header-fab-left': hasHeaderFabLeft, 'has-header-fab-right': hasHeaderFabRight}" align-title="left">
+            <ion-nav-back-button class="no-text">
+            </ion-nav-back-button>
+            <ion-nav-buttons side="right">
+                <button class="button button-icon button-clear ion-android-more-vertical" menu-toggle="right">
+                </button>
+            </ion-nav-buttons>
+        </ion-nav-bar>
+        <!--<ion-nav-view name="fabContent"></ion-nav-view>-->
+        <ion-nav-view name="menuContent"></ion-nav-view>
+    </ion-side-menu-content>
+    <ion-side-menu side="right">
+        <ion-header-bar class="dark-bg expanded">
+            <div class='item-avatar-left'>
+            <span ng-if='user.image' class="avatar" style="background: url('{{user.image}}'); background-size: cover;"></span>
+            <span ng-if='!user.image' class="avatar"><i class="icon ion-person"></i></span>
+            <h2 ng-bind-html='user.name'></h2>
+            </div>
+        </ion-header-bar>
+        <ion-content class="stable-bg has-expanded-header">
+            <ion-list>
+                <ion-item nav-clear menu-close ui-sref="app.dash">
+                    {{'menu_home' | translate}}
+                </ion-item>
+                <ion-item nav-clear menu-close ui-sref="app.users">
+                    {{'menu_users' | translate}}
+                </ion-item>
+                <ion-item nav-clear menu-close ui-sref="app.profile">
+                    Profile
+                </ion-item>
+                <ion-item nav-clear menu-close ng-click='logOut()'>
+                    {{'menu_logout' | translate}}
+                </ion-item>
+            </ion-list>
+        </ion-content>
+    </ion-side-menu>
+</ion-side-menus>

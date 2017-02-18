@@ -1,15 +1,31 @@
 <ion-view view-title="Login">
-  <ion-content class="padding">
-      <form name="formLogin" ng-model="formLogin" ng-submit="login(formLogin)">
-      <div class="list list-inset">
-          <label class="item item-input">
-              <input type="email" placeholder="Email" ng-model="data.email" required>
-          </label>
-          <label class="item item-input">
-              <input type="password" placeholder="Password" ng-model="data.password" required>
-          </label>
-      </div>
-      <button class="button button-block button-calm">Login</button>
-    </form>
-  </ion-content>
+    <ion-content class="padding">
+        <form name="formLogin" ng-model="formLogin" ng-submit="login(formLogin)">
+            <div class="list list-inset">
+                <div clas="list-item">
+                    <label class="item item-input">
+                        <input type="email" placeholder="Email" ng-model="data.email" required>
+                    </label>
+                </div>
+                <div clas="list-item">
+                    <label class="item item-input">
+                        <input type="password" placeholder="Password" ng-model="data.password" required>
+                    </label>
+                </div>
+                <!--<div clas="list-item" ng-if="data.hostname!='angeltalaveron.no-ip.org'">-->
+                <div clas="list-item">
+                    <button ng-click="googlePlusLogin()" type="button" class="button button-block button-calm"><i class="icon ion-social-googleplus button-icon left"></i>Login with google</button>
+                </div>
+<!--                <div clas="list-item" ng-if="data.hostname=='angeltalaveron.no-ip.org'">
+                    <google-plus-signin scope="profile email" clientid="129724507560-59g6g7k81ml4f4fhvdv5m5bm1cejlkt2.apps.googleusercontent.com"/>
+                </div>-->
+<!--                <div clas="list-item">
+                    <button ng-click="googlePlusLogin()" type="button" class="button button-block button-assertive"><i class="icon ion-social-googleplus button-icon left"></i>Login with google</button>
+                </div>-->
+                <div clas="list-item">
+                    <button class="button button-block button-calm">Login</button>
+                </div>
+            </div>
+        </form>
+    </ion-content>
 </ion-view>
