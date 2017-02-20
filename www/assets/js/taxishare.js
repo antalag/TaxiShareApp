@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-app = angular.module('starter', ['ionic','ionic.cloud','ionic-material','trans', 'starter.services', 'ngCordova', 'btford.socket-io', 'constants.server', 'directive.g+signin']);
+app = angular.module('starter', ['ionic',  'ionic-material', 'trans','starter.users', 'starter.chat', 'ngCordova', 'ngSails',  'constants.server', 'directive.g+signin']);
 
 app.run(function ($ionicPlatform) {
     $ionicPlatform.ready(function () {
@@ -22,7 +22,10 @@ app.run(function ($ionicPlatform) {
         }
     });
 })
-
+        .config(['$sailsProvider', function ($sailsProvider) {
+                $sailsProvider.url = 'http://localhost:1337/';
+                $sailsProvider.useCORSRouteToGetCookie = true;
+            }])
         .config(function ($stateProvider, $urlRouterProvider) {
 
             // Ionic uses AngularUI Router which uses the concept of states
@@ -117,7 +120,7 @@ app.controller('AccountCtrl', function ($scope) {
     };
 });
 
-app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,$translate, chatSocket, $log, messageFormatter, $state, $cordovaGeolocation, Users) {
+app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat, $translate, messageFormatter, $state, $cordovaGeolocation, Users) {
     _initController = function () {
         $rootScope.mensajeria = {};
         $rootScope.mensajeria.messageLog = [];
@@ -126,7 +129,7 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
         if (!window.localStorage.userTaxi && !$rootScope.user) {
             $state.go('login');
         } else if (!$rootScope.user) {
-            
+
 //            $ionicPush.register().then(function (t) {
 //                return $ionicPush.saveToken(t);
 //            }).then(function (t) {
@@ -139,7 +142,7 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
         } else {
             _initListen();
         }
-        gapi.load('auth2', function() {
+        gapi.load('auth2', function () {
             gapi.auth2.init();
         });
     }
@@ -150,39 +153,54 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
         });
     }
     _initListen = function () {
-        chatSocket.on('broadcast:' + $rootScope.user.email, function (data) {
-            if (!data.payload) {
-                $log.error('invalid message',
-                        'data', JSON.stringify(data));
-                return;
-            }
-            $rootScope.$apply(function () {
-                $rootScope.newMessage += 1;
-                $rootScope.mensajeria.messageLog.push(messageFormatter(
-                        new Date(), data.source,
-                        data.payload));
+        Chat.getUser({user:$rootScope.user.email}, function (result) {
+            angular.forEach(result,function(msg){
+                $rootScope.mensajeria.messageLog.push(messageFormatter(msg));
+            });
+            $sails.get('/chat/addconv');
+            $sails.on("chat", function (message) {
+                console.log(message);
+                if (message.verb === "created") {
+                    $rootScope.newMessage += 1;
+                    $rootScope.mensajeria.messageLog.push(messageFormatter(
+                            new Date(), message.data.from,
+                            message.data.message));
+                }
             });
         });
+//        chatSocket.on('broadcast:' + $rootScope.user.email, function (data) {
+//            if (!data.payload) {
+//                $log.error('invalid message',
+//                        'data', JSON.stringify(data));
+//                return;
+//            }
+//            $rootScope.$apply(function () {
+//                $rootScope.newMessage += 1;
+//                $rootScope.mensajeria.messageLog.push(messageFormatter(
+//                        new Date(), data.source,
+//                        data.payload));
+//            });
+//        });
     }
     $scope.logOut = function () {
         var confirmPopup = $ionicPopup.confirm({
             title: $translate.instant('exit_title'),
             template: $translate.instant('exit_body'),
             okText: $translate.instant('ok_text'),
-            okType:'button-positive',
+            okType: 'button-positive',
             cancelText: $translate.instant('cancel_text'),
-            cancelType:'button-assertive'
+            cancelType: 'button-assertive'
         });
 
         confirmPopup.then(function (res) {
             if (res) {
-                if($rootScope.user.googleId){
+                if ($rootScope.user.googleId) {
                     var auth2 = gapi.auth2.getAuthInstance();
                     auth2.signOut().then(function () {
                         window.localStorage.removeItem('userTaxi');
                         $state.go('login')
                     });
-                }else{
+                } else {
                     window.localStorage.removeItem('userTaxi');
                     $state.go('login')
                 }
@@ -195,7 +213,7 @@ app.controller('AppCtrl', function ($scope, $ionicPush, $ionicPopup, $rootScope,
 
 })
 
-app.controller('DashCtrl', function ($scope, $rootScope, $log, chatSocket, messageFormatter) {
+app.controller('DashCtrl', function ($scope, $rootScope) {
     
 });
 
@@ -270,16 +288,18 @@ app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicP
         }
     }
 })
-app.controller('UserDetailCtrl', function ($scope, $stateParams, Users,$log,chatSocket,$rootScope) {
+app.controller('UserDetailCtrl', function ($scope, $ionicScrollDelegate, $timeout, $stateParams, $sails, Users, Chat, $log, $rootScope) {
     _loadUser = function () {
         $scope.user = {};
         Users.get({id: $stateParams.userId}).$promise.then(function (ActualUser) {
             $scope.ActualUser = ActualUser;
+            $timeout(function() {
+                $ionicScrollDelegate.scrollBottom();
+              });
         });
-        console.log($scope);
     }
-    $scope.sendMessage = function (message,to) {
-        chatSocket.emit('message', $rootScope.user.email, $rootScope.mensajeria.message,to);
+    $scope.sendMessage = function (message, to) {
+        $sails.post('/chat/addconv/', {from: $rootScope.user.email, message: $rootScope.mensajeria.message, to: to});
         $rootScope.mensajeria.message = '';
     };
     _loadUser();
@@ -402,86 +422,67 @@ angular.module('directive.g+signin', []).
     }; 
 }]);
 
-angular.module('starter.services', ['ngResource','constants.server'])
- .factory('Users', [
-    '$resource','server', function($resource,server) {
-      return $resource('http://'+server.host()+':'+server.port+'/user/', {
-        id: '@id'
-      },{
-          'update': { 
-              method:'PUT',
-            url:'http://'+server.host()+':'+server.port+'/user/:id',
-          },
-      getNear:{
-          method:'get',
-          url:'http://'+server.host()+':'+server.port+'/user/near/',
-          params: {lat:'@lat',lng:'@lng'},
-          isArray: true
-      },
-      login:{
-          method:'get',
-          url:'http://'+server.host()+':'+server.port+'/user/login/:email/:password',
-          params: {email:'@email',password:'@password'},
-          isArray: false
-      },
-      googleLogin:{
-          method:'post',
-          url:'http://'+server.host()+':'+server.port+'/user/googleLogin/',
-          params:{
-              email:'@email',
-          },
-          data: {
-              name:'@name',
-              image:'@image',
-              ID:'@ID'
-          },
-          isArray: false
-      },
-  });
-    }
-  ]
-  
-      );
-//.factory('Users', function() {
-//  // Might use a resource here that returns a JSON array
-//
-//  // Some fake testing data
-//  '$resource', function($resource) {
-//      return $resource('http://blog.agresebe.com/user/:username', {
-//        username: '@username'
-//      });
-//        }
-//
-//  return {
-//    all: function() {
-//        return $resource.query().$promise.then(function(results) {
-//          return users = results;
-//        });
-//    },
-//    remove: function(user) {
-//      users.splice(users.indexOf(user), 1);
-//    },
-//    get: function(userId) {
-//      for (var i = 0; i < users.length; i++) {
-//        if (users[i].id === parseInt(userId)) {
-//          return users[i];
-//        }
-//      }
-//      return null;
-//    }
-//  };
-//});
-
-app.factory('chatSocket', function (socketFactory, $rootScope, server) {
-    return socketFactory(
-            {
-                ioSocket: io.connect('http://' + server.host() + ':1337'),
-                prefix: 'broadcast'
+angular.module('starter.chat', ['ngResource', 'constants.server'])
+        .factory('Chat', [
+            '$resource', 'server', function ($resource, server) {
+                return $resource('http://' + server.host() + ':' + server.port + '/chat/', {
+                    id: '@id'
+                },
+                {
+                    getUser:{
+                        url: 'http://' + server.host() + ':' + server.port + '/chat/user/',
+                        params: {
+                            user: '@user',
+                        },
+                        isArray: true
+                    }
+                }
+                );
             }
-    )
-});
-app.value('messageFormatter', function (date, nick, message) {
-    return {hora: date.toLocaleTimeString(), nick: nick, msg: message};
+        ])
+        ;
+angular.module('starter.users', ['ngResource', 'constants.server'])
+        .factory('Users', [
+            '$resource', 'server', function ($resource, server) {
+                return $resource('http://' + server.host() + ':' + server.port + '/user/', {
+                    id: '@id'
+                }, {
+                    'update': {
+                        method: 'PUT',
+                        url: 'http://' + server.host() + ':' + server.port + '/user/:id',
+                    },
+                    getNear: {
+                        method: 'get',
+                        url: 'http://' + server.host() + ':' + server.port + '/user/near/',
+                        params: {lat: '@lat', lng: '@lng'},
+                        isArray: true
+                    },
+                    login: {
+                        method: 'get',
+                        url: 'http://' + server.host() + ':' + server.port + '/user/login/:email/:password',
+                        params: {email: '@email', password: '@password'},
+                        isArray: false
+                    },
+                    googleLogin: {
+                        method: 'post',
+                        url: 'http://' + server.host() + ':' + server.port + '/user/googleLogin/',
+                        params: {
+                            email: '@email',
+                        },
+                        data: {
+                            name: '@name',
+                            image: '@image',
+                            ID: '@ID'
+                        },
+                        isArray: false
+                    },
+                });
+            }
+        ]
+                );
+app.value('messageFormatter', function (message) {
+    var date=new Date(message.createdAt);
+    return {hora: date.toLocaleTimeString(), from: message.from,to:message.to, message: message.message};
 });
 var app = angular.module('trans', ['pascalprecht.translate']);
 

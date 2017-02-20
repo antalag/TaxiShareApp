@@ -1,13 +1,15 @@
-app.controller('UserDetailCtrl', function ($scope, $stateParams, Users,$log,chatSocket,$rootScope) {
+app.controller('UserDetailCtrl', function ($scope, $ionicScrollDelegate, $timeout, $stateParams, $sails, Users, Chat, $log, $rootScope) {
     _loadUser = function () {
         $scope.user = {};
         Users.get({id: $stateParams.userId}).$promise.then(function (ActualUser) {
             $scope.ActualUser = ActualUser;
+            $timeout(function() {
+                $ionicScrollDelegate.scrollBottom();
+              });
         });
-        console.log($scope);
     }
-    $scope.sendMessage = function (message,to) {
-        chatSocket.emit('message', $rootScope.user.email, $rootScope.mensajeria.message,to);
+    $scope.sendMessage = function (message, to) {
+        $sails.post('/chat/addconv/', {from: $rootScope.user.email, message: $rootScope.mensajeria.message, to: to});
         $rootScope.mensajeria.message = '';
     };
     _loadUser();

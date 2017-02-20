@@ -1,5 +1,6 @@
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var sass = require('gulp-sass');
 var bower = require('bower');
 var concat = require('gulp-concat');
 var minifyCss = require('gulp-minify-css');
@@ -7,6 +8,7 @@ var header = require('gulp-header');
 var uglify = require('gulp-uglify');
 var stylus = require('gulp-stylus');
 var rename = require('gulp-rename');
+var merge = require('merge-stream');
 var sh = require('shelljs');
 var pkg = require('./package.json');
 
@@ -26,6 +28,9 @@ var source = {
 
     styl: [
         'www/css/*.css'
+    ],
+    sass: [
+        'www/css/*.scss'
     ]
 }
 
@@ -39,7 +44,10 @@ var bower = {
         'bower_components/angular-translate/angular-translate.min.js',
         'bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js',
         'bower_components/socket.io-client/dist/socket.io.js',
-        'bower_components/angular-socket-io/socket.js',
+//        'bower_components/angular-socket-io/socket.js',
+        'bower_components/sails.io.js/dist/sails.io.js',
+//        'bower_components/sails.io-client/dist/socket.io.js',
+        'bower_components/angular-sails/dist/angular-sails.js',
         'bower_components/ionic-material/dist/ionic.material.min.js',
         'www/lib/ionic.cloud.min.js',
 //    'bower_components/angular-directive.g-signin/google-plus-signin.js',
@@ -83,10 +91,17 @@ gulp.task('js', function () {
 });
 
 gulp.task('styl', function () {
-    gulp.src(source.styl)
-            .pipe(concat(pkg.name + '.css'))
-            .pipe(stylus({compress: true, errors: true}))
-            // .pipe(header(banner, {pkg: pkg}))
+    var css = gulp.src(source.styl)
+            .pipe(concat('css-files.css'))
+            .pipe(stylus({compress: true, errors: true}));
+    var scss = gulp.src(source.sass)
+            .pipe(sass({
+                errLogToConsole: true
+            }))
+            .pipe(concat('scss-files.scss'));
+    var mergedStream = merge(css, scss)
+        .pipe(concat(pkg.name+'.css'))
+//        .pipe(minify())
             .pipe(gulp.dest(assets + '/css'));
 
 });
@@ -116,6 +131,7 @@ gulp.task('init', function () {
 gulp.task('default', function () {
     gulp.watch(source.js, ['js']);
     gulp.watch(source.styl, ['styl']);
+    gulp.watch(source.sass, ['styl']);
 
 });
 
