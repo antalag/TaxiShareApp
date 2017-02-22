@@ -68830,8207 +68830,6 @@ b+"(\\W|$)","g"),function(a,b,d){return"/"===d.charAt(0)?d:b+d})});m.defaults.st
  * Copyright (c) 2017 The angular-translate team, Pascal Precht; Licensed MIT
  */
 !function(a,b){"function"==typeof define&&define.amd?define([],function(){return b()}):"object"==typeof exports?module.exports=b():b()}(this,function(){function a(a,b){"use strict";return function(c){if(!(c&&(angular.isArray(c.files)||angular.isString(c.prefix)&&angular.isString(c.suffix))))throw new Error("Couldn't load static files, no files and prefix or suffix specified!");c.files||(c.files=[{prefix:c.prefix,suffix:c.suffix}]);for(var d=function(d){if(!d||!angular.isString(d.prefix)||!angular.isString(d.suffix))throw new Error("Couldn't load static file, no prefix or suffix specified!");var e=[d.prefix,c.key,d.suffix].join("");return angular.isObject(c.fileMap)&&c.fileMap[e]&&(e=c.fileMap[e]),b(angular.extend({url:e,method:"GET"},c.$http)).then(function(a){return a.data},function(){return a.reject(c.key)})},e=[],f=c.files.length,g=0;g<f;g++)e.push(d({prefix:c.files[g].prefix,key:c.key,suffix:c.files[g].suffix}));return a.all(e).then(function(a){for(var b=a.length,c={},d=0;d<b;d++)for(var e in a[d])c[e]=a[d][e];return c})}}return a.$inject=["$q","$http"],angular.module("pascalprecht.translate").factory("$translateStaticFilesLoader",a),a.displayName="$translateStaticFilesLoader","pascalprecht.translate"});
-(function webpackUniversalModuleDefinition(root, factory) {
-	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
-	else if(typeof define === 'function' && define.amd)
-		define([], factory);
-	else if(typeof exports === 'object')
-		exports["io"] = factory();
-	else
-		root["io"] = factory();
-})(this, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
-/******/ 			return installedModules[moduleId].exports;
-
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			exports: {},
-/******/ 			id: moduleId,
-/******/ 			loaded: false
-/******/ 		};
-
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
-/******/ 		// Flag the module as loaded
-/******/ 		module.loaded = true;
-
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-
-
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(0);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-	/**
-	 * Module dependencies.
-	 */
-
-	var url = __webpack_require__(1);
-	var parser = __webpack_require__(7);
-	var Manager = __webpack_require__(17);
-	var debug = __webpack_require__(3)('socket.io-client');
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = exports = lookup;
-
-	/**
-	 * Managers cache.
-	 */
-
-	var cache = exports.managers = {};
-
-	/**
-	 * Looks up an existing `Manager` for multiplexing.
-	 * If the user summons:
-	 *
-	 *   `io('http://localhost/a');`
-	 *   `io('http://localhost/b');`
-	 *
-	 * We reuse the existing instance based on same scheme/port/host,
-	 * and we initialize sockets for each namespace.
-	 *
-	 * @api public
-	 */
-
-	function lookup(uri, opts) {
-	  if ((typeof uri === 'undefined' ? 'undefined' : _typeof(uri)) === 'object') {
-	    opts = uri;
-	    uri = undefined;
-	  }
-
-	  opts = opts || {};
-
-	  var parsed = url(uri);
-	  var source = parsed.source;
-	  var id = parsed.id;
-	  var path = parsed.path;
-	  var sameNamespace = cache[id] && path in cache[id].nsps;
-	  var newConnection = opts.forceNew || opts['force new connection'] || false === opts.multiplex || sameNamespace;
-
-	  var io;
-
-	  if (newConnection) {
-	    debug('ignoring socket cache for %s', source);
-	    io = Manager(source, opts);
-	  } else {
-	    if (!cache[id]) {
-	      debug('new io instance for %s', source);
-	      cache[id] = Manager(source, opts);
-	    }
-	    io = cache[id];
-	  }
-	  if (parsed.query && !opts.query) {
-	    opts.query = parsed.query;
-	  } else if (opts && 'object' === _typeof(opts.query)) {
-	    opts.query = encodeQueryString(opts.query);
-	  }
-	  return io.socket(parsed.path, opts);
-	}
-	/**
-	 *  Helper method to parse query objects to string.
-	 * @param {object} query
-	 * @returns {string}
-	 */
-	function encodeQueryString(obj) {
-	  var str = [];
-	  for (var p in obj) {
-	    if (obj.hasOwnProperty(p)) {
-	      str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
-	    }
-	  }
-	  return str.join('&');
-	}
-	/**
-	 * Protocol version.
-	 *
-	 * @api public
-	 */
-
-	exports.protocol = parser.protocol;
-
-	/**
-	 * `connect`.
-	 *
-	 * @param {String} uri
-	 * @api public
-	 */
-
-	exports.connect = lookup;
-
-	/**
-	 * Expose constructors for standalone build.
-	 *
-	 * @api public
-	 */
-
-	exports.Manager = __webpack_require__(17);
-	exports.Socket = __webpack_require__(44);
-
-/***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
-
-	/**
-	 * Module dependencies.
-	 */
-
-	var parseuri = __webpack_require__(2);
-	var debug = __webpack_require__(3)('socket.io-client:url');
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = url;
-
-	/**
-	 * URL parser.
-	 *
-	 * @param {String} url
-	 * @param {Object} An object meant to mimic window.location.
-	 *                 Defaults to window.location.
-	 * @api public
-	 */
-
-	function url(uri, loc) {
-	  var obj = uri;
-
-	  // default to window.location
-	  loc = loc || global.location;
-	  if (null == uri) uri = loc.protocol + '//' + loc.host;
-
-	  // relative path support
-	  if ('string' === typeof uri) {
-	    if ('/' === uri.charAt(0)) {
-	      if ('/' === uri.charAt(1)) {
-	        uri = loc.protocol + uri;
-	      } else {
-	        uri = loc.host + uri;
-	      }
-	    }
-
-	    if (!/^(https?|wss?):\/\//.test(uri)) {
-	      debug('protocol-less url %s', uri);
-	      if ('undefined' !== typeof loc) {
-	        uri = loc.protocol + '//' + uri;
-	      } else {
-	        uri = 'https://' + uri;
-	      }
-	    }
-
-	    // parse
-	    debug('parse %s', uri);
-	    obj = parseuri(uri);
-	  }
-
-	  // make sure we treat `localhost:80` and `localhost` equally
-	  if (!obj.port) {
-	    if (/^(http|ws)$/.test(obj.protocol)) {
-	      obj.port = '80';
-	    } else if (/^(http|ws)s$/.test(obj.protocol)) {
-	      obj.port = '443';
-	    }
-	  }
-
-	  obj.path = obj.path || '/';
-
-	  var ipv6 = obj.host.indexOf(':') !== -1;
-	  var host = ipv6 ? '[' + obj.host + ']' : obj.host;
-
-	  // define unique id
-	  obj.id = obj.protocol + '://' + host + ':' + obj.port;
-	  // define href
-	  obj.href = obj.protocol + '://' + host + (loc && loc.port === obj.port ? '' : ':' + obj.port);
-
-	  return obj;
-	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 2 */
-/***/ function(module, exports) {
-
-	/**
-	 * Parses an URI
-	 *
-	 * @author Steven Levithan <stevenlevithan.com> (MIT license)
-	 * @api private
-	 */
-
-	var re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
-
-	var parts = [
-	    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
-	];
-
-	module.exports = function parseuri(str) {
-	    var src = str,
-	        b = str.indexOf('['),
-	        e = str.indexOf(']');
-
-	    if (b != -1 && e != -1) {
-	        str = str.substring(0, b) + str.substring(b, e).replace(/:/g, ';') + str.substring(e, str.length);
-	    }
-
-	    var m = re.exec(str || ''),
-	        uri = {},
-	        i = 14;
-
-	    while (i--) {
-	        uri[parts[i]] = m[i] || '';
-	    }
-
-	    if (b != -1 && e != -1) {
-	        uri.source = src;
-	        uri.host = uri.host.substring(1, uri.host.length - 1).replace(/;/g, ':');
-	        uri.authority = uri.authority.replace('[', '').replace(']', '').replace(/;/g, ':');
-	        uri.ipv6uri = true;
-	    }
-
-	    return uri;
-	};
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {
-	/**
-	 * This is the web browser implementation of `debug()`.
-	 *
-	 * Expose `debug()` as the module.
-	 */
-
-	exports = module.exports = __webpack_require__(5);
-	exports.log = log;
-	exports.formatArgs = formatArgs;
-	exports.save = save;
-	exports.load = load;
-	exports.useColors = useColors;
-	exports.storage = 'undefined' != typeof chrome
-	               && 'undefined' != typeof chrome.storage
-	                  ? chrome.storage.local
-	                  : localstorage();
-
-	/**
-	 * Colors.
-	 */
-
-	exports.colors = [
-	  'lightseagreen',
-	  'forestgreen',
-	  'goldenrod',
-	  'dodgerblue',
-	  'darkorchid',
-	  'crimson'
-	];
-
-	/**
-	 * Currently only WebKit-based Web Inspectors, Firefox >= v31,
-	 * and the Firebug extension (any Firefox version) are known
-	 * to support "%c" CSS customizations.
-	 *
-	 * TODO: add a `localStorage` variable to explicitly enable/disable colors
-	 */
-
-	function useColors() {
-	  // is webkit? http://stackoverflow.com/a/16459606/376773
-	  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
-	  return (typeof document !== 'undefined' && 'WebkitAppearance' in document.documentElement.style) ||
-	    // is firebug? http://stackoverflow.com/a/398120/376773
-	    (window.console && (console.firebug || (console.exception && console.table))) ||
-	    // is firefox >= v31?
-	    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-	    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
-	}
-
-	/**
-	 * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
-	 */
-
-	exports.formatters.j = function(v) {
-	  try {
-	    return JSON.stringify(v);
-	  } catch (err) {
-	    return '[UnexpectedJSONParseError]: ' + err.message;
-	  }
-	};
-
-
-	/**
-	 * Colorize log arguments if enabled.
-	 *
-	 * @api public
-	 */
-
-	function formatArgs() {
-	  var args = arguments;
-	  var useColors = this.useColors;
-
-	  args[0] = (useColors ? '%c' : '')
-	    + this.namespace
-	    + (useColors ? ' %c' : ' ')
-	    + args[0]
-	    + (useColors ? '%c ' : ' ')
-	    + '+' + exports.humanize(this.diff);
-
-	  if (!useColors) return args;
-
-	  var c = 'color: ' + this.color;
-	  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
-
-	  // the final "%c" is somewhat tricky, because there could be other
-	  // arguments passed either before or after the %c, so we need to
-	  // figure out the correct index to insert the CSS into
-	  var index = 0;
-	  var lastC = 0;
-	  args[0].replace(/%[a-z%]/g, function(match) {
-	    if ('%%' === match) return;
-	    index++;
-	    if ('%c' === match) {
-	      // we only are interested in the *last* %c
-	      // (the user may have provided their own)
-	      lastC = index;
-	    }
-	  });
-
-	  args.splice(lastC, 0, c);
-	  return args;
-	}
-
-	/**
-	 * Invokes `console.log()` when available.
-	 * No-op when `console.log` is not a "function".
-	 *
-	 * @api public
-	 */
-
-	function log() {
-	  // this hackery is required for IE8/9, where
-	  // the `console.log` function doesn't have 'apply'
-	  return 'object' === typeof console
-	    && console.log
-	    && Function.prototype.apply.call(console.log, console, arguments);
-	}
-
-	/**
-	 * Save `namespaces`.
-	 *
-	 * @param {String} namespaces
-	 * @api private
-	 */
-
-	function save(namespaces) {
-	  try {
-	    if (null == namespaces) {
-	      exports.storage.removeItem('debug');
-	    } else {
-	      exports.storage.debug = namespaces;
-	    }
-	  } catch(e) {}
-	}
-
-	/**
-	 * Load `namespaces`.
-	 *
-	 * @return {String} returns the previously persisted debug modes
-	 * @api private
-	 */
-
-	function load() {
-	  var r;
-	  try {
-	    return exports.storage.debug;
-	  } catch(e) {}
-
-	  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-	  if (typeof process !== 'undefined' && 'env' in process) {
-	    return process.env.DEBUG;
-	  }
-	}
-
-	/**
-	 * Enable namespaces listed in `localStorage.debug` initially.
-	 */
-
-	exports.enable(load());
-
-	/**
-	 * Localstorage attempts to return the localstorage.
-	 *
-	 * This is necessary because safari throws
-	 * when a user disables cookies/localstorage
-	 * and you attempt to access it.
-	 *
-	 * @return {LocalStorage}
-	 * @api private
-	 */
-
-	function localstorage(){
-	  try {
-	    return window.localStorage;
-	  } catch (e) {}
-	}
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
-
-/***/ },
-/* 4 */
-/***/ function(module, exports) {
-
-	// shim for using process in browser
-	var process = module.exports = {};
-
-	// cached from whatever global is present so that test runners that stub it
-	// don't break things.  But we need to wrap it in a try catch in case it is
-	// wrapped in strict mode code which doesn't define any globals.  It's inside a
-	// function because try/catches deoptimize in certain engines.
-
-	var cachedSetTimeout;
-	var cachedClearTimeout;
-
-	function defaultSetTimout() {
-	    throw new Error('setTimeout has not been defined');
-	}
-	function defaultClearTimeout () {
-	    throw new Error('clearTimeout has not been defined');
-	}
-	(function () {
-	    try {
-	        if (typeof setTimeout === 'function') {
-	            cachedSetTimeout = setTimeout;
-	        } else {
-	            cachedSetTimeout = defaultSetTimout;
-	        }
-	    } catch (e) {
-	        cachedSetTimeout = defaultSetTimout;
-	    }
-	    try {
-	        if (typeof clearTimeout === 'function') {
-	            cachedClearTimeout = clearTimeout;
-	        } else {
-	            cachedClearTimeout = defaultClearTimeout;
-	        }
-	    } catch (e) {
-	        cachedClearTimeout = defaultClearTimeout;
-	    }
-	} ())
-	function runTimeout(fun) {
-	    if (cachedSetTimeout === setTimeout) {
-	        //normal enviroments in sane situations
-	        return setTimeout(fun, 0);
-	    }
-	    // if setTimeout wasn't available but was latter defined
-	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-	        cachedSetTimeout = setTimeout;
-	        return setTimeout(fun, 0);
-	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedSetTimeout(fun, 0);
-	    } catch(e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-	            return cachedSetTimeout.call(null, fun, 0);
-	        } catch(e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-	            return cachedSetTimeout.call(this, fun, 0);
-	        }
-	    }
-
-
-	}
-	function runClearTimeout(marker) {
-	    if (cachedClearTimeout === clearTimeout) {
-	        //normal enviroments in sane situations
-	        return clearTimeout(marker);
-	    }
-	    // if clearTimeout wasn't available but was latter defined
-	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-	        cachedClearTimeout = clearTimeout;
-	        return clearTimeout(marker);
-	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedClearTimeout(marker);
-	    } catch (e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-	            return cachedClearTimeout.call(null, marker);
-	        } catch (e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-	            return cachedClearTimeout.call(this, marker);
-	        }
-	    }
-
-
-
-	}
-	var queue = [];
-	var draining = false;
-	var currentQueue;
-	var queueIndex = -1;
-
-	function cleanUpNextTick() {
-	    if (!draining || !currentQueue) {
-	        return;
-	    }
-	    draining = false;
-	    if (currentQueue.length) {
-	        queue = currentQueue.concat(queue);
-	    } else {
-	        queueIndex = -1;
-	    }
-	    if (queue.length) {
-	        drainQueue();
-	    }
-	}
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    var timeout = runTimeout(cleanUpNextTick);
-	    draining = true;
-
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        while (++queueIndex < len) {
-	            if (currentQueue) {
-	                currentQueue[queueIndex].run();
-	            }
-	        }
-	        queueIndex = -1;
-	        len = queue.length;
-	    }
-	    currentQueue = null;
-	    draining = false;
-	    runClearTimeout(timeout);
-	}
-
-	process.nextTick = function (fun) {
-	    var args = new Array(arguments.length - 1);
-	    if (arguments.length > 1) {
-	        for (var i = 1; i < arguments.length; i++) {
-	            args[i - 1] = arguments[i];
-	        }
-	    }
-	    queue.push(new Item(fun, args));
-	    if (queue.length === 1 && !draining) {
-	        runTimeout(drainQueue);
-	    }
-	};
-
-	// v8 likes predictible objects
-	function Item(fun, array) {
-	    this.fun = fun;
-	    this.array = array;
-	}
-	Item.prototype.run = function () {
-	    this.fun.apply(null, this.array);
-	};
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * This is the common logic for both the Node.js and web browser
-	 * implementations of `debug()`.
-	 *
-	 * Expose `debug()` as the module.
-	 */
-
-	exports = module.exports = debug.debug = debug;
-	exports.coerce = coerce;
-	exports.disable = disable;
-	exports.enable = enable;
-	exports.enabled = enabled;
-	exports.humanize = __webpack_require__(6);
-
-	/**
-	 * The currently active debug mode names, and names to skip.
-	 */
-
-	exports.names = [];
-	exports.skips = [];
-
-	/**
-	 * Map of special "%n" handling functions, for the debug "format" argument.
-	 *
-	 * Valid key names are a single, lowercased letter, i.e. "n".
-	 */
-
-	exports.formatters = {};
-
-	/**
-	 * Previously assigned color.
-	 */
-
-	var prevColor = 0;
-
-	/**
-	 * Previous log timestamp.
-	 */
-
-	var prevTime;
-
-	/**
-	 * Select a color.
-	 *
-	 * @return {Number}
-	 * @api private
-	 */
-
-	function selectColor() {
-	  return exports.colors[prevColor++ % exports.colors.length];
-	}
-
-	/**
-	 * Create a debugger with the given `namespace`.
-	 *
-	 * @param {String} namespace
-	 * @return {Function}
-	 * @api public
-	 */
-
-	function debug(namespace) {
-
-	  // define the `disabled` version
-	  function disabled() {
-	  }
-	  disabled.enabled = false;
-
-	  // define the `enabled` version
-	  function enabled() {
-
-	    var self = enabled;
-
-	    // set `diff` timestamp
-	    var curr = +new Date();
-	    var ms = curr - (prevTime || curr);
-	    self.diff = ms;
-	    self.prev = prevTime;
-	    self.curr = curr;
-	    prevTime = curr;
-
-	    // add the `color` if not set
-	    if (null == self.useColors) self.useColors = exports.useColors();
-	    if (null == self.color && self.useColors) self.color = selectColor();
-
-	    var args = new Array(arguments.length);
-	    for (var i = 0; i < args.length; i++) {
-	      args[i] = arguments[i];
-	    }
-
-	    args[0] = exports.coerce(args[0]);
-
-	    if ('string' !== typeof args[0]) {
-	      // anything else let's inspect with %o
-	      args = ['%o'].concat(args);
-	    }
-
-	    // apply any `formatters` transformations
-	    var index = 0;
-	    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
-	      // if we encounter an escaped % then don't increase the array index
-	      if (match === '%%') return match;
-	      index++;
-	      var formatter = exports.formatters[format];
-	      if ('function' === typeof formatter) {
-	        var val = args[index];
-	        match = formatter.call(self, val);
-
-	        // now we need to remove `args[index]` since it's inlined in the `format`
-	        args.splice(index, 1);
-	        index--;
-	      }
-	      return match;
-	    });
-
-	    // apply env-specific formatting
-	    args = exports.formatArgs.apply(self, args);
-
-	    var logFn = enabled.log || exports.log || console.log.bind(console);
-	    logFn.apply(self, args);
-	  }
-	  enabled.enabled = true;
-
-	  var fn = exports.enabled(namespace) ? enabled : disabled;
-
-	  fn.namespace = namespace;
-
-	  return fn;
-	}
-
-	/**
-	 * Enables a debug mode by namespaces. This can include modes
-	 * separated by a colon and wildcards.
-	 *
-	 * @param {String} namespaces
-	 * @api public
-	 */
-
-	function enable(namespaces) {
-	  exports.save(namespaces);
-
-	  var split = (namespaces || '').split(/[\s,]+/);
-	  var len = split.length;
-
-	  for (var i = 0; i < len; i++) {
-	    if (!split[i]) continue; // ignore empty strings
-	    namespaces = split[i].replace(/[\\^$+?.()|[\]{}]/g, '\\$&').replace(/\*/g, '.*?');
-	    if (namespaces[0] === '-') {
-	      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-	    } else {
-	      exports.names.push(new RegExp('^' + namespaces + '$'));
-	    }
-	  }
-	}
-
-	/**
-	 * Disable debug output.
-	 *
-	 * @api public
-	 */
-
-	function disable() {
-	  exports.enable('');
-	}
-
-	/**
-	 * Returns true if the given mode name is enabled, false otherwise.
-	 *
-	 * @param {String} name
-	 * @return {Boolean}
-	 * @api public
-	 */
-
-	function enabled(name) {
-	  var i, len;
-	  for (i = 0, len = exports.skips.length; i < len; i++) {
-	    if (exports.skips[i].test(name)) {
-	      return false;
-	    }
-	  }
-	  for (i = 0, len = exports.names.length; i < len; i++) {
-	    if (exports.names[i].test(name)) {
-	      return true;
-	    }
-	  }
-	  return false;
-	}
-
-	/**
-	 * Coerce `val`.
-	 *
-	 * @param {Mixed} val
-	 * @return {Mixed}
-	 * @api private
-	 */
-
-	function coerce(val) {
-	  if (val instanceof Error) return val.stack || val.message;
-	  return val;
-	}
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	/**
-	 * Helpers.
-	 */
-
-	var s = 1000
-	var m = s * 60
-	var h = m * 60
-	var d = h * 24
-	var y = d * 365.25
-
-	/**
-	 * Parse or format the given `val`.
-	 *
-	 * Options:
-	 *
-	 *  - `long` verbose formatting [false]
-	 *
-	 * @param {String|Number} val
-	 * @param {Object} options
-	 * @throws {Error} throw an error if val is not a non-empty string or a number
-	 * @return {String|Number}
-	 * @api public
-	 */
-
-	module.exports = function (val, options) {
-	  options = options || {}
-	  var type = typeof val
-	  if (type === 'string' && val.length > 0) {
-	    return parse(val)
-	  } else if (type === 'number' && isNaN(val) === false) {
-	    return options.long ?
-				fmtLong(val) :
-				fmtShort(val)
-	  }
-	  throw new Error('val is not a non-empty string or a valid number. val=' + JSON.stringify(val))
-	}
-
-	/**
-	 * Parse the given `str` and return milliseconds.
-	 *
-	 * @param {String} str
-	 * @return {Number}
-	 * @api private
-	 */
-
-	function parse(str) {
-	  str = String(str)
-	  if (str.length > 10000) {
-	    return
-	  }
-	  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(str)
-	  if (!match) {
-	    return
-	  }
-	  var n = parseFloat(match[1])
-	  var type = (match[2] || 'ms').toLowerCase()
-	  switch (type) {
-	    case 'years':
-	    case 'year':
-	    case 'yrs':
-	    case 'yr':
-	    case 'y':
-	      return n * y
-	    case 'days':
-	    case 'day':
-	    case 'd':
-	      return n * d
-	    case 'hours':
-	    case 'hour':
-	    case 'hrs':
-	    case 'hr':
-	    case 'h':
-	      return n * h
-	    case 'minutes':
-	    case 'minute':
-	    case 'mins':
-	    case 'min':
-	    case 'm':
-	      return n * m
-	    case 'seconds':
-	    case 'second':
-	    case 'secs':
-	    case 'sec':
-	    case 's':
-	      return n * s
-	    case 'milliseconds':
-	    case 'millisecond':
-	    case 'msecs':
-	    case 'msec':
-	    case 'ms':
-	      return n
-	    default:
-	      return undefined
-	  }
-	}
-
-	/**
-	 * Short format for `ms`.
-	 *
-	 * @param {Number} ms
-	 * @return {String}
-	 * @api private
-	 */
-
-	function fmtShort(ms) {
-	  if (ms >= d) {
-	    return Math.round(ms / d) + 'd'
-	  }
-	  if (ms >= h) {
-	    return Math.round(ms / h) + 'h'
-	  }
-	  if (ms >= m) {
-	    return Math.round(ms / m) + 'm'
-	  }
-	  if (ms >= s) {
-	    return Math.round(ms / s) + 's'
-	  }
-	  return ms + 'ms'
-	}
-
-	/**
-	 * Long format for `ms`.
-	 *
-	 * @param {Number} ms
-	 * @return {String}
-	 * @api private
-	 */
-
-	function fmtLong(ms) {
-	  return plural(ms, d, 'day') ||
-	    plural(ms, h, 'hour') ||
-	    plural(ms, m, 'minute') ||
-	    plural(ms, s, 'second') ||
-	    ms + ' ms'
-	}
-
-	/**
-	 * Pluralization helper.
-	 */
-
-	function plural(ms, n, name) {
-	  if (ms < n) {
-	    return
-	  }
-	  if (ms < n * 1.5) {
-	    return Math.floor(ms / n) + ' ' + name
-	  }
-	  return Math.ceil(ms / n) + ' ' + name + 's'
-	}
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * Module dependencies.
-	 */
-
-	var debug = __webpack_require__(8)('socket.io-parser');
-	var json = __webpack_require__(11);
-	var Emitter = __webpack_require__(13);
-	var binary = __webpack_require__(14);
-	var isBuf = __webpack_require__(16);
-
-	/**
-	 * Protocol version.
-	 *
-	 * @api public
-	 */
-
-	exports.protocol = 4;
-
-	/**
-	 * Packet types.
-	 *
-	 * @api public
-	 */
-
-	exports.types = [
-	  'CONNECT',
-	  'DISCONNECT',
-	  'EVENT',
-	  'ACK',
-	  'ERROR',
-	  'BINARY_EVENT',
-	  'BINARY_ACK'
-	];
-
-	/**
-	 * Packet type `connect`.
-	 *
-	 * @api public
-	 */
-
-	exports.CONNECT = 0;
-
-	/**
-	 * Packet type `disconnect`.
-	 *
-	 * @api public
-	 */
-
-	exports.DISCONNECT = 1;
-
-	/**
-	 * Packet type `event`.
-	 *
-	 * @api public
-	 */
-
-	exports.EVENT = 2;
-
-	/**
-	 * Packet type `ack`.
-	 *
-	 * @api public
-	 */
-
-	exports.ACK = 3;
-
-	/**
-	 * Packet type `error`.
-	 *
-	 * @api public
-	 */
-
-	exports.ERROR = 4;
-
-	/**
-	 * Packet type 'binary event'
-	 *
-	 * @api public
-	 */
-
-	exports.BINARY_EVENT = 5;
-
-	/**
-	 * Packet type `binary ack`. For acks with binary arguments.
-	 *
-	 * @api public
-	 */
-
-	exports.BINARY_ACK = 6;
-
-	/**
-	 * Encoder constructor.
-	 *
-	 * @api public
-	 */
-
-	exports.Encoder = Encoder;
-
-	/**
-	 * Decoder constructor.
-	 *
-	 * @api public
-	 */
-
-	exports.Decoder = Decoder;
-
-	/**
-	 * A socket.io Encoder instance
-	 *
-	 * @api public
-	 */
-
-	function Encoder() {}
-
-	/**
-	 * Encode a packet as a single string if non-binary, or as a
-	 * buffer sequence, depending on packet type.
-	 *
-	 * @param {Object} obj - packet object
-	 * @param {Function} callback - function to handle encodings (likely engine.write)
-	 * @return Calls callback with Array of encodings
-	 * @api public
-	 */
-
-	Encoder.prototype.encode = function(obj, callback){
-	  debug('encoding packet %j', obj);
-
-	  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
-	    encodeAsBinary(obj, callback);
-	  }
-	  else {
-	    var encoding = encodeAsString(obj);
-	    callback([encoding]);
-	  }
-	};
-
-	/**
-	 * Encode packet as string.
-	 *
-	 * @param {Object} packet
-	 * @return {String} encoded
-	 * @api private
-	 */
-
-	function encodeAsString(obj) {
-	  var str = '';
-	  var nsp = false;
-
-	  // first is type
-	  str += obj.type;
-
-	  // attachments if we have them
-	  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
-	    str += obj.attachments;
-	    str += '-';
-	  }
-
-	  // if we have a namespace other than `/`
-	  // we append it followed by a comma `,`
-	  if (obj.nsp && '/' != obj.nsp) {
-	    nsp = true;
-	    str += obj.nsp;
-	  }
-
-	  // immediately followed by the id
-	  if (null != obj.id) {
-	    if (nsp) {
-	      str += ',';
-	      nsp = false;
-	    }
-	    str += obj.id;
-	  }
-
-	  // json data
-	  if (null != obj.data) {
-	    if (nsp) str += ',';
-	    str += json.stringify(obj.data);
-	  }
-
-	  debug('encoded %j as %s', obj, str);
-	  return str;
-	}
-
-	/**
-	 * Encode packet as 'buffer sequence' by removing blobs, and
-	 * deconstructing packet into object with placeholders and
-	 * a list of buffers.
-	 *
-	 * @param {Object} packet
-	 * @return {Buffer} encoded
-	 * @api private
-	 */
-
-	function encodeAsBinary(obj, callback) {
-
-	  function writeEncoding(bloblessData) {
-	    var deconstruction = binary.deconstructPacket(bloblessData);
-	    var pack = encodeAsString(deconstruction.packet);
-	    var buffers = deconstruction.buffers;
-
-	    buffers.unshift(pack); // add packet info to beginning of data list
-	    callback(buffers); // write all the buffers
-	  }
-
-	  binary.removeBlobs(obj, writeEncoding);
-	}
-
-	/**
-	 * A socket.io Decoder instance
-	 *
-	 * @return {Object} decoder
-	 * @api public
-	 */
-
-	function Decoder() {
-	  this.reconstructor = null;
-	}
-
-	/**
-	 * Mix in `Emitter` with Decoder.
-	 */
-
-	Emitter(Decoder.prototype);
-
-	/**
-	 * Decodes an ecoded packet string into packet JSON.
-	 *
-	 * @param {String} obj - encoded packet
-	 * @return {Object} packet
-	 * @api public
-	 */
-
-	Decoder.prototype.add = function(obj) {
-	  var packet;
-	  if ('string' == typeof obj) {
-	    packet = decodeString(obj);
-	    if (exports.BINARY_EVENT == packet.type || exports.BINARY_ACK == packet.type) { // binary packet's json
-	      this.reconstructor = new BinaryReconstructor(packet);
-
-	      // no attachments, labeled binary but no binary data to follow
-	      if (this.reconstructor.reconPack.attachments === 0) {
-	        this.emit('decoded', packet);
-	      }
-	    } else { // non-binary full packet
-	      this.emit('decoded', packet);
-	    }
-	  }
-	  else if (isBuf(obj) || obj.base64) { // raw binary data
-	    if (!this.reconstructor) {
-	      throw new Error('got binary data when not reconstructing a packet');
-	    } else {
-	      packet = this.reconstructor.takeBinaryData(obj);
-	      if (packet) { // received final buffer
-	        this.reconstructor = null;
-	        this.emit('decoded', packet);
-	      }
-	    }
-	  }
-	  else {
-	    throw new Error('Unknown type: ' + obj);
-	  }
-	};
-
-	/**
-	 * Decode a packet String (JSON data)
-	 *
-	 * @param {String} str
-	 * @return {Object} packet
-	 * @api private
-	 */
-
-	function decodeString(str) {
-	  var p = {};
-	  var i = 0;
-
-	  // look up type
-	  p.type = Number(str.charAt(0));
-	  if (null == exports.types[p.type]) return error();
-
-	  // look up attachments if type binary
-	  if (exports.BINARY_EVENT == p.type || exports.BINARY_ACK == p.type) {
-	    var buf = '';
-	    while (str.charAt(++i) != '-') {
-	      buf += str.charAt(i);
-	      if (i == str.length) break;
-	    }
-	    if (buf != Number(buf) || str.charAt(i) != '-') {
-	      throw new Error('Illegal attachments');
-	    }
-	    p.attachments = Number(buf);
-	  }
-
-	  // look up namespace (if any)
-	  if ('/' == str.charAt(i + 1)) {
-	    p.nsp = '';
-	    while (++i) {
-	      var c = str.charAt(i);
-	      if (',' == c) break;
-	      p.nsp += c;
-	      if (i == str.length) break;
-	    }
-	  } else {
-	    p.nsp = '/';
-	  }
-
-	  // look up id
-	  var next = str.charAt(i + 1);
-	  if ('' !== next && Number(next) == next) {
-	    p.id = '';
-	    while (++i) {
-	      var c = str.charAt(i);
-	      if (null == c || Number(c) != c) {
-	        --i;
-	        break;
-	      }
-	      p.id += str.charAt(i);
-	      if (i == str.length) break;
-	    }
-	    p.id = Number(p.id);
-	  }
-
-	  // look up json data
-	  if (str.charAt(++i)) {
-	    p = tryParse(p, str.substr(i));
-	  }
-
-	  debug('decoded %s as %j', str, p);
-	  return p;
-	}
-
-	function tryParse(p, str) {
-	  try {
-	    p.data = json.parse(str);
-	  } catch(e){
-	    return error();
-	  }
-	  return p; 
-	};
-
-	/**
-	 * Deallocates a parser's resources
-	 *
-	 * @api public
-	 */
-
-	Decoder.prototype.destroy = function() {
-	  if (this.reconstructor) {
-	    this.reconstructor.finishedReconstruction();
-	  }
-	};
-
-	/**
-	 * A manager of a binary event's 'buffer sequence'. Should
-	 * be constructed whenever a packet of type BINARY_EVENT is
-	 * decoded.
-	 *
-	 * @param {Object} packet
-	 * @return {BinaryReconstructor} initialized reconstructor
-	 * @api private
-	 */
-
-	function BinaryReconstructor(packet) {
-	  this.reconPack = packet;
-	  this.buffers = [];
-	}
-
-	/**
-	 * Method to be called when binary data received from connection
-	 * after a BINARY_EVENT packet.
-	 *
-	 * @param {Buffer | ArrayBuffer} binData - the raw binary data received
-	 * @return {null | Object} returns null if more binary data is expected or
-	 *   a reconstructed packet object if all buffers have been received.
-	 * @api private
-	 */
-
-	BinaryReconstructor.prototype.takeBinaryData = function(binData) {
-	  this.buffers.push(binData);
-	  if (this.buffers.length == this.reconPack.attachments) { // done with buffer list
-	    var packet = binary.reconstructPacket(this.reconPack, this.buffers);
-	    this.finishedReconstruction();
-	    return packet;
-	  }
-	  return null;
-	};
-
-	/**
-	 * Cleans up binary packet reconstruction variables.
-	 *
-	 * @api private
-	 */
-
-	BinaryReconstructor.prototype.finishedReconstruction = function() {
-	  this.reconPack = null;
-	  this.buffers = [];
-	};
-
-	function error(data){
-	  return {
-	    type: exports.ERROR,
-	    data: 'parser error'
-	  };
-	}
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * This is the web browser implementation of `debug()`.
-	 *
-	 * Expose `debug()` as the module.
-	 */
-
-	exports = module.exports = __webpack_require__(9);
-	exports.log = log;
-	exports.formatArgs = formatArgs;
-	exports.save = save;
-	exports.load = load;
-	exports.useColors = useColors;
-	exports.storage = 'undefined' != typeof chrome
-	               && 'undefined' != typeof chrome.storage
-	                  ? chrome.storage.local
-	                  : localstorage();
-
-	/**
-	 * Colors.
-	 */
-
-	exports.colors = [
-	  'lightseagreen',
-	  'forestgreen',
-	  'goldenrod',
-	  'dodgerblue',
-	  'darkorchid',
-	  'crimson'
-	];
-
-	/**
-	 * Currently only WebKit-based Web Inspectors, Firefox >= v31,
-	 * and the Firebug extension (any Firefox version) are known
-	 * to support "%c" CSS customizations.
-	 *
-	 * TODO: add a `localStorage` variable to explicitly enable/disable colors
-	 */
-
-	function useColors() {
-	  // is webkit? http://stackoverflow.com/a/16459606/376773
-	  return ('WebkitAppearance' in document.documentElement.style) ||
-	    // is firebug? http://stackoverflow.com/a/398120/376773
-	    (window.console && (console.firebug || (console.exception && console.table))) ||
-	    // is firefox >= v31?
-	    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-	    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
-	}
-
-	/**
-	 * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
-	 */
-
-	exports.formatters.j = function(v) {
-	  return JSON.stringify(v);
-	};
-
-
-	/**
-	 * Colorize log arguments if enabled.
-	 *
-	 * @api public
-	 */
-
-	function formatArgs() {
-	  var args = arguments;
-	  var useColors = this.useColors;
-
-	  args[0] = (useColors ? '%c' : '')
-	    + this.namespace
-	    + (useColors ? ' %c' : ' ')
-	    + args[0]
-	    + (useColors ? '%c ' : ' ')
-	    + '+' + exports.humanize(this.diff);
-
-	  if (!useColors) return args;
-
-	  var c = 'color: ' + this.color;
-	  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
-
-	  // the final "%c" is somewhat tricky, because there could be other
-	  // arguments passed either before or after the %c, so we need to
-	  // figure out the correct index to insert the CSS into
-	  var index = 0;
-	  var lastC = 0;
-	  args[0].replace(/%[a-z%]/g, function(match) {
-	    if ('%%' === match) return;
-	    index++;
-	    if ('%c' === match) {
-	      // we only are interested in the *last* %c
-	      // (the user may have provided their own)
-	      lastC = index;
-	    }
-	  });
-
-	  args.splice(lastC, 0, c);
-	  return args;
-	}
-
-	/**
-	 * Invokes `console.log()` when available.
-	 * No-op when `console.log` is not a "function".
-	 *
-	 * @api public
-	 */
-
-	function log() {
-	  // this hackery is required for IE8/9, where
-	  // the `console.log` function doesn't have 'apply'
-	  return 'object' === typeof console
-	    && console.log
-	    && Function.prototype.apply.call(console.log, console, arguments);
-	}
-
-	/**
-	 * Save `namespaces`.
-	 *
-	 * @param {String} namespaces
-	 * @api private
-	 */
-
-	function save(namespaces) {
-	  try {
-	    if (null == namespaces) {
-	      exports.storage.removeItem('debug');
-	    } else {
-	      exports.storage.debug = namespaces;
-	    }
-	  } catch(e) {}
-	}
-
-	/**
-	 * Load `namespaces`.
-	 *
-	 * @return {String} returns the previously persisted debug modes
-	 * @api private
-	 */
-
-	function load() {
-	  var r;
-	  try {
-	    r = exports.storage.debug;
-	  } catch(e) {}
-	  return r;
-	}
-
-	/**
-	 * Enable namespaces listed in `localStorage.debug` initially.
-	 */
-
-	exports.enable(load());
-
-	/**
-	 * Localstorage attempts to return the localstorage.
-	 *
-	 * This is necessary because safari throws
-	 * when a user disables cookies/localstorage
-	 * and you attempt to access it.
-	 *
-	 * @return {LocalStorage}
-	 * @api private
-	 */
-
-	function localstorage(){
-	  try {
-	    return window.localStorage;
-	  } catch (e) {}
-	}
-
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * This is the common logic for both the Node.js and web browser
-	 * implementations of `debug()`.
-	 *
-	 * Expose `debug()` as the module.
-	 */
-
-	exports = module.exports = debug;
-	exports.coerce = coerce;
-	exports.disable = disable;
-	exports.enable = enable;
-	exports.enabled = enabled;
-	exports.humanize = __webpack_require__(10);
-
-	/**
-	 * The currently active debug mode names, and names to skip.
-	 */
-
-	exports.names = [];
-	exports.skips = [];
-
-	/**
-	 * Map of special "%n" handling functions, for the debug "format" argument.
-	 *
-	 * Valid key names are a single, lowercased letter, i.e. "n".
-	 */
-
-	exports.formatters = {};
-
-	/**
-	 * Previously assigned color.
-	 */
-
-	var prevColor = 0;
-
-	/**
-	 * Previous log timestamp.
-	 */
-
-	var prevTime;
-
-	/**
-	 * Select a color.
-	 *
-	 * @return {Number}
-	 * @api private
-	 */
-
-	function selectColor() {
-	  return exports.colors[prevColor++ % exports.colors.length];
-	}
-
-	/**
-	 * Create a debugger with the given `namespace`.
-	 *
-	 * @param {String} namespace
-	 * @return {Function}
-	 * @api public
-	 */
-
-	function debug(namespace) {
-
-	  // define the `disabled` version
-	  function disabled() {
-	  }
-	  disabled.enabled = false;
-
-	  // define the `enabled` version
-	  function enabled() {
-
-	    var self = enabled;
-
-	    // set `diff` timestamp
-	    var curr = +new Date();
-	    var ms = curr - (prevTime || curr);
-	    self.diff = ms;
-	    self.prev = prevTime;
-	    self.curr = curr;
-	    prevTime = curr;
-
-	    // add the `color` if not set
-	    if (null == self.useColors) self.useColors = exports.useColors();
-	    if (null == self.color && self.useColors) self.color = selectColor();
-
-	    var args = Array.prototype.slice.call(arguments);
-
-	    args[0] = exports.coerce(args[0]);
-
-	    if ('string' !== typeof args[0]) {
-	      // anything else let's inspect with %o
-	      args = ['%o'].concat(args);
-	    }
-
-	    // apply any `formatters` transformations
-	    var index = 0;
-	    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
-	      // if we encounter an escaped % then don't increase the array index
-	      if (match === '%%') return match;
-	      index++;
-	      var formatter = exports.formatters[format];
-	      if ('function' === typeof formatter) {
-	        var val = args[index];
-	        match = formatter.call(self, val);
-
-	        // now we need to remove `args[index]` since it's inlined in the `format`
-	        args.splice(index, 1);
-	        index--;
-	      }
-	      return match;
-	    });
-
-	    if ('function' === typeof exports.formatArgs) {
-	      args = exports.formatArgs.apply(self, args);
-	    }
-	    var logFn = enabled.log || exports.log || console.log.bind(console);
-	    logFn.apply(self, args);
-	  }
-	  enabled.enabled = true;
-
-	  var fn = exports.enabled(namespace) ? enabled : disabled;
-
-	  fn.namespace = namespace;
-
-	  return fn;
-	}
-
-	/**
-	 * Enables a debug mode by namespaces. This can include modes
-	 * separated by a colon and wildcards.
-	 *
-	 * @param {String} namespaces
-	 * @api public
-	 */
-
-	function enable(namespaces) {
-	  exports.save(namespaces);
-
-	  var split = (namespaces || '').split(/[\s,]+/);
-	  var len = split.length;
-
-	  for (var i = 0; i < len; i++) {
-	    if (!split[i]) continue; // ignore empty strings
-	    namespaces = split[i].replace(/\*/g, '.*?');
-	    if (namespaces[0] === '-') {
-	      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-	    } else {
-	      exports.names.push(new RegExp('^' + namespaces + '$'));
-	    }
-	  }
-	}
-
-	/**
-	 * Disable debug output.
-	 *
-	 * @api public
-	 */
-
-	function disable() {
-	  exports.enable('');
-	}
-
-	/**
-	 * Returns true if the given mode name is enabled, false otherwise.
-	 *
-	 * @param {String} name
-	 * @return {Boolean}
-	 * @api public
-	 */
-
-	function enabled(name) {
-	  var i, len;
-	  for (i = 0, len = exports.skips.length; i < len; i++) {
-	    if (exports.skips[i].test(name)) {
-	      return false;
-	    }
-	  }
-	  for (i = 0, len = exports.names.length; i < len; i++) {
-	    if (exports.names[i].test(name)) {
-	      return true;
-	    }
-	  }
-	  return false;
-	}
-
-	/**
-	 * Coerce `val`.
-	 *
-	 * @param {Mixed} val
-	 * @return {Mixed}
-	 * @api private
-	 */
-
-	function coerce(val) {
-	  if (val instanceof Error) return val.stack || val.message;
-	  return val;
-	}
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports) {
-
-	/**
-	 * Helpers.
-	 */
-
-	var s = 1000;
-	var m = s * 60;
-	var h = m * 60;
-	var d = h * 24;
-	var y = d * 365.25;
-
-	/**
-	 * Parse or format the given `val`.
-	 *
-	 * Options:
-	 *
-	 *  - `long` verbose formatting [false]
-	 *
-	 * @param {String|Number} val
-	 * @param {Object} options
-	 * @return {String|Number}
-	 * @api public
-	 */
-
-	module.exports = function(val, options){
-	  options = options || {};
-	  if ('string' == typeof val) return parse(val);
-	  return options.long
-	    ? long(val)
-	    : short(val);
-	};
-
-	/**
-	 * Parse the given `str` and return milliseconds.
-	 *
-	 * @param {String} str
-	 * @return {Number}
-	 * @api private
-	 */
-
-	function parse(str) {
-	  str = '' + str;
-	  if (str.length > 10000) return;
-	  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(str);
-	  if (!match) return;
-	  var n = parseFloat(match[1]);
-	  var type = (match[2] || 'ms').toLowerCase();
-	  switch (type) {
-	    case 'years':
-	    case 'year':
-	    case 'yrs':
-	    case 'yr':
-	    case 'y':
-	      return n * y;
-	    case 'days':
-	    case 'day':
-	    case 'd':
-	      return n * d;
-	    case 'hours':
-	    case 'hour':
-	    case 'hrs':
-	    case 'hr':
-	    case 'h':
-	      return n * h;
-	    case 'minutes':
-	    case 'minute':
-	    case 'mins':
-	    case 'min':
-	    case 'm':
-	      return n * m;
-	    case 'seconds':
-	    case 'second':
-	    case 'secs':
-	    case 'sec':
-	    case 's':
-	      return n * s;
-	    case 'milliseconds':
-	    case 'millisecond':
-	    case 'msecs':
-	    case 'msec':
-	    case 'ms':
-	      return n;
-	  }
-	}
-
-	/**
-	 * Short format for `ms`.
-	 *
-	 * @param {Number} ms
-	 * @return {String}
-	 * @api private
-	 */
-
-	function short(ms) {
-	  if (ms >= d) return Math.round(ms / d) + 'd';
-	  if (ms >= h) return Math.round(ms / h) + 'h';
-	  if (ms >= m) return Math.round(ms / m) + 'm';
-	  if (ms >= s) return Math.round(ms / s) + 's';
-	  return ms + 'ms';
-	}
-
-	/**
-	 * Long format for `ms`.
-	 *
-	 * @param {Number} ms
-	 * @return {String}
-	 * @api private
-	 */
-
-	function long(ms) {
-	  return plural(ms, d, 'day')
-	    || plural(ms, h, 'hour')
-	    || plural(ms, m, 'minute')
-	    || plural(ms, s, 'second')
-	    || ms + ' ms';
-	}
-
-	/**
-	 * Pluralization helper.
-	 */
-
-	function plural(ms, n, name) {
-	  if (ms < n) return;
-	  if (ms < n * 1.5) return Math.floor(ms / n) + ' ' + name;
-	  return Math.ceil(ms / n) + ' ' + name + 's';
-	}
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(module, global) {/*** IMPORTS FROM imports-loader ***/
-	var define = false;
-
-	/*! JSON v3.3.2 | http://bestiejs.github.io/json3 | Copyright 2012-2014, Kit Cambridge | http://kit.mit-license.org */
-	;(function () {
-	  // Detect the `define` function exposed by asynchronous module loaders. The
-	  // strict `define` check is necessary for compatibility with `r.js`.
-	  var isLoader = typeof define === "function" && define.amd;
-
-	  // A set of types used to distinguish objects from primitives.
-	  var objectTypes = {
-	    "function": true,
-	    "object": true
-	  };
-
-	  // Detect the `exports` object exposed by CommonJS implementations.
-	  var freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports;
-
-	  // Use the `global` object exposed by Node (including Browserify via
-	  // `insert-module-globals`), Narwhal, and Ringo as the default context,
-	  // and the `window` object in browsers. Rhino exports a `global` function
-	  // instead.
-	  var root = objectTypes[typeof window] && window || this,
-	      freeGlobal = freeExports && objectTypes[typeof module] && module && !module.nodeType && typeof global == "object" && global;
-
-	  if (freeGlobal && (freeGlobal["global"] === freeGlobal || freeGlobal["window"] === freeGlobal || freeGlobal["self"] === freeGlobal)) {
-	    root = freeGlobal;
-	  }
-
-	  // Public: Initializes JSON 3 using the given `context` object, attaching the
-	  // `stringify` and `parse` functions to the specified `exports` object.
-	  function runInContext(context, exports) {
-	    context || (context = root["Object"]());
-	    exports || (exports = root["Object"]());
-
-	    // Native constructor aliases.
-	    var Number = context["Number"] || root["Number"],
-	        String = context["String"] || root["String"],
-	        Object = context["Object"] || root["Object"],
-	        Date = context["Date"] || root["Date"],
-	        SyntaxError = context["SyntaxError"] || root["SyntaxError"],
-	        TypeError = context["TypeError"] || root["TypeError"],
-	        Math = context["Math"] || root["Math"],
-	        nativeJSON = context["JSON"] || root["JSON"];
-
-	    // Delegate to the native `stringify` and `parse` implementations.
-	    if (typeof nativeJSON == "object" && nativeJSON) {
-	      exports.stringify = nativeJSON.stringify;
-	      exports.parse = nativeJSON.parse;
-	    }
-
-	    // Convenience aliases.
-	    var objectProto = Object.prototype,
-	        getClass = objectProto.toString,
-	        isProperty, forEach, undef;
-
-	    // Test the `Date#getUTC*` methods. Based on work by @Yaffle.
-	    var isExtended = new Date(-3509827334573292);
-	    try {
-	      // The `getUTCFullYear`, `Month`, and `Date` methods return nonsensical
-	      // results for certain dates in Opera >= 10.53.
-	      isExtended = isExtended.getUTCFullYear() == -109252 && isExtended.getUTCMonth() === 0 && isExtended.getUTCDate() === 1 &&
-	        // Safari < 2.0.2 stores the internal millisecond time value correctly,
-	        // but clips the values returned by the date methods to the range of
-	        // signed 32-bit integers ([-2 ** 31, 2 ** 31 - 1]).
-	        isExtended.getUTCHours() == 10 && isExtended.getUTCMinutes() == 37 && isExtended.getUTCSeconds() == 6 && isExtended.getUTCMilliseconds() == 708;
-	    } catch (exception) {}
-
-	    // Internal: Determines whether the native `JSON.stringify` and `parse`
-	    // implementations are spec-compliant. Based on work by Ken Snyder.
-	    function has(name) {
-	      if (has[name] !== undef) {
-	        // Return cached feature test result.
-	        return has[name];
-	      }
-	      var isSupported;
-	      if (name == "bug-string-char-index") {
-	        // IE <= 7 doesn't support accessing string characters using square
-	        // bracket notation. IE 8 only supports this for primitives.
-	        isSupported = "a"[0] != "a";
-	      } else if (name == "json") {
-	        // Indicates whether both `JSON.stringify` and `JSON.parse` are
-	        // supported.
-	        isSupported = has("json-stringify") && has("json-parse");
-	      } else {
-	        var value, serialized = '{"a":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}';
-	        // Test `JSON.stringify`.
-	        if (name == "json-stringify") {
-	          var stringify = exports.stringify, stringifySupported = typeof stringify == "function" && isExtended;
-	          if (stringifySupported) {
-	            // A test function object with a custom `toJSON` method.
-	            (value = function () {
-	              return 1;
-	            }).toJSON = value;
-	            try {
-	              stringifySupported =
-	                // Firefox 3.1b1 and b2 serialize string, number, and boolean
-	                // primitives as object literals.
-	                stringify(0) === "0" &&
-	                // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
-	                // literals.
-	                stringify(new Number()) === "0" &&
-	                stringify(new String()) == '""' &&
-	                // FF 3.1b1, 2 throw an error if the value is `null`, `undefined`, or
-	                // does not define a canonical JSON representation (this applies to
-	                // objects with `toJSON` properties as well, *unless* they are nested
-	                // within an object or array).
-	                stringify(getClass) === undef &&
-	                // IE 8 serializes `undefined` as `"undefined"`. Safari <= 5.1.7 and
-	                // FF 3.1b3 pass this test.
-	                stringify(undef) === undef &&
-	                // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
-	                // respectively, if the value is omitted entirely.
-	                stringify() === undef &&
-	                // FF 3.1b1, 2 throw an error if the given value is not a number,
-	                // string, array, object, Boolean, or `null` literal. This applies to
-	                // objects with custom `toJSON` methods as well, unless they are nested
-	                // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
-	                // methods entirely.
-	                stringify(value) === "1" &&
-	                stringify([value]) == "[1]" &&
-	                // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
-	                // `"[null]"`.
-	                stringify([undef]) == "[null]" &&
-	                // YUI 3.0.0b1 fails to serialize `null` literals.
-	                stringify(null) == "null" &&
-	                // FF 3.1b1, 2 halts serialization if an array contains a function:
-	                // `[1, true, getClass, 1]` serializes as "[1,true,],". FF 3.1b3
-	                // elides non-JSON values from objects and arrays, unless they
-	                // define custom `toJSON` methods.
-	                stringify([undef, getClass, null]) == "[null,null,null]" &&
-	                // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
-	                // where character escape codes are expected (e.g., `\b` => `\u0008`).
-	                stringify({ "a": [value, true, false, null, "\x00\b\n\f\r\t"] }) == serialized &&
-	                // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-	                stringify(null, value) === "1" &&
-	                stringify([1, 2], null, 1) == "[\n 1,\n 2\n]" &&
-	                // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
-	                // serialize extended years.
-	                stringify(new Date(-8.64e15)) == '"-271821-04-20T00:00:00.000Z"' &&
-	                // The milliseconds are optional in ES 5, but required in 5.1.
-	                stringify(new Date(8.64e15)) == '"+275760-09-13T00:00:00.000Z"' &&
-	                // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
-	                // four-digit years instead of six-digit years. Credits: @Yaffle.
-	                stringify(new Date(-621987552e5)) == '"-000001-01-01T00:00:00.000Z"' &&
-	                // Safari <= 5.1.5 and Opera >= 10.53 incorrectly serialize millisecond
-	                // values less than 1000. Credits: @Yaffle.
-	                stringify(new Date(-1)) == '"1969-12-31T23:59:59.999Z"';
-	            } catch (exception) {
-	              stringifySupported = false;
-	            }
-	          }
-	          isSupported = stringifySupported;
-	        }
-	        // Test `JSON.parse`.
-	        if (name == "json-parse") {
-	          var parse = exports.parse;
-	          if (typeof parse == "function") {
-	            try {
-	              // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
-	              // Conforming implementations should also coerce the initial argument to
-	              // a string prior to parsing.
-	              if (parse("0") === 0 && !parse(false)) {
-	                // Simple parsing test.
-	                value = parse(serialized);
-	                var parseSupported = value["a"].length == 5 && value["a"][0] === 1;
-	                if (parseSupported) {
-	                  try {
-	                    // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
-	                    parseSupported = !parse('"\t"');
-	                  } catch (exception) {}
-	                  if (parseSupported) {
-	                    try {
-	                      // FF 4.0 and 4.0.1 allow leading `+` signs and leading
-	                      // decimal points. FF 4.0, 4.0.1, and IE 9-10 also allow
-	                      // certain octal literals.
-	                      parseSupported = parse("01") !== 1;
-	                    } catch (exception) {}
-	                  }
-	                  if (parseSupported) {
-	                    try {
-	                      // FF 4.0, 4.0.1, and Rhino 1.7R3-R4 allow trailing decimal
-	                      // points. These environments, along with FF 3.1b1 and 2,
-	                      // also allow trailing commas in JSON objects and arrays.
-	                      parseSupported = parse("1.") !== 1;
-	                    } catch (exception) {}
-	                  }
-	                }
-	              }
-	            } catch (exception) {
-	              parseSupported = false;
-	            }
-	          }
-	          isSupported = parseSupported;
-	        }
-	      }
-	      return has[name] = !!isSupported;
-	    }
-
-	    if (!has("json")) {
-	      // Common `[[Class]]` name aliases.
-	      var functionClass = "[object Function]",
-	          dateClass = "[object Date]",
-	          numberClass = "[object Number]",
-	          stringClass = "[object String]",
-	          arrayClass = "[object Array]",
-	          booleanClass = "[object Boolean]";
-
-	      // Detect incomplete support for accessing string characters by index.
-	      var charIndexBuggy = has("bug-string-char-index");
-
-	      // Define additional utility methods if the `Date` methods are buggy.
-	      if (!isExtended) {
-	        var floor = Math.floor;
-	        // A mapping between the months of the year and the number of days between
-	        // January 1st and the first of the respective month.
-	        var Months = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-	        // Internal: Calculates the number of days between the Unix epoch and the
-	        // first day of the given month.
-	        var getDay = function (year, month) {
-	          return Months[month] + 365 * (year - 1970) + floor((year - 1969 + (month = +(month > 1))) / 4) - floor((year - 1901 + month) / 100) + floor((year - 1601 + month) / 400);
-	        };
-	      }
-
-	      // Internal: Determines if a property is a direct property of the given
-	      // object. Delegates to the native `Object#hasOwnProperty` method.
-	      if (!(isProperty = objectProto.hasOwnProperty)) {
-	        isProperty = function (property) {
-	          var members = {}, constructor;
-	          if ((members.__proto__ = null, members.__proto__ = {
-	            // The *proto* property cannot be set multiple times in recent
-	            // versions of Firefox and SeaMonkey.
-	            "toString": 1
-	          }, members).toString != getClass) {
-	            // Safari <= 2.0.3 doesn't implement `Object#hasOwnProperty`, but
-	            // supports the mutable *proto* property.
-	            isProperty = function (property) {
-	              // Capture and break the object's prototype chain (see section 8.6.2
-	              // of the ES 5.1 spec). The parenthesized expression prevents an
-	              // unsafe transformation by the Closure Compiler.
-	              var original = this.__proto__, result = property in (this.__proto__ = null, this);
-	              // Restore the original prototype chain.
-	              this.__proto__ = original;
-	              return result;
-	            };
-	          } else {
-	            // Capture a reference to the top-level `Object` constructor.
-	            constructor = members.constructor;
-	            // Use the `constructor` property to simulate `Object#hasOwnProperty` in
-	            // other environments.
-	            isProperty = function (property) {
-	              var parent = (this.constructor || constructor).prototype;
-	              return property in this && !(property in parent && this[property] === parent[property]);
-	            };
-	          }
-	          members = null;
-	          return isProperty.call(this, property);
-	        };
-	      }
-
-	      // Internal: Normalizes the `for...in` iteration algorithm across
-	      // environments. Each enumerated key is yielded to a `callback` function.
-	      forEach = function (object, callback) {
-	        var size = 0, Properties, members, property;
-
-	        // Tests for bugs in the current environment's `for...in` algorithm. The
-	        // `valueOf` property inherits the non-enumerable flag from
-	        // `Object.prototype` in older versions of IE, Netscape, and Mozilla.
-	        (Properties = function () {
-	          this.valueOf = 0;
-	        }).prototype.valueOf = 0;
-
-	        // Iterate over a new instance of the `Properties` class.
-	        members = new Properties();
-	        for (property in members) {
-	          // Ignore all properties inherited from `Object.prototype`.
-	          if (isProperty.call(members, property)) {
-	            size++;
-	          }
-	        }
-	        Properties = members = null;
-
-	        // Normalize the iteration algorithm.
-	        if (!size) {
-	          // A list of non-enumerable properties inherited from `Object.prototype`.
-	          members = ["valueOf", "toString", "toLocaleString", "propertyIsEnumerable", "isPrototypeOf", "hasOwnProperty", "constructor"];
-	          // IE <= 8, Mozilla 1.0, and Netscape 6.2 ignore shadowed non-enumerable
-	          // properties.
-	          forEach = function (object, callback) {
-	            var isFunction = getClass.call(object) == functionClass, property, length;
-	            var hasProperty = !isFunction && typeof object.constructor != "function" && objectTypes[typeof object.hasOwnProperty] && object.hasOwnProperty || isProperty;
-	            for (property in object) {
-	              // Gecko <= 1.0 enumerates the `prototype` property of functions under
-	              // certain conditions; IE does not.
-	              if (!(isFunction && property == "prototype") && hasProperty.call(object, property)) {
-	                callback(property);
-	              }
-	            }
-	            // Manually invoke the callback for each non-enumerable property.
-	            for (length = members.length; property = members[--length]; hasProperty.call(object, property) && callback(property));
-	          };
-	        } else if (size == 2) {
-	          // Safari <= 2.0.4 enumerates shadowed properties twice.
-	          forEach = function (object, callback) {
-	            // Create a set of iterated properties.
-	            var members = {}, isFunction = getClass.call(object) == functionClass, property;
-	            for (property in object) {
-	              // Store each property name to prevent double enumeration. The
-	              // `prototype` property of functions is not enumerated due to cross-
-	              // environment inconsistencies.
-	              if (!(isFunction && property == "prototype") && !isProperty.call(members, property) && (members[property] = 1) && isProperty.call(object, property)) {
-	                callback(property);
-	              }
-	            }
-	          };
-	        } else {
-	          // No bugs detected; use the standard `for...in` algorithm.
-	          forEach = function (object, callback) {
-	            var isFunction = getClass.call(object) == functionClass, property, isConstructor;
-	            for (property in object) {
-	              if (!(isFunction && property == "prototype") && isProperty.call(object, property) && !(isConstructor = property === "constructor")) {
-	                callback(property);
-	              }
-	            }
-	            // Manually invoke the callback for the `constructor` property due to
-	            // cross-environment inconsistencies.
-	            if (isConstructor || isProperty.call(object, (property = "constructor"))) {
-	              callback(property);
-	            }
-	          };
-	        }
-	        return forEach(object, callback);
-	      };
-
-	      // Public: Serializes a JavaScript `value` as a JSON string. The optional
-	      // `filter` argument may specify either a function that alters how object and
-	      // array members are serialized, or an array of strings and numbers that
-	      // indicates which properties should be serialized. The optional `width`
-	      // argument may be either a string or number that specifies the indentation
-	      // level of the output.
-	      if (!has("json-stringify")) {
-	        // Internal: A map of control characters and their escaped equivalents.
-	        var Escapes = {
-	          92: "\\\\",
-	          34: '\\"',
-	          8: "\\b",
-	          12: "\\f",
-	          10: "\\n",
-	          13: "\\r",
-	          9: "\\t"
-	        };
-
-	        // Internal: Converts `value` into a zero-padded string such that its
-	        // length is at least equal to `width`. The `width` must be <= 6.
-	        var leadingZeroes = "000000";
-	        var toPaddedString = function (width, value) {
-	          // The `|| 0` expression is necessary to work around a bug in
-	          // Opera <= 7.54u2 where `0 == -0`, but `String(-0) !== "0"`.
-	          return (leadingZeroes + (value || 0)).slice(-width);
-	        };
-
-	        // Internal: Double-quotes a string `value`, replacing all ASCII control
-	        // characters (characters with code unit values between 0 and 31) with
-	        // their escaped equivalents. This is an implementation of the
-	        // `Quote(value)` operation defined in ES 5.1 section 15.12.3.
-	        var unicodePrefix = "\\u00";
-	        var quote = function (value) {
-	          var result = '"', index = 0, length = value.length, useCharIndex = !charIndexBuggy || length > 10;
-	          var symbols = useCharIndex && (charIndexBuggy ? value.split("") : value);
-	          for (; index < length; index++) {
-	            var charCode = value.charCodeAt(index);
-	            // If the character is a control character, append its Unicode or
-	            // shorthand escape sequence; otherwise, append the character as-is.
-	            switch (charCode) {
-	              case 8: case 9: case 10: case 12: case 13: case 34: case 92:
-	                result += Escapes[charCode];
-	                break;
-	              default:
-	                if (charCode < 32) {
-	                  result += unicodePrefix + toPaddedString(2, charCode.toString(16));
-	                  break;
-	                }
-	                result += useCharIndex ? symbols[index] : value.charAt(index);
-	            }
-	          }
-	          return result + '"';
-	        };
-
-	        // Internal: Recursively serializes an object. Implements the
-	        // `Str(key, holder)`, `JO(value)`, and `JA(value)` operations.
-	        var serialize = function (property, object, callback, properties, whitespace, indentation, stack) {
-	          var value, className, year, month, date, time, hours, minutes, seconds, milliseconds, results, element, index, length, prefix, result;
-	          try {
-	            // Necessary for host object support.
-	            value = object[property];
-	          } catch (exception) {}
-	          if (typeof value == "object" && value) {
-	            className = getClass.call(value);
-	            if (className == dateClass && !isProperty.call(value, "toJSON")) {
-	              if (value > -1 / 0 && value < 1 / 0) {
-	                // Dates are serialized according to the `Date#toJSON` method
-	                // specified in ES 5.1 section 15.9.5.44. See section 15.9.1.15
-	                // for the ISO 8601 date time string format.
-	                if (getDay) {
-	                  // Manually compute the year, month, date, hours, minutes,
-	                  // seconds, and milliseconds if the `getUTC*` methods are
-	                  // buggy. Adapted from @Yaffle's `date-shim` project.
-	                  date = floor(value / 864e5);
-	                  for (year = floor(date / 365.2425) + 1970 - 1; getDay(year + 1, 0) <= date; year++);
-	                  for (month = floor((date - getDay(year, 0)) / 30.42); getDay(year, month + 1) <= date; month++);
-	                  date = 1 + date - getDay(year, month);
-	                  // The `time` value specifies the time within the day (see ES
-	                  // 5.1 section 15.9.1.2). The formula `(A % B + B) % B` is used
-	                  // to compute `A modulo B`, as the `%` operator does not
-	                  // correspond to the `modulo` operation for negative numbers.
-	                  time = (value % 864e5 + 864e5) % 864e5;
-	                  // The hours, minutes, seconds, and milliseconds are obtained by
-	                  // decomposing the time within the day. See section 15.9.1.10.
-	                  hours = floor(time / 36e5) % 24;
-	                  minutes = floor(time / 6e4) % 60;
-	                  seconds = floor(time / 1e3) % 60;
-	                  milliseconds = time % 1e3;
-	                } else {
-	                  year = value.getUTCFullYear();
-	                  month = value.getUTCMonth();
-	                  date = value.getUTCDate();
-	                  hours = value.getUTCHours();
-	                  minutes = value.getUTCMinutes();
-	                  seconds = value.getUTCSeconds();
-	                  milliseconds = value.getUTCMilliseconds();
-	                }
-	                // Serialize extended years correctly.
-	                value = (year <= 0 || year >= 1e4 ? (year < 0 ? "-" : "+") + toPaddedString(6, year < 0 ? -year : year) : toPaddedString(4, year)) +
-	                  "-" + toPaddedString(2, month + 1) + "-" + toPaddedString(2, date) +
-	                  // Months, dates, hours, minutes, and seconds should have two
-	                  // digits; milliseconds should have three.
-	                  "T" + toPaddedString(2, hours) + ":" + toPaddedString(2, minutes) + ":" + toPaddedString(2, seconds) +
-	                  // Milliseconds are optional in ES 5.0, but required in 5.1.
-	                  "." + toPaddedString(3, milliseconds) + "Z";
-	              } else {
-	                value = null;
-	              }
-	            } else if (typeof value.toJSON == "function" && ((className != numberClass && className != stringClass && className != arrayClass) || isProperty.call(value, "toJSON"))) {
-	              // Prototype <= 1.6.1 adds non-standard `toJSON` methods to the
-	              // `Number`, `String`, `Date`, and `Array` prototypes. JSON 3
-	              // ignores all `toJSON` methods on these objects unless they are
-	              // defined directly on an instance.
-	              value = value.toJSON(property);
-	            }
-	          }
-	          if (callback) {
-	            // If a replacement function was provided, call it to obtain the value
-	            // for serialization.
-	            value = callback.call(object, property, value);
-	          }
-	          if (value === null) {
-	            return "null";
-	          }
-	          className = getClass.call(value);
-	          if (className == booleanClass) {
-	            // Booleans are represented literally.
-	            return "" + value;
-	          } else if (className == numberClass) {
-	            // JSON numbers must be finite. `Infinity` and `NaN` are serialized as
-	            // `"null"`.
-	            return value > -1 / 0 && value < 1 / 0 ? "" + value : "null";
-	          } else if (className == stringClass) {
-	            // Strings are double-quoted and escaped.
-	            return quote("" + value);
-	          }
-	          // Recursively serialize objects and arrays.
-	          if (typeof value == "object") {
-	            // Check for cyclic structures. This is a linear search; performance
-	            // is inversely proportional to the number of unique nested objects.
-	            for (length = stack.length; length--;) {
-	              if (stack[length] === value) {
-	                // Cyclic structures cannot be serialized by `JSON.stringify`.
-	                throw TypeError();
-	              }
-	            }
-	            // Add the object to the stack of traversed objects.
-	            stack.push(value);
-	            results = [];
-	            // Save the current indentation level and indent one additional level.
-	            prefix = indentation;
-	            indentation += whitespace;
-	            if (className == arrayClass) {
-	              // Recursively serialize array elements.
-	              for (index = 0, length = value.length; index < length; index++) {
-	                element = serialize(index, value, callback, properties, whitespace, indentation, stack);
-	                results.push(element === undef ? "null" : element);
-	              }
-	              result = results.length ? (whitespace ? "[\n" + indentation + results.join(",\n" + indentation) + "\n" + prefix + "]" : ("[" + results.join(",") + "]")) : "[]";
-	            } else {
-	              // Recursively serialize object members. Members are selected from
-	              // either a user-specified list of property names, or the object
-	              // itself.
-	              forEach(properties || value, function (property) {
-	                var element = serialize(property, value, callback, properties, whitespace, indentation, stack);
-	                if (element !== undef) {
-	                  // According to ES 5.1 section 15.12.3: "If `gap` {whitespace}
-	                  // is not the empty string, let `member` {quote(property) + ":"}
-	                  // be the concatenation of `member` and the `space` character."
-	                  // The "`space` character" refers to the literal space
-	                  // character, not the `space` {width} argument provided to
-	                  // `JSON.stringify`.
-	                  results.push(quote(property) + ":" + (whitespace ? " " : "") + element);
-	                }
-	              });
-	              result = results.length ? (whitespace ? "{\n" + indentation + results.join(",\n" + indentation) + "\n" + prefix + "}" : ("{" + results.join(",") + "}")) : "{}";
-	            }
-	            // Remove the object from the traversed object stack.
-	            stack.pop();
-	            return result;
-	          }
-	        };
-
-	        // Public: `JSON.stringify`. See ES 5.1 section 15.12.3.
-	        exports.stringify = function (source, filter, width) {
-	          var whitespace, callback, properties, className;
-	          if (objectTypes[typeof filter] && filter) {
-	            if ((className = getClass.call(filter)) == functionClass) {
-	              callback = filter;
-	            } else if (className == arrayClass) {
-	              // Convert the property names array into a makeshift set.
-	              properties = {};
-	              for (var index = 0, length = filter.length, value; index < length; value = filter[index++], ((className = getClass.call(value)), className == stringClass || className == numberClass) && (properties[value] = 1));
-	            }
-	          }
-	          if (width) {
-	            if ((className = getClass.call(width)) == numberClass) {
-	              // Convert the `width` to an integer and create a string containing
-	              // `width` number of space characters.
-	              if ((width -= width % 1) > 0) {
-	                for (whitespace = "", width > 10 && (width = 10); whitespace.length < width; whitespace += " ");
-	              }
-	            } else if (className == stringClass) {
-	              whitespace = width.length <= 10 ? width : width.slice(0, 10);
-	            }
-	          }
-	          // Opera <= 7.54u2 discards the values associated with empty string keys
-	          // (`""`) only if they are used directly within an object member list
-	          // (e.g., `!("" in { "": 1})`).
-	          return serialize("", (value = {}, value[""] = source, value), callback, properties, whitespace, "", []);
-	        };
-	      }
-
-	      // Public: Parses a JSON source string.
-	      if (!has("json-parse")) {
-	        var fromCharCode = String.fromCharCode;
-
-	        // Internal: A map of escaped control characters and their unescaped
-	        // equivalents.
-	        var Unescapes = {
-	          92: "\\",
-	          34: '"',
-	          47: "/",
-	          98: "\b",
-	          116: "\t",
-	          110: "\n",
-	          102: "\f",
-	          114: "\r"
-	        };
-
-	        // Internal: Stores the parser state.
-	        var Index, Source;
-
-	        // Internal: Resets the parser state and throws a `SyntaxError`.
-	        var abort = function () {
-	          Index = Source = null;
-	          throw SyntaxError();
-	        };
-
-	        // Internal: Returns the next token, or `"$"` if the parser has reached
-	        // the end of the source string. A token may be a string, number, `null`
-	        // literal, or Boolean literal.
-	        var lex = function () {
-	          var source = Source, length = source.length, value, begin, position, isSigned, charCode;
-	          while (Index < length) {
-	            charCode = source.charCodeAt(Index);
-	            switch (charCode) {
-	              case 9: case 10: case 13: case 32:
-	                // Skip whitespace tokens, including tabs, carriage returns, line
-	                // feeds, and space characters.
-	                Index++;
-	                break;
-	              case 123: case 125: case 91: case 93: case 58: case 44:
-	                // Parse a punctuator token (`{`, `}`, `[`, `]`, `:`, or `,`) at
-	                // the current position.
-	                value = charIndexBuggy ? source.charAt(Index) : source[Index];
-	                Index++;
-	                return value;
-	              case 34:
-	                // `"` delimits a JSON string; advance to the next character and
-	                // begin parsing the string. String tokens are prefixed with the
-	                // sentinel `@` character to distinguish them from punctuators and
-	                // end-of-string tokens.
-	                for (value = "@", Index++; Index < length;) {
-	                  charCode = source.charCodeAt(Index);
-	                  if (charCode < 32) {
-	                    // Unescaped ASCII control characters (those with a code unit
-	                    // less than the space character) are not permitted.
-	                    abort();
-	                  } else if (charCode == 92) {
-	                    // A reverse solidus (`\`) marks the beginning of an escaped
-	                    // control character (including `"`, `\`, and `/`) or Unicode
-	                    // escape sequence.
-	                    charCode = source.charCodeAt(++Index);
-	                    switch (charCode) {
-	                      case 92: case 34: case 47: case 98: case 116: case 110: case 102: case 114:
-	                        // Revive escaped control characters.
-	                        value += Unescapes[charCode];
-	                        Index++;
-	                        break;
-	                      case 117:
-	                        // `\u` marks the beginning of a Unicode escape sequence.
-	                        // Advance to the first character and validate the
-	                        // four-digit code point.
-	                        begin = ++Index;
-	                        for (position = Index + 4; Index < position; Index++) {
-	                          charCode = source.charCodeAt(Index);
-	                          // A valid sequence comprises four hexdigits (case-
-	                          // insensitive) that form a single hexadecimal value.
-	                          if (!(charCode >= 48 && charCode <= 57 || charCode >= 97 && charCode <= 102 || charCode >= 65 && charCode <= 70)) {
-	                            // Invalid Unicode escape sequence.
-	                            abort();
-	                          }
-	                        }
-	                        // Revive the escaped character.
-	                        value += fromCharCode("0x" + source.slice(begin, Index));
-	                        break;
-	                      default:
-	                        // Invalid escape sequence.
-	                        abort();
-	                    }
-	                  } else {
-	                    if (charCode == 34) {
-	                      // An unescaped double-quote character marks the end of the
-	                      // string.
-	                      break;
-	                    }
-	                    charCode = source.charCodeAt(Index);
-	                    begin = Index;
-	                    // Optimize for the common case where a string is valid.
-	                    while (charCode >= 32 && charCode != 92 && charCode != 34) {
-	                      charCode = source.charCodeAt(++Index);
-	                    }
-	                    // Append the string as-is.
-	                    value += source.slice(begin, Index);
-	                  }
-	                }
-	                if (source.charCodeAt(Index) == 34) {
-	                  // Advance to the next character and return the revived string.
-	                  Index++;
-	                  return value;
-	                }
-	                // Unterminated string.
-	                abort();
-	              default:
-	                // Parse numbers and literals.
-	                begin = Index;
-	                // Advance past the negative sign, if one is specified.
-	                if (charCode == 45) {
-	                  isSigned = true;
-	                  charCode = source.charCodeAt(++Index);
-	                }
-	                // Parse an integer or floating-point value.
-	                if (charCode >= 48 && charCode <= 57) {
-	                  // Leading zeroes are interpreted as octal literals.
-	                  if (charCode == 48 && ((charCode = source.charCodeAt(Index + 1)), charCode >= 48 && charCode <= 57)) {
-	                    // Illegal octal literal.
-	                    abort();
-	                  }
-	                  isSigned = false;
-	                  // Parse the integer component.
-	                  for (; Index < length && ((charCode = source.charCodeAt(Index)), charCode >= 48 && charCode <= 57); Index++);
-	                  // Floats cannot contain a leading decimal point; however, this
-	                  // case is already accounted for by the parser.
-	                  if (source.charCodeAt(Index) == 46) {
-	                    position = ++Index;
-	                    // Parse the decimal component.
-	                    for (; position < length && ((charCode = source.charCodeAt(position)), charCode >= 48 && charCode <= 57); position++);
-	                    if (position == Index) {
-	                      // Illegal trailing decimal.
-	                      abort();
-	                    }
-	                    Index = position;
-	                  }
-	                  // Parse exponents. The `e` denoting the exponent is
-	                  // case-insensitive.
-	                  charCode = source.charCodeAt(Index);
-	                  if (charCode == 101 || charCode == 69) {
-	                    charCode = source.charCodeAt(++Index);
-	                    // Skip past the sign following the exponent, if one is
-	                    // specified.
-	                    if (charCode == 43 || charCode == 45) {
-	                      Index++;
-	                    }
-	                    // Parse the exponential component.
-	                    for (position = Index; position < length && ((charCode = source.charCodeAt(position)), charCode >= 48 && charCode <= 57); position++);
-	                    if (position == Index) {
-	                      // Illegal empty exponent.
-	                      abort();
-	                    }
-	                    Index = position;
-	                  }
-	                  // Coerce the parsed value to a JavaScript number.
-	                  return +source.slice(begin, Index);
-	                }
-	                // A negative sign may only precede numbers.
-	                if (isSigned) {
-	                  abort();
-	                }
-	                // `true`, `false`, and `null` literals.
-	                if (source.slice(Index, Index + 4) == "true") {
-	                  Index += 4;
-	                  return true;
-	                } else if (source.slice(Index, Index + 5) == "false") {
-	                  Index += 5;
-	                  return false;
-	                } else if (source.slice(Index, Index + 4) == "null") {
-	                  Index += 4;
-	                  return null;
-	                }
-	                // Unrecognized token.
-	                abort();
-	            }
-	          }
-	          // Return the sentinel `$` character if the parser has reached the end
-	          // of the source string.
-	          return "$";
-	        };
-
-	        // Internal: Parses a JSON `value` token.
-	        var get = function (value) {
-	          var results, hasMembers;
-	          if (value == "$") {
-	            // Unexpected end of input.
-	            abort();
-	          }
-	          if (typeof value == "string") {
-	            if ((charIndexBuggy ? value.charAt(0) : value[0]) == "@") {
-	              // Remove the sentinel `@` character.
-	              return value.slice(1);
-	            }
-	            // Parse object and array literals.
-	            if (value == "[") {
-	              // Parses a JSON array, returning a new JavaScript array.
-	              results = [];
-	              for (;; hasMembers || (hasMembers = true)) {
-	                value = lex();
-	                // A closing square bracket marks the end of the array literal.
-	                if (value == "]") {
-	                  break;
-	                }
-	                // If the array literal contains elements, the current token
-	                // should be a comma separating the previous element from the
-	                // next.
-	                if (hasMembers) {
-	                  if (value == ",") {
-	                    value = lex();
-	                    if (value == "]") {
-	                      // Unexpected trailing `,` in array literal.
-	                      abort();
-	                    }
-	                  } else {
-	                    // A `,` must separate each array element.
-	                    abort();
-	                  }
-	                }
-	                // Elisions and leading commas are not permitted.
-	                if (value == ",") {
-	                  abort();
-	                }
-	                results.push(get(value));
-	              }
-	              return results;
-	            } else if (value == "{") {
-	              // Parses a JSON object, returning a new JavaScript object.
-	              results = {};
-	              for (;; hasMembers || (hasMembers = true)) {
-	                value = lex();
-	                // A closing curly brace marks the end of the object literal.
-	                if (value == "}") {
-	                  break;
-	                }
-	                // If the object literal contains members, the current token
-	                // should be a comma separator.
-	                if (hasMembers) {
-	                  if (value == ",") {
-	                    value = lex();
-	                    if (value == "}") {
-	                      // Unexpected trailing `,` in object literal.
-	                      abort();
-	                    }
-	                  } else {
-	                    // A `,` must separate each object member.
-	                    abort();
-	                  }
-	                }
-	                // Leading commas are not permitted, object property names must be
-	                // double-quoted strings, and a `:` must separate each property
-	                // name and value.
-	                if (value == "," || typeof value != "string" || (charIndexBuggy ? value.charAt(0) : value[0]) != "@" || lex() != ":") {
-	                  abort();
-	                }
-	                results[value.slice(1)] = get(lex());
-	              }
-	              return results;
-	            }
-	            // Unexpected token encountered.
-	            abort();
-	          }
-	          return value;
-	        };
-
-	        // Internal: Updates a traversed object member.
-	        var update = function (source, property, callback) {
-	          var element = walk(source, property, callback);
-	          if (element === undef) {
-	            delete source[property];
-	          } else {
-	            source[property] = element;
-	          }
-	        };
-
-	        // Internal: Recursively traverses a parsed JSON object, invoking the
-	        // `callback` function for each value. This is an implementation of the
-	        // `Walk(holder, name)` operation defined in ES 5.1 section 15.12.2.
-	        var walk = function (source, property, callback) {
-	          var value = source[property], length;
-	          if (typeof value == "object" && value) {
-	            // `forEach` can't be used to traverse an array in Opera <= 8.54
-	            // because its `Object#hasOwnProperty` implementation returns `false`
-	            // for array indices (e.g., `![1, 2, 3].hasOwnProperty("0")`).
-	            if (getClass.call(value) == arrayClass) {
-	              for (length = value.length; length--;) {
-	                update(value, length, callback);
-	              }
-	            } else {
-	              forEach(value, function (property) {
-	                update(value, property, callback);
-	              });
-	            }
-	          }
-	          return callback.call(source, property, value);
-	        };
-
-	        // Public: `JSON.parse`. See ES 5.1 section 15.12.2.
-	        exports.parse = function (source, callback) {
-	          var result, value;
-	          Index = 0;
-	          Source = "" + source;
-	          result = get(lex());
-	          // If a JSON string contains multiple tokens, it is invalid.
-	          if (lex() != "$") {
-	            abort();
-	          }
-	          // Reset the parser state.
-	          Index = Source = null;
-	          return callback && getClass.call(callback) == functionClass ? walk((value = {}, value[""] = result, value), "", callback) : result;
-	        };
-	      }
-	    }
-
-	    exports["runInContext"] = runInContext;
-	    return exports;
-	  }
-
-	  if (freeExports && !isLoader) {
-	    // Export for CommonJS environments.
-	    runInContext(root, freeExports);
-	  } else {
-	    // Export for web browsers and JavaScript engines.
-	    var nativeJSON = root.JSON,
-	        previousJSON = root["JSON3"],
-	        isRestored = false;
-
-	    var JSON3 = runInContext(root, (root["JSON3"] = {
-	      // Public: Restores the original value of the global `JSON` object and
-	      // returns a reference to the `JSON3` object.
-	      "noConflict": function () {
-	        if (!isRestored) {
-	          isRestored = true;
-	          root.JSON = nativeJSON;
-	          root["JSON3"] = previousJSON;
-	          nativeJSON = previousJSON = null;
-	        }
-	        return JSON3;
-	      }
-	    }));
-
-	    root.JSON = {
-	      "parse": JSON3.parse,
-	      "stringify": JSON3.stringify
-	    };
-	  }
-
-	  // Export for asynchronous module loaders.
-	  if (isLoader) {
-	    define(function () {
-	      return JSON3;
-	    });
-	  }
-	}).call(this);
-
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)(module), (function() { return this; }())))
-
-/***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-	module.exports = function(module) {
-		if(!module.webpackPolyfill) {
-			module.deprecate = function() {};
-			module.paths = [];
-			// module.parent = undefined by default
-			module.children = [];
-			module.webpackPolyfill = 1;
-		}
-		return module;
-	}
-
-
-/***/ },
-/* 13 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Expose `Emitter`.
-	 */
-
-	module.exports = Emitter;
-
-	/**
-	 * Initialize a new `Emitter`.
-	 *
-	 * @api public
-	 */
-
-	function Emitter(obj) {
-	  if (obj) return mixin(obj);
-	};
-
-	/**
-	 * Mixin the emitter properties.
-	 *
-	 * @param {Object} obj
-	 * @return {Object}
-	 * @api private
-	 */
-
-	function mixin(obj) {
-	  for (var key in Emitter.prototype) {
-	    obj[key] = Emitter.prototype[key];
-	  }
-	  return obj;
-	}
-
-	/**
-	 * Listen on the given `event` with `fn`.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.on =
-	Emitter.prototype.addEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	  (this._callbacks[event] = this._callbacks[event] || [])
-	    .push(fn);
-	  return this;
-	};
-
-	/**
-	 * Adds an `event` listener that will be invoked a single
-	 * time then automatically removed.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.once = function(event, fn){
-	  var self = this;
-	  this._callbacks = this._callbacks || {};
-
-	  function on() {
-	    self.off(event, on);
-	    fn.apply(this, arguments);
-	  }
-
-	  on.fn = fn;
-	  this.on(event, on);
-	  return this;
-	};
-
-	/**
-	 * Remove the given callback for `event` or all
-	 * registered callbacks.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.off =
-	Emitter.prototype.removeListener =
-	Emitter.prototype.removeAllListeners =
-	Emitter.prototype.removeEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-
-	  // all
-	  if (0 == arguments.length) {
-	    this._callbacks = {};
-	    return this;
-	  }
-
-	  // specific event
-	  var callbacks = this._callbacks[event];
-	  if (!callbacks) return this;
-
-	  // remove all handlers
-	  if (1 == arguments.length) {
-	    delete this._callbacks[event];
-	    return this;
-	  }
-
-	  // remove specific handler
-	  var cb;
-	  for (var i = 0; i < callbacks.length; i++) {
-	    cb = callbacks[i];
-	    if (cb === fn || cb.fn === fn) {
-	      callbacks.splice(i, 1);
-	      break;
-	    }
-	  }
-	  return this;
-	};
-
-	/**
-	 * Emit `event` with the given args.
-	 *
-	 * @param {String} event
-	 * @param {Mixed} ...
-	 * @return {Emitter}
-	 */
-
-	Emitter.prototype.emit = function(event){
-	  this._callbacks = this._callbacks || {};
-	  var args = [].slice.call(arguments, 1)
-	    , callbacks = this._callbacks[event];
-
-	  if (callbacks) {
-	    callbacks = callbacks.slice(0);
-	    for (var i = 0, len = callbacks.length; i < len; ++i) {
-	      callbacks[i].apply(this, args);
-	    }
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Return array of callbacks for `event`.
-	 *
-	 * @param {String} event
-	 * @return {Array}
-	 * @api public
-	 */
-
-	Emitter.prototype.listeners = function(event){
-	  this._callbacks = this._callbacks || {};
-	  return this._callbacks[event] || [];
-	};
-
-	/**
-	 * Check if this emitter has `event` handlers.
-	 *
-	 * @param {String} event
-	 * @return {Boolean}
-	 * @api public
-	 */
-
-	Emitter.prototype.hasListeners = function(event){
-	  return !! this.listeners(event).length;
-	};
-
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/*global Blob,File*/
-
-	/**
-	 * Module requirements
-	 */
-
-	var isArray = __webpack_require__(15);
-	var isBuf = __webpack_require__(16);
-
-	/**
-	 * Replaces every Buffer | ArrayBuffer in packet with a numbered placeholder.
-	 * Anything with blobs or files should be fed through removeBlobs before coming
-	 * here.
-	 *
-	 * @param {Object} packet - socket.io event packet
-	 * @return {Object} with deconstructed packet and list of buffers
-	 * @api public
-	 */
-
-	exports.deconstructPacket = function(packet){
-	  var buffers = [];
-	  var packetData = packet.data;
-
-	  function _deconstructPacket(data) {
-	    if (!data) return data;
-
-	    if (isBuf(data)) {
-	      var placeholder = { _placeholder: true, num: buffers.length };
-	      buffers.push(data);
-	      return placeholder;
-	    } else if (isArray(data)) {
-	      var newData = new Array(data.length);
-	      for (var i = 0; i < data.length; i++) {
-	        newData[i] = _deconstructPacket(data[i]);
-	      }
-	      return newData;
-	    } else if ('object' == typeof data && !(data instanceof Date)) {
-	      var newData = {};
-	      for (var key in data) {
-	        newData[key] = _deconstructPacket(data[key]);
-	      }
-	      return newData;
-	    }
-	    return data;
-	  }
-
-	  var pack = packet;
-	  pack.data = _deconstructPacket(packetData);
-	  pack.attachments = buffers.length; // number of binary 'attachments'
-	  return {packet: pack, buffers: buffers};
-	};
-
-	/**
-	 * Reconstructs a binary packet from its placeholder packet and buffers
-	 *
-	 * @param {Object} packet - event packet with placeholders
-	 * @param {Array} buffers - binary buffers to put in placeholder positions
-	 * @return {Object} reconstructed packet
-	 * @api public
-	 */
-
-	exports.reconstructPacket = function(packet, buffers) {
-	  var curPlaceHolder = 0;
-
-	  function _reconstructPacket(data) {
-	    if (data && data._placeholder) {
-	      var buf = buffers[data.num]; // appropriate buffer (should be natural order anyway)
-	      return buf;
-	    } else if (isArray(data)) {
-	      for (var i = 0; i < data.length; i++) {
-	        data[i] = _reconstructPacket(data[i]);
-	      }
-	      return data;
-	    } else if (data && 'object' == typeof data) {
-	      for (var key in data) {
-	        data[key] = _reconstructPacket(data[key]);
-	      }
-	      return data;
-	    }
-	    return data;
-	  }
-
-	  packet.data = _reconstructPacket(packet.data);
-	  packet.attachments = undefined; // no longer useful
-	  return packet;
-	};
-
-	/**
-	 * Asynchronously removes Blobs or Files from data via
-	 * FileReader's readAsArrayBuffer method. Used before encoding
-	 * data as msgpack. Calls callback with the blobless data.
-	 *
-	 * @param {Object} data
-	 * @param {Function} callback
-	 * @api private
-	 */
-
-	exports.removeBlobs = function(data, callback) {
-	  function _removeBlobs(obj, curKey, containingObject) {
-	    if (!obj) return obj;
-
-	    // convert any blob
-	    if ((global.Blob && obj instanceof Blob) ||
-	        (global.File && obj instanceof File)) {
-	      pendingBlobs++;
-
-	      // async filereader
-	      var fileReader = new FileReader();
-	      fileReader.onload = function() { // this.result == arraybuffer
-	        if (containingObject) {
-	          containingObject[curKey] = this.result;
-	        }
-	        else {
-	          bloblessData = this.result;
-	        }
-
-	        // if nothing pending its callback time
-	        if(! --pendingBlobs) {
-	          callback(bloblessData);
-	        }
-	      };
-
-	      fileReader.readAsArrayBuffer(obj); // blob -> arraybuffer
-	    } else if (isArray(obj)) { // handle array
-	      for (var i = 0; i < obj.length; i++) {
-	        _removeBlobs(obj[i], i, obj);
-	      }
-	    } else if (obj && 'object' == typeof obj && !isBuf(obj)) { // and object
-	      for (var key in obj) {
-	        _removeBlobs(obj[key], key, obj);
-	      }
-	    }
-	  }
-
-	  var pendingBlobs = 0;
-	  var bloblessData = data;
-	  _removeBlobs(bloblessData);
-	  if (!pendingBlobs) {
-	    callback(bloblessData);
-	  }
-	};
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 15 */
-/***/ function(module, exports) {
-
-	module.exports = Array.isArray || function (arr) {
-	  return Object.prototype.toString.call(arr) == '[object Array]';
-	};
-
-
-/***/ },
-/* 16 */
-/***/ function(module, exports) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {
-	module.exports = isBuf;
-
-	/**
-	 * Returns true if obj is a buffer or an arraybuffer.
-	 *
-	 * @api private
-	 */
-
-	function isBuf(obj) {
-	  return (global.Buffer && global.Buffer.isBuffer(obj)) ||
-	         (global.ArrayBuffer && obj instanceof ArrayBuffer);
-	}
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-	/**
-	 * Module dependencies.
-	 */
-
-	var eio = __webpack_require__(18);
-	var Socket = __webpack_require__(44);
-	var Emitter = __webpack_require__(35);
-	var parser = __webpack_require__(7);
-	var on = __webpack_require__(46);
-	var bind = __webpack_require__(47);
-	var debug = __webpack_require__(3)('socket.io-client:manager');
-	var indexOf = __webpack_require__(42);
-	var Backoff = __webpack_require__(48);
-
-	/**
-	 * IE6+ hasOwnProperty
-	 */
-
-	var has = Object.prototype.hasOwnProperty;
-
-	/**
-	 * Module exports
-	 */
-
-	module.exports = Manager;
-
-	/**
-	 * `Manager` constructor.
-	 *
-	 * @param {String} engine instance or engine uri/opts
-	 * @param {Object} options
-	 * @api public
-	 */
-
-	function Manager(uri, opts) {
-	  if (!(this instanceof Manager)) return new Manager(uri, opts);
-	  if (uri && 'object' === (typeof uri === 'undefined' ? 'undefined' : _typeof(uri))) {
-	    opts = uri;
-	    uri = undefined;
-	  }
-	  opts = opts || {};
-
-	  opts.path = opts.path || '/socket.io';
-	  this.nsps = {};
-	  this.subs = [];
-	  this.opts = opts;
-	  this.reconnection(opts.reconnection !== false);
-	  this.reconnectionAttempts(opts.reconnectionAttempts || Infinity);
-	  this.reconnectionDelay(opts.reconnectionDelay || 1000);
-	  this.reconnectionDelayMax(opts.reconnectionDelayMax || 5000);
-	  this.randomizationFactor(opts.randomizationFactor || 0.5);
-	  this.backoff = new Backoff({
-	    min: this.reconnectionDelay(),
-	    max: this.reconnectionDelayMax(),
-	    jitter: this.randomizationFactor()
-	  });
-	  this.timeout(null == opts.timeout ? 20000 : opts.timeout);
-	  this.readyState = 'closed';
-	  this.uri = uri;
-	  this.connecting = [];
-	  this.lastPing = null;
-	  this.encoding = false;
-	  this.packetBuffer = [];
-	  this.encoder = new parser.Encoder();
-	  this.decoder = new parser.Decoder();
-	  this.autoConnect = opts.autoConnect !== false;
-	  if (this.autoConnect) this.open();
-	}
-
-	/**
-	 * Propagate given event to sockets and emit on `this`
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.emitAll = function () {
-	  this.emit.apply(this, arguments);
-	  for (var nsp in this.nsps) {
-	    if (has.call(this.nsps, nsp)) {
-	      this.nsps[nsp].emit.apply(this.nsps[nsp], arguments);
-	    }
-	  }
-	};
-
-	/**
-	 * Update `socket.id` of all sockets
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.updateSocketIds = function () {
-	  for (var nsp in this.nsps) {
-	    if (has.call(this.nsps, nsp)) {
-	      this.nsps[nsp].id = this.engine.id;
-	    }
-	  }
-	};
-
-	/**
-	 * Mix in `Emitter`.
-	 */
-
-	Emitter(Manager.prototype);
-
-	/**
-	 * Sets the `reconnection` config.
-	 *
-	 * @param {Boolean} true/false if it should automatically reconnect
-	 * @return {Manager} self or value
-	 * @api public
-	 */
-
-	Manager.prototype.reconnection = function (v) {
-	  if (!arguments.length) return this._reconnection;
-	  this._reconnection = !!v;
-	  return this;
-	};
-
-	/**
-	 * Sets the reconnection attempts config.
-	 *
-	 * @param {Number} max reconnection attempts before giving up
-	 * @return {Manager} self or value
-	 * @api public
-	 */
-
-	Manager.prototype.reconnectionAttempts = function (v) {
-	  if (!arguments.length) return this._reconnectionAttempts;
-	  this._reconnectionAttempts = v;
-	  return this;
-	};
-
-	/**
-	 * Sets the delay between reconnections.
-	 *
-	 * @param {Number} delay
-	 * @return {Manager} self or value
-	 * @api public
-	 */
-
-	Manager.prototype.reconnectionDelay = function (v) {
-	  if (!arguments.length) return this._reconnectionDelay;
-	  this._reconnectionDelay = v;
-	  this.backoff && this.backoff.setMin(v);
-	  return this;
-	};
-
-	Manager.prototype.randomizationFactor = function (v) {
-	  if (!arguments.length) return this._randomizationFactor;
-	  this._randomizationFactor = v;
-	  this.backoff && this.backoff.setJitter(v);
-	  return this;
-	};
-
-	/**
-	 * Sets the maximum delay between reconnections.
-	 *
-	 * @param {Number} delay
-	 * @return {Manager} self or value
-	 * @api public
-	 */
-
-	Manager.prototype.reconnectionDelayMax = function (v) {
-	  if (!arguments.length) return this._reconnectionDelayMax;
-	  this._reconnectionDelayMax = v;
-	  this.backoff && this.backoff.setMax(v);
-	  return this;
-	};
-
-	/**
-	 * Sets the connection timeout. `false` to disable
-	 *
-	 * @return {Manager} self or value
-	 * @api public
-	 */
-
-	Manager.prototype.timeout = function (v) {
-	  if (!arguments.length) return this._timeout;
-	  this._timeout = v;
-	  return this;
-	};
-
-	/**
-	 * Starts trying to reconnect if reconnection is enabled and we have not
-	 * started reconnecting yet
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.maybeReconnectOnOpen = function () {
-	  // Only try to reconnect if it's the first time we're connecting
-	  if (!this.reconnecting && this._reconnection && this.backoff.attempts === 0) {
-	    // keeps reconnection from firing twice for the same reconnection loop
-	    this.reconnect();
-	  }
-	};
-
-	/**
-	 * Sets the current transport `socket`.
-	 *
-	 * @param {Function} optional, callback
-	 * @return {Manager} self
-	 * @api public
-	 */
-
-	Manager.prototype.open = Manager.prototype.connect = function (fn, opts) {
-	  debug('readyState %s', this.readyState);
-	  if (~this.readyState.indexOf('open')) return this;
-
-	  debug('opening %s', this.uri);
-	  this.engine = eio(this.uri, this.opts);
-	  var socket = this.engine;
-	  var self = this;
-	  this.readyState = 'opening';
-	  this.skipReconnect = false;
-
-	  // emit `open`
-	  var openSub = on(socket, 'open', function () {
-	    self.onopen();
-	    fn && fn();
-	  });
-
-	  // emit `connect_error`
-	  var errorSub = on(socket, 'error', function (data) {
-	    debug('connect_error');
-	    self.cleanup();
-	    self.readyState = 'closed';
-	    self.emitAll('connect_error', data);
-	    if (fn) {
-	      var err = new Error('Connection error');
-	      err.data = data;
-	      fn(err);
-	    } else {
-	      // Only do this if there is no fn to handle the error
-	      self.maybeReconnectOnOpen();
-	    }
-	  });
-
-	  // emit `connect_timeout`
-	  if (false !== this._timeout) {
-	    var timeout = this._timeout;
-	    debug('connect attempt will timeout after %d', timeout);
-
-	    // set timer
-	    var timer = setTimeout(function () {
-	      debug('connect attempt timed out after %d', timeout);
-	      openSub.destroy();
-	      socket.close();
-	      socket.emit('error', 'timeout');
-	      self.emitAll('connect_timeout', timeout);
-	    }, timeout);
-
-	    this.subs.push({
-	      destroy: function destroy() {
-	        clearTimeout(timer);
-	      }
-	    });
-	  }
-
-	  this.subs.push(openSub);
-	  this.subs.push(errorSub);
-
-	  return this;
-	};
-
-	/**
-	 * Called upon transport open.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.onopen = function () {
-	  debug('open');
-
-	  // clear old subs
-	  this.cleanup();
-
-	  // mark as open
-	  this.readyState = 'open';
-	  this.emit('open');
-
-	  // add new subs
-	  var socket = this.engine;
-	  this.subs.push(on(socket, 'data', bind(this, 'ondata')));
-	  this.subs.push(on(socket, 'ping', bind(this, 'onping')));
-	  this.subs.push(on(socket, 'pong', bind(this, 'onpong')));
-	  this.subs.push(on(socket, 'error', bind(this, 'onerror')));
-	  this.subs.push(on(socket, 'close', bind(this, 'onclose')));
-	  this.subs.push(on(this.decoder, 'decoded', bind(this, 'ondecoded')));
-	};
-
-	/**
-	 * Called upon a ping.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.onping = function () {
-	  this.lastPing = new Date();
-	  this.emitAll('ping');
-	};
-
-	/**
-	 * Called upon a packet.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.onpong = function () {
-	  this.emitAll('pong', new Date() - this.lastPing);
-	};
-
-	/**
-	 * Called with data.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.ondata = function (data) {
-	  this.decoder.add(data);
-	};
-
-	/**
-	 * Called when parser fully decodes a packet.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.ondecoded = function (packet) {
-	  this.emit('packet', packet);
-	};
-
-	/**
-	 * Called upon socket error.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.onerror = function (err) {
-	  debug('error', err);
-	  this.emitAll('error', err);
-	};
-
-	/**
-	 * Creates a new socket for the given `nsp`.
-	 *
-	 * @return {Socket}
-	 * @api public
-	 */
-
-	Manager.prototype.socket = function (nsp, opts) {
-	  var socket = this.nsps[nsp];
-	  if (!socket) {
-	    socket = new Socket(this, nsp, opts);
-	    this.nsps[nsp] = socket;
-	    var self = this;
-	    socket.on('connecting', onConnecting);
-	    socket.on('connect', function () {
-	      socket.id = self.engine.id;
-	    });
-
-	    if (this.autoConnect) {
-	      // manually call here since connecting evnet is fired before listening
-	      onConnecting();
-	    }
-	  }
-
-	  function onConnecting() {
-	    if (!~indexOf(self.connecting, socket)) {
-	      self.connecting.push(socket);
-	    }
-	  }
-
-	  return socket;
-	};
-
-	/**
-	 * Called upon a socket close.
-	 *
-	 * @param {Socket} socket
-	 */
-
-	Manager.prototype.destroy = function (socket) {
-	  var index = indexOf(this.connecting, socket);
-	  if (~index) this.connecting.splice(index, 1);
-	  if (this.connecting.length) return;
-
-	  this.close();
-	};
-
-	/**
-	 * Writes a packet.
-	 *
-	 * @param {Object} packet
-	 * @api private
-	 */
-
-	Manager.prototype.packet = function (packet) {
-	  debug('writing packet %j', packet);
-	  var self = this;
-	  if (packet.query && packet.type === 0) packet.nsp += '?' + packet.query;
-
-	  if (!self.encoding) {
-	    // encode, then write to engine with result
-	    self.encoding = true;
-	    this.encoder.encode(packet, function (encodedPackets) {
-	      for (var i = 0; i < encodedPackets.length; i++) {
-	        self.engine.write(encodedPackets[i], packet.options);
-	      }
-	      self.encoding = false;
-	      self.processPacketQueue();
-	    });
-	  } else {
-	    // add packet to the queue
-	    self.packetBuffer.push(packet);
-	  }
-	};
-
-	/**
-	 * If packet buffer is non-empty, begins encoding the
-	 * next packet in line.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.processPacketQueue = function () {
-	  if (this.packetBuffer.length > 0 && !this.encoding) {
-	    var pack = this.packetBuffer.shift();
-	    this.packet(pack);
-	  }
-	};
-
-	/**
-	 * Clean up transport subscriptions and packet buffer.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.cleanup = function () {
-	  debug('cleanup');
-
-	  var subsLength = this.subs.length;
-	  for (var i = 0; i < subsLength; i++) {
-	    var sub = this.subs.shift();
-	    sub.destroy();
-	  }
-
-	  this.packetBuffer = [];
-	  this.encoding = false;
-	  this.lastPing = null;
-
-	  this.decoder.destroy();
-	};
-
-	/**
-	 * Close the current socket.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.close = Manager.prototype.disconnect = function () {
-	  debug('disconnect');
-	  this.skipReconnect = true;
-	  this.reconnecting = false;
-	  if ('opening' === this.readyState) {
-	    // `onclose` will not fire because
-	    // an open event never happened
-	    this.cleanup();
-	  }
-	  this.backoff.reset();
-	  this.readyState = 'closed';
-	  if (this.engine) this.engine.close();
-	};
-
-	/**
-	 * Called upon engine close.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.onclose = function (reason) {
-	  debug('onclose');
-
-	  this.cleanup();
-	  this.backoff.reset();
-	  this.readyState = 'closed';
-	  this.emit('close', reason);
-
-	  if (this._reconnection && !this.skipReconnect) {
-	    this.reconnect();
-	  }
-	};
-
-	/**
-	 * Attempt a reconnection.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.reconnect = function () {
-	  if (this.reconnecting || this.skipReconnect) return this;
-
-	  var self = this;
-
-	  if (this.backoff.attempts >= this._reconnectionAttempts) {
-	    debug('reconnect failed');
-	    this.backoff.reset();
-	    this.emitAll('reconnect_failed');
-	    this.reconnecting = false;
-	  } else {
-	    var delay = this.backoff.duration();
-	    debug('will wait %dms before reconnect attempt', delay);
-
-	    this.reconnecting = true;
-	    var timer = setTimeout(function () {
-	      if (self.skipReconnect) return;
-
-	      debug('attempting reconnect');
-	      self.emitAll('reconnect_attempt', self.backoff.attempts);
-	      self.emitAll('reconnecting', self.backoff.attempts);
-
-	      // check again for the case socket closed in above events
-	      if (self.skipReconnect) return;
-
-	      self.open(function (err) {
-	        if (err) {
-	          debug('reconnect attempt error');
-	          self.reconnecting = false;
-	          self.reconnect();
-	          self.emitAll('reconnect_error', err.data);
-	        } else {
-	          debug('reconnect success');
-	          self.onreconnect();
-	        }
-	      });
-	    }, delay);
-
-	    this.subs.push({
-	      destroy: function destroy() {
-	        clearTimeout(timer);
-	      }
-	    });
-	  }
-	};
-
-	/**
-	 * Called upon successful reconnect.
-	 *
-	 * @api private
-	 */
-
-	Manager.prototype.onreconnect = function () {
-	  var attempt = this.backoff.attempts;
-	  this.reconnecting = false;
-	  this.backoff.reset();
-	  this.updateSocketIds();
-	  this.emitAll('reconnect', attempt);
-	};
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	module.exports = __webpack_require__(19);
-
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	module.exports = __webpack_require__(20);
-
-	/**
-	 * Exports parser
-	 *
-	 * @api public
-	 *
-	 */
-	module.exports.parser = __webpack_require__(27);
-
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Module dependencies.
-	 */
-
-	var transports = __webpack_require__(21);
-	var Emitter = __webpack_require__(35);
-	var debug = __webpack_require__(3)('engine.io-client:socket');
-	var index = __webpack_require__(42);
-	var parser = __webpack_require__(27);
-	var parseuri = __webpack_require__(2);
-	var parsejson = __webpack_require__(43);
-	var parseqs = __webpack_require__(36);
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = Socket;
-
-	/**
-	 * Socket constructor.
-	 *
-	 * @param {String|Object} uri or options
-	 * @param {Object} options
-	 * @api public
-	 */
-
-	function Socket (uri, opts) {
-	  if (!(this instanceof Socket)) return new Socket(uri, opts);
-
-	  opts = opts || {};
-
-	  if (uri && 'object' === typeof uri) {
-	    opts = uri;
-	    uri = null;
-	  }
-
-	  if (uri) {
-	    uri = parseuri(uri);
-	    opts.hostname = uri.host;
-	    opts.secure = uri.protocol === 'https' || uri.protocol === 'wss';
-	    opts.port = uri.port;
-	    if (uri.query) opts.query = uri.query;
-	  } else if (opts.host) {
-	    opts.hostname = parseuri(opts.host).host;
-	  }
-
-	  this.secure = null != opts.secure ? opts.secure
-	    : (global.location && 'https:' === location.protocol);
-
-	  if (opts.hostname && !opts.port) {
-	    // if no port is specified manually, use the protocol default
-	    opts.port = this.secure ? '443' : '80';
-	  }
-
-	  this.agent = opts.agent || false;
-	  this.hostname = opts.hostname ||
-	    (global.location ? location.hostname : 'localhost');
-	  this.port = opts.port || (global.location && location.port
-	      ? location.port
-	      : (this.secure ? 443 : 80));
-	  this.query = opts.query || {};
-	  if ('string' === typeof this.query) this.query = parseqs.decode(this.query);
-	  this.upgrade = false !== opts.upgrade;
-	  this.path = (opts.path || '/engine.io').replace(/\/$/, '') + '/';
-	  this.forceJSONP = !!opts.forceJSONP;
-	  this.jsonp = false !== opts.jsonp;
-	  this.forceBase64 = !!opts.forceBase64;
-	  this.enablesXDR = !!opts.enablesXDR;
-	  this.timestampParam = opts.timestampParam || 't';
-	  this.timestampRequests = opts.timestampRequests;
-	  this.transports = opts.transports || ['polling', 'websocket'];
-	  this.readyState = '';
-	  this.writeBuffer = [];
-	  this.prevBufferLen = 0;
-	  this.policyPort = opts.policyPort || 843;
-	  this.rememberUpgrade = opts.rememberUpgrade || false;
-	  this.binaryType = null;
-	  this.onlyBinaryUpgrades = opts.onlyBinaryUpgrades;
-	  this.perMessageDeflate = false !== opts.perMessageDeflate ? (opts.perMessageDeflate || {}) : false;
-
-	  if (true === this.perMessageDeflate) this.perMessageDeflate = {};
-	  if (this.perMessageDeflate && null == this.perMessageDeflate.threshold) {
-	    this.perMessageDeflate.threshold = 1024;
-	  }
-
-	  // SSL options for Node.js client
-	  this.pfx = opts.pfx || null;
-	  this.key = opts.key || null;
-	  this.passphrase = opts.passphrase || null;
-	  this.cert = opts.cert || null;
-	  this.ca = opts.ca || null;
-	  this.ciphers = opts.ciphers || null;
-	  this.rejectUnauthorized = opts.rejectUnauthorized === undefined ? null : opts.rejectUnauthorized;
-	  this.forceNode = !!opts.forceNode;
-
-	  // other options for Node.js client
-	  var freeGlobal = typeof global === 'object' && global;
-	  if (freeGlobal.global === freeGlobal) {
-	    if (opts.extraHeaders && Object.keys(opts.extraHeaders).length > 0) {
-	      this.extraHeaders = opts.extraHeaders;
-	    }
-
-	    if (opts.localAddress) {
-	      this.localAddress = opts.localAddress;
-	    }
-	  }
-
-	  // set on handshake
-	  this.id = null;
-	  this.upgrades = null;
-	  this.pingInterval = null;
-	  this.pingTimeout = null;
-
-	  // set on heartbeat
-	  this.pingIntervalTimer = null;
-	  this.pingTimeoutTimer = null;
-
-	  this.open();
-	}
-
-	Socket.priorWebsocketSuccess = false;
-
-	/**
-	 * Mix in `Emitter`.
-	 */
-
-	Emitter(Socket.prototype);
-
-	/**
-	 * Protocol version.
-	 *
-	 * @api public
-	 */
-
-	Socket.protocol = parser.protocol; // this is an int
-
-	/**
-	 * Expose deps for legacy compatibility
-	 * and standalone browser access.
-	 */
-
-	Socket.Socket = Socket;
-	Socket.Transport = __webpack_require__(26);
-	Socket.transports = __webpack_require__(21);
-	Socket.parser = __webpack_require__(27);
-
-	/**
-	 * Creates transport of the given type.
-	 *
-	 * @param {String} transport name
-	 * @return {Transport}
-	 * @api private
-	 */
-
-	Socket.prototype.createTransport = function (name) {
-	  debug('creating transport "%s"', name);
-	  var query = clone(this.query);
-
-	  // append engine.io protocol identifier
-	  query.EIO = parser.protocol;
-
-	  // transport name
-	  query.transport = name;
-
-	  // session id if we already have one
-	  if (this.id) query.sid = this.id;
-
-	  var transport = new transports[name]({
-	    agent: this.agent,
-	    hostname: this.hostname,
-	    port: this.port,
-	    secure: this.secure,
-	    path: this.path,
-	    query: query,
-	    forceJSONP: this.forceJSONP,
-	    jsonp: this.jsonp,
-	    forceBase64: this.forceBase64,
-	    enablesXDR: this.enablesXDR,
-	    timestampRequests: this.timestampRequests,
-	    timestampParam: this.timestampParam,
-	    policyPort: this.policyPort,
-	    socket: this,
-	    pfx: this.pfx,
-	    key: this.key,
-	    passphrase: this.passphrase,
-	    cert: this.cert,
-	    ca: this.ca,
-	    ciphers: this.ciphers,
-	    rejectUnauthorized: this.rejectUnauthorized,
-	    perMessageDeflate: this.perMessageDeflate,
-	    extraHeaders: this.extraHeaders,
-	    forceNode: this.forceNode,
-	    localAddress: this.localAddress
-	  });
-
-	  return transport;
-	};
-
-	function clone (obj) {
-	  var o = {};
-	  for (var i in obj) {
-	    if (obj.hasOwnProperty(i)) {
-	      o[i] = obj[i];
-	    }
-	  }
-	  return o;
-	}
-
-	/**
-	 * Initializes transport to use and starts probe.
-	 *
-	 * @api private
-	 */
-	Socket.prototype.open = function () {
-	  var transport;
-	  if (this.rememberUpgrade && Socket.priorWebsocketSuccess && this.transports.indexOf('websocket') !== -1) {
-	    transport = 'websocket';
-	  } else if (0 === this.transports.length) {
-	    // Emit error on next tick so it can be listened to
-	    var self = this;
-	    setTimeout(function () {
-	      self.emit('error', 'No transports available');
-	    }, 0);
-	    return;
-	  } else {
-	    transport = this.transports[0];
-	  }
-	  this.readyState = 'opening';
-
-	  // Retry with the next transport if the transport is disabled (jsonp: false)
-	  try {
-	    transport = this.createTransport(transport);
-	  } catch (e) {
-	    this.transports.shift();
-	    this.open();
-	    return;
-	  }
-
-	  transport.open();
-	  this.setTransport(transport);
-	};
-
-	/**
-	 * Sets the current transport. Disables the existing one (if any).
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.setTransport = function (transport) {
-	  debug('setting transport %s', transport.name);
-	  var self = this;
-
-	  if (this.transport) {
-	    debug('clearing existing transport %s', this.transport.name);
-	    this.transport.removeAllListeners();
-	  }
-
-	  // set up transport
-	  this.transport = transport;
-
-	  // set up transport listeners
-	  transport
-	  .on('drain', function () {
-	    self.onDrain();
-	  })
-	  .on('packet', function (packet) {
-	    self.onPacket(packet);
-	  })
-	  .on('error', function (e) {
-	    self.onError(e);
-	  })
-	  .on('close', function () {
-	    self.onClose('transport close');
-	  });
-	};
-
-	/**
-	 * Probes a transport.
-	 *
-	 * @param {String} transport name
-	 * @api private
-	 */
-
-	Socket.prototype.probe = function (name) {
-	  debug('probing transport "%s"', name);
-	  var transport = this.createTransport(name, { probe: 1 });
-	  var failed = false;
-	  var self = this;
-
-	  Socket.priorWebsocketSuccess = false;
-
-	  function onTransportOpen () {
-	    if (self.onlyBinaryUpgrades) {
-	      var upgradeLosesBinary = !this.supportsBinary && self.transport.supportsBinary;
-	      failed = failed || upgradeLosesBinary;
-	    }
-	    if (failed) return;
-
-	    debug('probe transport "%s" opened', name);
-	    transport.send([{ type: 'ping', data: 'probe' }]);
-	    transport.once('packet', function (msg) {
-	      if (failed) return;
-	      if ('pong' === msg.type && 'probe' === msg.data) {
-	        debug('probe transport "%s" pong', name);
-	        self.upgrading = true;
-	        self.emit('upgrading', transport);
-	        if (!transport) return;
-	        Socket.priorWebsocketSuccess = 'websocket' === transport.name;
-
-	        debug('pausing current transport "%s"', self.transport.name);
-	        self.transport.pause(function () {
-	          if (failed) return;
-	          if ('closed' === self.readyState) return;
-	          debug('changing transport and sending upgrade packet');
-
-	          cleanup();
-
-	          self.setTransport(transport);
-	          transport.send([{ type: 'upgrade' }]);
-	          self.emit('upgrade', transport);
-	          transport = null;
-	          self.upgrading = false;
-	          self.flush();
-	        });
-	      } else {
-	        debug('probe transport "%s" failed', name);
-	        var err = new Error('probe error');
-	        err.transport = transport.name;
-	        self.emit('upgradeError', err);
-	      }
-	    });
-	  }
-
-	  function freezeTransport () {
-	    if (failed) return;
-
-	    // Any callback called by transport should be ignored since now
-	    failed = true;
-
-	    cleanup();
-
-	    transport.close();
-	    transport = null;
-	  }
-
-	  // Handle any error that happens while probing
-	  function onerror (err) {
-	    var error = new Error('probe error: ' + err);
-	    error.transport = transport.name;
-
-	    freezeTransport();
-
-	    debug('probe transport "%s" failed because of error: %s', name, err);
-
-	    self.emit('upgradeError', error);
-	  }
-
-	  function onTransportClose () {
-	    onerror('transport closed');
-	  }
-
-	  // When the socket is closed while we're probing
-	  function onclose () {
-	    onerror('socket closed');
-	  }
-
-	  // When the socket is upgraded while we're probing
-	  function onupgrade (to) {
-	    if (transport && to.name !== transport.name) {
-	      debug('"%s" works - aborting "%s"', to.name, transport.name);
-	      freezeTransport();
-	    }
-	  }
-
-	  // Remove all listeners on the transport and on self
-	  function cleanup () {
-	    transport.removeListener('open', onTransportOpen);
-	    transport.removeListener('error', onerror);
-	    transport.removeListener('close', onTransportClose);
-	    self.removeListener('close', onclose);
-	    self.removeListener('upgrading', onupgrade);
-	  }
-
-	  transport.once('open', onTransportOpen);
-	  transport.once('error', onerror);
-	  transport.once('close', onTransportClose);
-
-	  this.once('close', onclose);
-	  this.once('upgrading', onupgrade);
-
-	  transport.open();
-	};
-
-	/**
-	 * Called when connection is deemed open.
-	 *
-	 * @api public
-	 */
-
-	Socket.prototype.onOpen = function () {
-	  debug('socket open');
-	  this.readyState = 'open';
-	  Socket.priorWebsocketSuccess = 'websocket' === this.transport.name;
-	  this.emit('open');
-	  this.flush();
-
-	  // we check for `readyState` in case an `open`
-	  // listener already closed the socket
-	  if ('open' === this.readyState && this.upgrade && this.transport.pause) {
-	    debug('starting upgrade probes');
-	    for (var i = 0, l = this.upgrades.length; i < l; i++) {
-	      this.probe(this.upgrades[i]);
-	    }
-	  }
-	};
-
-	/**
-	 * Handles a packet.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.onPacket = function (packet) {
-	  if ('opening' === this.readyState || 'open' === this.readyState ||
-	      'closing' === this.readyState) {
-	    debug('socket receive: type "%s", data "%s"', packet.type, packet.data);
-
-	    this.emit('packet', packet);
-
-	    // Socket is live - any packet counts
-	    this.emit('heartbeat');
-
-	    switch (packet.type) {
-	      case 'open':
-	        this.onHandshake(parsejson(packet.data));
-	        break;
-
-	      case 'pong':
-	        this.setPing();
-	        this.emit('pong');
-	        break;
-
-	      case 'error':
-	        var err = new Error('server error');
-	        err.code = packet.data;
-	        this.onError(err);
-	        break;
-
-	      case 'message':
-	        this.emit('data', packet.data);
-	        this.emit('message', packet.data);
-	        break;
-	    }
-	  } else {
-	    debug('packet received with socket readyState "%s"', this.readyState);
-	  }
-	};
-
-	/**
-	 * Called upon handshake completion.
-	 *
-	 * @param {Object} handshake obj
-	 * @api private
-	 */
-
-	Socket.prototype.onHandshake = function (data) {
-	  this.emit('handshake', data);
-	  this.id = data.sid;
-	  this.transport.query.sid = data.sid;
-	  this.upgrades = this.filterUpgrades(data.upgrades);
-	  this.pingInterval = data.pingInterval;
-	  this.pingTimeout = data.pingTimeout;
-	  this.onOpen();
-	  // In case open handler closes socket
-	  if ('closed' === this.readyState) return;
-	  this.setPing();
-
-	  // Prolong liveness of socket on heartbeat
-	  this.removeListener('heartbeat', this.onHeartbeat);
-	  this.on('heartbeat', this.onHeartbeat);
-	};
-
-	/**
-	 * Resets ping timeout.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.onHeartbeat = function (timeout) {
-	  clearTimeout(this.pingTimeoutTimer);
-	  var self = this;
-	  self.pingTimeoutTimer = setTimeout(function () {
-	    if ('closed' === self.readyState) return;
-	    self.onClose('ping timeout');
-	  }, timeout || (self.pingInterval + self.pingTimeout));
-	};
-
-	/**
-	 * Pings server every `this.pingInterval` and expects response
-	 * within `this.pingTimeout` or closes connection.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.setPing = function () {
-	  var self = this;
-	  clearTimeout(self.pingIntervalTimer);
-	  self.pingIntervalTimer = setTimeout(function () {
-	    debug('writing ping packet - expecting pong within %sms', self.pingTimeout);
-	    self.ping();
-	    self.onHeartbeat(self.pingTimeout);
-	  }, self.pingInterval);
-	};
-
-	/**
-	* Sends a ping packet.
-	*
-	* @api private
-	*/
-
-	Socket.prototype.ping = function () {
-	  var self = this;
-	  this.sendPacket('ping', function () {
-	    self.emit('ping');
-	  });
-	};
-
-	/**
-	 * Called on `drain` event
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.onDrain = function () {
-	  this.writeBuffer.splice(0, this.prevBufferLen);
-
-	  // setting prevBufferLen = 0 is very important
-	  // for example, when upgrading, upgrade packet is sent over,
-	  // and a nonzero prevBufferLen could cause problems on `drain`
-	  this.prevBufferLen = 0;
-
-	  if (0 === this.writeBuffer.length) {
-	    this.emit('drain');
-	  } else {
-	    this.flush();
-	  }
-	};
-
-	/**
-	 * Flush write buffers.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.flush = function () {
-	  if ('closed' !== this.readyState && this.transport.writable &&
-	    !this.upgrading && this.writeBuffer.length) {
-	    debug('flushing %d packets in socket', this.writeBuffer.length);
-	    this.transport.send(this.writeBuffer);
-	    // keep track of current length of writeBuffer
-	    // splice writeBuffer and callbackBuffer on `drain`
-	    this.prevBufferLen = this.writeBuffer.length;
-	    this.emit('flush');
-	  }
-	};
-
-	/**
-	 * Sends a message.
-	 *
-	 * @param {String} message.
-	 * @param {Function} callback function.
-	 * @param {Object} options.
-	 * @return {Socket} for chaining.
-	 * @api public
-	 */
-
-	Socket.prototype.write =
-	Socket.prototype.send = function (msg, options, fn) {
-	  this.sendPacket('message', msg, options, fn);
-	  return this;
-	};
-
-	/**
-	 * Sends a packet.
-	 *
-	 * @param {String} packet type.
-	 * @param {String} data.
-	 * @param {Object} options.
-	 * @param {Function} callback function.
-	 * @api private
-	 */
-
-	Socket.prototype.sendPacket = function (type, data, options, fn) {
-	  if ('function' === typeof data) {
-	    fn = data;
-	    data = undefined;
-	  }
-
-	  if ('function' === typeof options) {
-	    fn = options;
-	    options = null;
-	  }
-
-	  if ('closing' === this.readyState || 'closed' === this.readyState) {
-	    return;
-	  }
-
-	  options = options || {};
-	  options.compress = false !== options.compress;
-
-	  var packet = {
-	    type: type,
-	    data: data,
-	    options: options
-	  };
-	  this.emit('packetCreate', packet);
-	  this.writeBuffer.push(packet);
-	  if (fn) this.once('flush', fn);
-	  this.flush();
-	};
-
-	/**
-	 * Closes the connection.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.close = function () {
-	  if ('opening' === this.readyState || 'open' === this.readyState) {
-	    this.readyState = 'closing';
-
-	    var self = this;
-
-	    if (this.writeBuffer.length) {
-	      this.once('drain', function () {
-	        if (this.upgrading) {
-	          waitForUpgrade();
-	        } else {
-	          close();
-	        }
-	      });
-	    } else if (this.upgrading) {
-	      waitForUpgrade();
-	    } else {
-	      close();
-	    }
-	  }
-
-	  function close () {
-	    self.onClose('forced close');
-	    debug('socket closing - telling transport to close');
-	    self.transport.close();
-	  }
-
-	  function cleanupAndClose () {
-	    self.removeListener('upgrade', cleanupAndClose);
-	    self.removeListener('upgradeError', cleanupAndClose);
-	    close();
-	  }
-
-	  function waitForUpgrade () {
-	    // wait for upgrade to finish since we can't send packets while pausing a transport
-	    self.once('upgrade', cleanupAndClose);
-	    self.once('upgradeError', cleanupAndClose);
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Called upon transport error
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.onError = function (err) {
-	  debug('socket error %j', err);
-	  Socket.priorWebsocketSuccess = false;
-	  this.emit('error', err);
-	  this.onClose('transport error', err);
-	};
-
-	/**
-	 * Called upon transport close.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.onClose = function (reason, desc) {
-	  if ('opening' === this.readyState || 'open' === this.readyState || 'closing' === this.readyState) {
-	    debug('socket close with reason: "%s"', reason);
-	    var self = this;
-
-	    // clear timers
-	    clearTimeout(this.pingIntervalTimer);
-	    clearTimeout(this.pingTimeoutTimer);
-
-	    // stop event from firing again for transport
-	    this.transport.removeAllListeners('close');
-
-	    // ensure transport won't stay open
-	    this.transport.close();
-
-	    // ignore further transport communication
-	    this.transport.removeAllListeners();
-
-	    // set ready state
-	    this.readyState = 'closed';
-
-	    // clear session id
-	    this.id = null;
-
-	    // emit close event
-	    this.emit('close', reason, desc);
-
-	    // clean buffers after, so users can still
-	    // grab the buffers on `close` event
-	    self.writeBuffer = [];
-	    self.prevBufferLen = 0;
-	  }
-	};
-
-	/**
-	 * Filters upgrades, returning only those matching client transports.
-	 *
-	 * @param {Array} server upgrades
-	 * @api private
-	 *
-	 */
-
-	Socket.prototype.filterUpgrades = function (upgrades) {
-	  var filteredUpgrades = [];
-	  for (var i = 0, j = upgrades.length; i < j; i++) {
-	    if (~index(this.transports, upgrades[i])) filteredUpgrades.push(upgrades[i]);
-	  }
-	  return filteredUpgrades;
-	};
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Module dependencies
-	 */
-
-	var XMLHttpRequest = __webpack_require__(22);
-	var XHR = __webpack_require__(24);
-	var JSONP = __webpack_require__(39);
-	var websocket = __webpack_require__(40);
-
-	/**
-	 * Export transports.
-	 */
-
-	exports.polling = polling;
-	exports.websocket = websocket;
-
-	/**
-	 * Polling transport polymorphic constructor.
-	 * Decides on xhr vs jsonp based on feature detection.
-	 *
-	 * @api private
-	 */
-
-	function polling (opts) {
-	  var xhr;
-	  var xd = false;
-	  var xs = false;
-	  var jsonp = false !== opts.jsonp;
-
-	  if (global.location) {
-	    var isSSL = 'https:' === location.protocol;
-	    var port = location.port;
-
-	    // some user agents have empty `location.port`
-	    if (!port) {
-	      port = isSSL ? 443 : 80;
-	    }
-
-	    xd = opts.hostname !== location.hostname || port !== opts.port;
-	    xs = opts.secure !== isSSL;
-	  }
-
-	  opts.xdomain = xd;
-	  opts.xscheme = xs;
-	  xhr = new XMLHttpRequest(opts);
-
-	  if ('open' in xhr && !opts.forceJSONP) {
-	    return new XHR(opts);
-	  } else {
-	    if (!jsonp) throw new Error('JSONP disabled');
-	    return new JSONP(opts);
-	  }
-	}
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {// browser shim for xmlhttprequest module
-
-	var hasCORS = __webpack_require__(23);
-
-	module.exports = function (opts) {
-	  var xdomain = opts.xdomain;
-
-	  // scheme must be same when usign XDomainRequest
-	  // http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
-	  var xscheme = opts.xscheme;
-
-	  // XDomainRequest has a flow of not sending cookie, therefore it should be disabled as a default.
-	  // https://github.com/Automattic/engine.io-client/pull/217
-	  var enablesXDR = opts.enablesXDR;
-
-	  // XMLHttpRequest can be disabled on IE
-	  try {
-	    if ('undefined' !== typeof XMLHttpRequest && (!xdomain || hasCORS)) {
-	      return new XMLHttpRequest();
-	    }
-	  } catch (e) { }
-
-	  // Use XDomainRequest for IE8 if enablesXDR is true
-	  // because loading bar keeps flashing when using jsonp-polling
-	  // https://github.com/yujiosaka/socke.io-ie8-loading-example
-	  try {
-	    if ('undefined' !== typeof XDomainRequest && !xscheme && enablesXDR) {
-	      return new XDomainRequest();
-	    }
-	  } catch (e) { }
-
-	  if (!xdomain) {
-	    try {
-	      return new global[['Active'].concat('Object').join('X')]('Microsoft.XMLHTTP');
-	    } catch (e) { }
-	  }
-	};
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 23 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Module exports.
-	 *
-	 * Logic borrowed from Modernizr:
-	 *
-	 *   - https://github.com/Modernizr/Modernizr/blob/master/feature-detects/cors.js
-	 */
-
-	try {
-	  module.exports = typeof XMLHttpRequest !== 'undefined' &&
-	    'withCredentials' in new XMLHttpRequest();
-	} catch (err) {
-	  // if XMLHttp support is disabled in IE then it will throw
-	  // when trying to create
-	  module.exports = false;
-	}
-
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Module requirements.
-	 */
-
-	var XMLHttpRequest = __webpack_require__(22);
-	var Polling = __webpack_require__(25);
-	var Emitter = __webpack_require__(35);
-	var inherit = __webpack_require__(37);
-	var debug = __webpack_require__(3)('engine.io-client:polling-xhr');
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = XHR;
-	module.exports.Request = Request;
-
-	/**
-	 * Empty function
-	 */
-
-	function empty () {}
-
-	/**
-	 * XHR Polling constructor.
-	 *
-	 * @param {Object} opts
-	 * @api public
-	 */
-
-	function XHR (opts) {
-	  Polling.call(this, opts);
-	  this.requestTimeout = opts.requestTimeout;
-
-	  if (global.location) {
-	    var isSSL = 'https:' === location.protocol;
-	    var port = location.port;
-
-	    // some user agents have empty `location.port`
-	    if (!port) {
-	      port = isSSL ? 443 : 80;
-	    }
-
-	    this.xd = opts.hostname !== global.location.hostname ||
-	      port !== opts.port;
-	    this.xs = opts.secure !== isSSL;
-	  } else {
-	    this.extraHeaders = opts.extraHeaders;
-	  }
-	}
-
-	/**
-	 * Inherits from Polling.
-	 */
-
-	inherit(XHR, Polling);
-
-	/**
-	 * XHR supports binary
-	 */
-
-	XHR.prototype.supportsBinary = true;
-
-	/**
-	 * Creates a request.
-	 *
-	 * @param {String} method
-	 * @api private
-	 */
-
-	XHR.prototype.request = function (opts) {
-	  opts = opts || {};
-	  opts.uri = this.uri();
-	  opts.xd = this.xd;
-	  opts.xs = this.xs;
-	  opts.agent = this.agent || false;
-	  opts.supportsBinary = this.supportsBinary;
-	  opts.enablesXDR = this.enablesXDR;
-
-	  // SSL options for Node.js client
-	  opts.pfx = this.pfx;
-	  opts.key = this.key;
-	  opts.passphrase = this.passphrase;
-	  opts.cert = this.cert;
-	  opts.ca = this.ca;
-	  opts.ciphers = this.ciphers;
-	  opts.rejectUnauthorized = this.rejectUnauthorized;
-	  opts.requestTimeout = this.requestTimeout;
-
-	  // other options for Node.js client
-	  opts.extraHeaders = this.extraHeaders;
-
-	  return new Request(opts);
-	};
-
-	/**
-	 * Sends data.
-	 *
-	 * @param {String} data to send.
-	 * @param {Function} called upon flush.
-	 * @api private
-	 */
-
-	XHR.prototype.doWrite = function (data, fn) {
-	  var isBinary = typeof data !== 'string' && data !== undefined;
-	  var req = this.request({ method: 'POST', data: data, isBinary: isBinary });
-	  var self = this;
-	  req.on('success', fn);
-	  req.on('error', function (err) {
-	    self.onError('xhr post error', err);
-	  });
-	  this.sendXhr = req;
-	};
-
-	/**
-	 * Starts a poll cycle.
-	 *
-	 * @api private
-	 */
-
-	XHR.prototype.doPoll = function () {
-	  debug('xhr poll');
-	  var req = this.request();
-	  var self = this;
-	  req.on('data', function (data) {
-	    self.onData(data);
-	  });
-	  req.on('error', function (err) {
-	    self.onError('xhr poll error', err);
-	  });
-	  this.pollXhr = req;
-	};
-
-	/**
-	 * Request constructor
-	 *
-	 * @param {Object} options
-	 * @api public
-	 */
-
-	function Request (opts) {
-	  this.method = opts.method || 'GET';
-	  this.uri = opts.uri;
-	  this.xd = !!opts.xd;
-	  this.xs = !!opts.xs;
-	  this.async = false !== opts.async;
-	  this.data = undefined !== opts.data ? opts.data : null;
-	  this.agent = opts.agent;
-	  this.isBinary = opts.isBinary;
-	  this.supportsBinary = opts.supportsBinary;
-	  this.enablesXDR = opts.enablesXDR;
-	  this.requestTimeout = opts.requestTimeout;
-
-	  // SSL options for Node.js client
-	  this.pfx = opts.pfx;
-	  this.key = opts.key;
-	  this.passphrase = opts.passphrase;
-	  this.cert = opts.cert;
-	  this.ca = opts.ca;
-	  this.ciphers = opts.ciphers;
-	  this.rejectUnauthorized = opts.rejectUnauthorized;
-
-	  // other options for Node.js client
-	  this.extraHeaders = opts.extraHeaders;
-
-	  this.create();
-	}
-
-	/**
-	 * Mix in `Emitter`.
-	 */
-
-	Emitter(Request.prototype);
-
-	/**
-	 * Creates the XHR object and sends the request.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.create = function () {
-	  var opts = { agent: this.agent, xdomain: this.xd, xscheme: this.xs, enablesXDR: this.enablesXDR };
-
-	  // SSL options for Node.js client
-	  opts.pfx = this.pfx;
-	  opts.key = this.key;
-	  opts.passphrase = this.passphrase;
-	  opts.cert = this.cert;
-	  opts.ca = this.ca;
-	  opts.ciphers = this.ciphers;
-	  opts.rejectUnauthorized = this.rejectUnauthorized;
-
-	  var xhr = this.xhr = new XMLHttpRequest(opts);
-	  var self = this;
-
-	  try {
-	    debug('xhr open %s: %s', this.method, this.uri);
-	    xhr.open(this.method, this.uri, this.async);
-	    try {
-	      if (this.extraHeaders) {
-	        xhr.setDisableHeaderCheck(true);
-	        for (var i in this.extraHeaders) {
-	          if (this.extraHeaders.hasOwnProperty(i)) {
-	            xhr.setRequestHeader(i, this.extraHeaders[i]);
-	          }
-	        }
-	      }
-	    } catch (e) {}
-	    if (this.supportsBinary) {
-	      // This has to be done after open because Firefox is stupid
-	      // http://stackoverflow.com/questions/13216903/get-binary-data-with-xmlhttprequest-in-a-firefox-extension
-	      xhr.responseType = 'arraybuffer';
-	    }
-
-	    if ('POST' === this.method) {
-	      try {
-	        if (this.isBinary) {
-	          xhr.setRequestHeader('Content-type', 'application/octet-stream');
-	        } else {
-	          xhr.setRequestHeader('Content-type', 'text/plain;charset=UTF-8');
-	        }
-	      } catch (e) {}
-	    }
-
-	    try {
-	      xhr.setRequestHeader('Accept', '*/*');
-	    } catch (e) {}
-
-	    // ie6 check
-	    if ('withCredentials' in xhr) {
-	      xhr.withCredentials = true;
-	    }
-
-	    if (this.requestTimeout) {
-	      xhr.timeout = this.requestTimeout;
-	    }
-
-	    if (this.hasXDR()) {
-	      xhr.onload = function () {
-	        self.onLoad();
-	      };
-	      xhr.onerror = function () {
-	        self.onError(xhr.responseText);
-	      };
-	    } else {
-	      xhr.onreadystatechange = function () {
-	        if (4 !== xhr.readyState) return;
-	        if (200 === xhr.status || 1223 === xhr.status) {
-	          self.onLoad();
-	        } else {
-	          // make sure the `error` event handler that's user-set
-	          // does not throw in the same tick and gets caught here
-	          setTimeout(function () {
-	            self.onError(xhr.status);
-	          }, 0);
-	        }
-	      };
-	    }
-
-	    debug('xhr data %s', this.data);
-	    xhr.send(this.data);
-	  } catch (e) {
-	    // Need to defer since .create() is called directly fhrom the constructor
-	    // and thus the 'error' event can only be only bound *after* this exception
-	    // occurs.  Therefore, also, we cannot throw here at all.
-	    setTimeout(function () {
-	      self.onError(e);
-	    }, 0);
-	    return;
-	  }
-
-	  if (global.document) {
-	    this.index = Request.requestsCount++;
-	    Request.requests[this.index] = this;
-	  }
-	};
-
-	/**
-	 * Called upon successful response.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.onSuccess = function () {
-	  this.emit('success');
-	  this.cleanup();
-	};
-
-	/**
-	 * Called if we have data.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.onData = function (data) {
-	  this.emit('data', data);
-	  this.onSuccess();
-	};
-
-	/**
-	 * Called upon error.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.onError = function (err) {
-	  this.emit('error', err);
-	  this.cleanup(true);
-	};
-
-	/**
-	 * Cleans up house.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.cleanup = function (fromError) {
-	  if ('undefined' === typeof this.xhr || null === this.xhr) {
-	    return;
-	  }
-	  // xmlhttprequest
-	  if (this.hasXDR()) {
-	    this.xhr.onload = this.xhr.onerror = empty;
-	  } else {
-	    this.xhr.onreadystatechange = empty;
-	  }
-
-	  if (fromError) {
-	    try {
-	      this.xhr.abort();
-	    } catch (e) {}
-	  }
-
-	  if (global.document) {
-	    delete Request.requests[this.index];
-	  }
-
-	  this.xhr = null;
-	};
-
-	/**
-	 * Called upon load.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.onLoad = function () {
-	  var data;
-	  try {
-	    var contentType;
-	    try {
-	      contentType = this.xhr.getResponseHeader('Content-Type').split(';')[0];
-	    } catch (e) {}
-	    if (contentType === 'application/octet-stream') {
-	      data = this.xhr.response || this.xhr.responseText;
-	    } else {
-	      if (!this.supportsBinary) {
-	        data = this.xhr.responseText;
-	      } else {
-	        try {
-	          data = String.fromCharCode.apply(null, new Uint8Array(this.xhr.response));
-	        } catch (e) {
-	          var ui8Arr = new Uint8Array(this.xhr.response);
-	          var dataArray = [];
-	          for (var idx = 0, length = ui8Arr.length; idx < length; idx++) {
-	            dataArray.push(ui8Arr[idx]);
-	          }
-
-	          data = String.fromCharCode.apply(null, dataArray);
-	        }
-	      }
-	    }
-	  } catch (e) {
-	    this.onError(e);
-	  }
-	  if (null != data) {
-	    this.onData(data);
-	  }
-	};
-
-	/**
-	 * Check if it has XDomainRequest.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.hasXDR = function () {
-	  return 'undefined' !== typeof global.XDomainRequest && !this.xs && this.enablesXDR;
-	};
-
-	/**
-	 * Aborts the request.
-	 *
-	 * @api public
-	 */
-
-	Request.prototype.abort = function () {
-	  this.cleanup();
-	};
-
-	/**
-	 * Aborts pending requests when unloading the window. This is needed to prevent
-	 * memory leaks (e.g. when using IE) and to ensure that no spurious error is
-	 * emitted.
-	 */
-
-	Request.requestsCount = 0;
-	Request.requests = {};
-
-	if (global.document) {
-	  if (global.attachEvent) {
-	    global.attachEvent('onunload', unloadHandler);
-	  } else if (global.addEventListener) {
-	    global.addEventListener('beforeunload', unloadHandler, false);
-	  }
-	}
-
-	function unloadHandler () {
-	  for (var i in Request.requests) {
-	    if (Request.requests.hasOwnProperty(i)) {
-	      Request.requests[i].abort();
-	    }
-	  }
-	}
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Module dependencies.
-	 */
-
-	var Transport = __webpack_require__(26);
-	var parseqs = __webpack_require__(36);
-	var parser = __webpack_require__(27);
-	var inherit = __webpack_require__(37);
-	var yeast = __webpack_require__(38);
-	var debug = __webpack_require__(3)('engine.io-client:polling');
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = Polling;
-
-	/**
-	 * Is XHR2 supported?
-	 */
-
-	var hasXHR2 = (function () {
-	  var XMLHttpRequest = __webpack_require__(22);
-	  var xhr = new XMLHttpRequest({ xdomain: false });
-	  return null != xhr.responseType;
-	})();
-
-	/**
-	 * Polling interface.
-	 *
-	 * @param {Object} opts
-	 * @api private
-	 */
-
-	function Polling (opts) {
-	  var forceBase64 = (opts && opts.forceBase64);
-	  if (!hasXHR2 || forceBase64) {
-	    this.supportsBinary = false;
-	  }
-	  Transport.call(this, opts);
-	}
-
-	/**
-	 * Inherits from Transport.
-	 */
-
-	inherit(Polling, Transport);
-
-	/**
-	 * Transport name.
-	 */
-
-	Polling.prototype.name = 'polling';
-
-	/**
-	 * Opens the socket (triggers polling). We write a PING message to determine
-	 * when the transport is open.
-	 *
-	 * @api private
-	 */
-
-	Polling.prototype.doOpen = function () {
-	  this.poll();
-	};
-
-	/**
-	 * Pauses polling.
-	 *
-	 * @param {Function} callback upon buffers are flushed and transport is paused
-	 * @api private
-	 */
-
-	Polling.prototype.pause = function (onPause) {
-	  var self = this;
-
-	  this.readyState = 'pausing';
-
-	  function pause () {
-	    debug('paused');
-	    self.readyState = 'paused';
-	    onPause();
-	  }
-
-	  if (this.polling || !this.writable) {
-	    var total = 0;
-
-	    if (this.polling) {
-	      debug('we are currently polling - waiting to pause');
-	      total++;
-	      this.once('pollComplete', function () {
-	        debug('pre-pause polling complete');
-	        --total || pause();
-	      });
-	    }
-
-	    if (!this.writable) {
-	      debug('we are currently writing - waiting to pause');
-	      total++;
-	      this.once('drain', function () {
-	        debug('pre-pause writing complete');
-	        --total || pause();
-	      });
-	    }
-	  } else {
-	    pause();
-	  }
-	};
-
-	/**
-	 * Starts polling cycle.
-	 *
-	 * @api public
-	 */
-
-	Polling.prototype.poll = function () {
-	  debug('polling');
-	  this.polling = true;
-	  this.doPoll();
-	  this.emit('poll');
-	};
-
-	/**
-	 * Overloads onData to detect payloads.
-	 *
-	 * @api private
-	 */
-
-	Polling.prototype.onData = function (data) {
-	  var self = this;
-	  debug('polling got data %s', data);
-	  var callback = function (packet, index, total) {
-	    // if its the first message we consider the transport open
-	    if ('opening' === self.readyState) {
-	      self.onOpen();
-	    }
-
-	    // if its a close packet, we close the ongoing requests
-	    if ('close' === packet.type) {
-	      self.onClose();
-	      return false;
-	    }
-
-	    // otherwise bypass onData and handle the message
-	    self.onPacket(packet);
-	  };
-
-	  // decode payload
-	  parser.decodePayload(data, this.socket.binaryType, callback);
-
-	  // if an event did not trigger closing
-	  if ('closed' !== this.readyState) {
-	    // if we got data we're not polling
-	    this.polling = false;
-	    this.emit('pollComplete');
-
-	    if ('open' === this.readyState) {
-	      this.poll();
-	    } else {
-	      debug('ignoring poll - transport state "%s"', this.readyState);
-	    }
-	  }
-	};
-
-	/**
-	 * For polling, send a close packet.
-	 *
-	 * @api private
-	 */
-
-	Polling.prototype.doClose = function () {
-	  var self = this;
-
-	  function close () {
-	    debug('writing close packet');
-	    self.write([{ type: 'close' }]);
-	  }
-
-	  if ('open' === this.readyState) {
-	    debug('transport open - closing');
-	    close();
-	  } else {
-	    // in case we're trying to close while
-	    // handshaking is in progress (GH-164)
-	    debug('transport not open - deferring close');
-	    this.once('open', close);
-	  }
-	};
-
-	/**
-	 * Writes a packets payload.
-	 *
-	 * @param {Array} data packets
-	 * @param {Function} drain callback
-	 * @api private
-	 */
-
-	Polling.prototype.write = function (packets) {
-	  var self = this;
-	  this.writable = false;
-	  var callbackfn = function () {
-	    self.writable = true;
-	    self.emit('drain');
-	  };
-
-	  parser.encodePayload(packets, this.supportsBinary, function (data) {
-	    self.doWrite(data, callbackfn);
-	  });
-	};
-
-	/**
-	 * Generates uri for connection.
-	 *
-	 * @api private
-	 */
-
-	Polling.prototype.uri = function () {
-	  var query = this.query || {};
-	  var schema = this.secure ? 'https' : 'http';
-	  var port = '';
-
-	  // cache busting is forced
-	  if (false !== this.timestampRequests) {
-	    query[this.timestampParam] = yeast();
-	  }
-
-	  if (!this.supportsBinary && !query.sid) {
-	    query.b64 = 1;
-	  }
-
-	  query = parseqs.encode(query);
-
-	  // avoid port if default for schema
-	  if (this.port && (('https' === schema && Number(this.port) !== 443) ||
-	     ('http' === schema && Number(this.port) !== 80))) {
-	    port = ':' + this.port;
-	  }
-
-	  // prepend ? to query
-	  if (query.length) {
-	    query = '?' + query;
-	  }
-
-	  var ipv6 = this.hostname.indexOf(':') !== -1;
-	  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
-	};
-
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Module dependencies.
-	 */
-
-	var parser = __webpack_require__(27);
-	var Emitter = __webpack_require__(35);
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = Transport;
-
-	/**
-	 * Transport abstract constructor.
-	 *
-	 * @param {Object} options.
-	 * @api private
-	 */
-
-	function Transport (opts) {
-	  this.path = opts.path;
-	  this.hostname = opts.hostname;
-	  this.port = opts.port;
-	  this.secure = opts.secure;
-	  this.query = opts.query;
-	  this.timestampParam = opts.timestampParam;
-	  this.timestampRequests = opts.timestampRequests;
-	  this.readyState = '';
-	  this.agent = opts.agent || false;
-	  this.socket = opts.socket;
-	  this.enablesXDR = opts.enablesXDR;
-
-	  // SSL options for Node.js client
-	  this.pfx = opts.pfx;
-	  this.key = opts.key;
-	  this.passphrase = opts.passphrase;
-	  this.cert = opts.cert;
-	  this.ca = opts.ca;
-	  this.ciphers = opts.ciphers;
-	  this.rejectUnauthorized = opts.rejectUnauthorized;
-	  this.forceNode = opts.forceNode;
-
-	  // other options for Node.js client
-	  this.extraHeaders = opts.extraHeaders;
-	  this.localAddress = opts.localAddress;
-	}
-
-	/**
-	 * Mix in `Emitter`.
-	 */
-
-	Emitter(Transport.prototype);
-
-	/**
-	 * Emits an error.
-	 *
-	 * @param {String} str
-	 * @return {Transport} for chaining
-	 * @api public
-	 */
-
-	Transport.prototype.onError = function (msg, desc) {
-	  var err = new Error(msg);
-	  err.type = 'TransportError';
-	  err.description = desc;
-	  this.emit('error', err);
-	  return this;
-	};
-
-	/**
-	 * Opens the transport.
-	 *
-	 * @api public
-	 */
-
-	Transport.prototype.open = function () {
-	  if ('closed' === this.readyState || '' === this.readyState) {
-	    this.readyState = 'opening';
-	    this.doOpen();
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Closes the transport.
-	 *
-	 * @api private
-	 */
-
-	Transport.prototype.close = function () {
-	  if ('opening' === this.readyState || 'open' === this.readyState) {
-	    this.doClose();
-	    this.onClose();
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Sends multiple packets.
-	 *
-	 * @param {Array} packets
-	 * @api private
-	 */
-
-	Transport.prototype.send = function (packets) {
-	  if ('open' === this.readyState) {
-	    this.write(packets);
-	  } else {
-	    throw new Error('Transport not open');
-	  }
-	};
-
-	/**
-	 * Called upon open
-	 *
-	 * @api private
-	 */
-
-	Transport.prototype.onOpen = function () {
-	  this.readyState = 'open';
-	  this.writable = true;
-	  this.emit('open');
-	};
-
-	/**
-	 * Called with data.
-	 *
-	 * @param {String} data
-	 * @api private
-	 */
-
-	Transport.prototype.onData = function (data) {
-	  var packet = parser.decodePacket(data, this.socket.binaryType);
-	  this.onPacket(packet);
-	};
-
-	/**
-	 * Called with a decoded packet.
-	 */
-
-	Transport.prototype.onPacket = function (packet) {
-	  this.emit('packet', packet);
-	};
-
-	/**
-	 * Called upon close.
-	 *
-	 * @api private
-	 */
-
-	Transport.prototype.onClose = function () {
-	  this.readyState = 'closed';
-	  this.emit('close');
-	};
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Module dependencies.
-	 */
-
-	var keys = __webpack_require__(28);
-	var hasBinary = __webpack_require__(29);
-	var sliceBuffer = __webpack_require__(30);
-	var after = __webpack_require__(31);
-	var utf8 = __webpack_require__(32);
-
-	var base64encoder;
-	if (global && global.ArrayBuffer) {
-	  base64encoder = __webpack_require__(33);
-	}
-
-	/**
-	 * Check if we are running an android browser. That requires us to use
-	 * ArrayBuffer with polling transports...
-	 *
-	 * http://ghinda.net/jpeg-blob-ajax-android/
-	 */
-
-	var isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-
-	/**
-	 * Check if we are running in PhantomJS.
-	 * Uploading a Blob with PhantomJS does not work correctly, as reported here:
-	 * https://github.com/ariya/phantomjs/issues/11395
-	 * @type boolean
-	 */
-	var isPhantomJS = typeof navigator !== 'undefined' && /PhantomJS/i.test(navigator.userAgent);
-
-	/**
-	 * When true, avoids using Blobs to encode payloads.
-	 * @type boolean
-	 */
-	var dontSendBlobs = isAndroid || isPhantomJS;
-
-	/**
-	 * Current protocol version.
-	 */
-
-	exports.protocol = 3;
-
-	/**
-	 * Packet types.
-	 */
-
-	var packets = exports.packets = {
-	    open:     0    // non-ws
-	  , close:    1    // non-ws
-	  , ping:     2
-	  , pong:     3
-	  , message:  4
-	  , upgrade:  5
-	  , noop:     6
-	};
-
-	var packetslist = keys(packets);
-
-	/**
-	 * Premade error packet.
-	 */
-
-	var err = { type: 'error', data: 'parser error' };
-
-	/**
-	 * Create a blob api even for blob builder when vendor prefixes exist
-	 */
-
-	var Blob = __webpack_require__(34);
-
-	/**
-	 * Encodes a packet.
-	 *
-	 *     <packet type id> [ <data> ]
-	 *
-	 * Example:
-	 *
-	 *     5hello world
-	 *     3
-	 *     4
-	 *
-	 * Binary is encoded in an identical principle
-	 *
-	 * @api private
-	 */
-
-	exports.encodePacket = function (packet, supportsBinary, utf8encode, callback) {
-	  if ('function' == typeof supportsBinary) {
-	    callback = supportsBinary;
-	    supportsBinary = false;
-	  }
-
-	  if ('function' == typeof utf8encode) {
-	    callback = utf8encode;
-	    utf8encode = null;
-	  }
-
-	  var data = (packet.data === undefined)
-	    ? undefined
-	    : packet.data.buffer || packet.data;
-
-	  if (global.ArrayBuffer && data instanceof ArrayBuffer) {
-	    return encodeArrayBuffer(packet, supportsBinary, callback);
-	  } else if (Blob && data instanceof global.Blob) {
-	    return encodeBlob(packet, supportsBinary, callback);
-	  }
-
-	  // might be an object with { base64: true, data: dataAsBase64String }
-	  if (data && data.base64) {
-	    return encodeBase64Object(packet, callback);
-	  }
-
-	  // Sending data as a utf-8 string
-	  var encoded = packets[packet.type];
-
-	  // data fragment is optional
-	  if (undefined !== packet.data) {
-	    encoded += utf8encode ? utf8.encode(String(packet.data)) : String(packet.data);
-	  }
-
-	  return callback('' + encoded);
-
-	};
-
-	function encodeBase64Object(packet, callback) {
-	  // packet data is an object { base64: true, data: dataAsBase64String }
-	  var message = 'b' + exports.packets[packet.type] + packet.data.data;
-	  return callback(message);
-	}
-
-	/**
-	 * Encode packet helpers for binary types
-	 */
-
-	function encodeArrayBuffer(packet, supportsBinary, callback) {
-	  if (!supportsBinary) {
-	    return exports.encodeBase64Packet(packet, callback);
-	  }
-
-	  var data = packet.data;
-	  var contentArray = new Uint8Array(data);
-	  var resultBuffer = new Uint8Array(1 + data.byteLength);
-
-	  resultBuffer[0] = packets[packet.type];
-	  for (var i = 0; i < contentArray.length; i++) {
-	    resultBuffer[i+1] = contentArray[i];
-	  }
-
-	  return callback(resultBuffer.buffer);
-	}
-
-	function encodeBlobAsArrayBuffer(packet, supportsBinary, callback) {
-	  if (!supportsBinary) {
-	    return exports.encodeBase64Packet(packet, callback);
-	  }
-
-	  var fr = new FileReader();
-	  fr.onload = function() {
-	    packet.data = fr.result;
-	    exports.encodePacket(packet, supportsBinary, true, callback);
-	  };
-	  return fr.readAsArrayBuffer(packet.data);
-	}
-
-	function encodeBlob(packet, supportsBinary, callback) {
-	  if (!supportsBinary) {
-	    return exports.encodeBase64Packet(packet, callback);
-	  }
-
-	  if (dontSendBlobs) {
-	    return encodeBlobAsArrayBuffer(packet, supportsBinary, callback);
-	  }
-
-	  var length = new Uint8Array(1);
-	  length[0] = packets[packet.type];
-	  var blob = new Blob([length.buffer, packet.data]);
-
-	  return callback(blob);
-	}
-
-	/**
-	 * Encodes a packet with binary data in a base64 string
-	 *
-	 * @param {Object} packet, has `type` and `data`
-	 * @return {String} base64 encoded message
-	 */
-
-	exports.encodeBase64Packet = function(packet, callback) {
-	  var message = 'b' + exports.packets[packet.type];
-	  if (Blob && packet.data instanceof global.Blob) {
-	    var fr = new FileReader();
-	    fr.onload = function() {
-	      var b64 = fr.result.split(',')[1];
-	      callback(message + b64);
-	    };
-	    return fr.readAsDataURL(packet.data);
-	  }
-
-	  var b64data;
-	  try {
-	    b64data = String.fromCharCode.apply(null, new Uint8Array(packet.data));
-	  } catch (e) {
-	    // iPhone Safari doesn't let you apply with typed arrays
-	    var typed = new Uint8Array(packet.data);
-	    var basic = new Array(typed.length);
-	    for (var i = 0; i < typed.length; i++) {
-	      basic[i] = typed[i];
-	    }
-	    b64data = String.fromCharCode.apply(null, basic);
-	  }
-	  message += global.btoa(b64data);
-	  return callback(message);
-	};
-
-	/**
-	 * Decodes a packet. Changes format to Blob if requested.
-	 *
-	 * @return {Object} with `type` and `data` (if any)
-	 * @api private
-	 */
-
-	exports.decodePacket = function (data, binaryType, utf8decode) {
-	  if (data === undefined) {
-	    return err;
-	  }
-	  // String data
-	  if (typeof data == 'string') {
-	    if (data.charAt(0) == 'b') {
-	      return exports.decodeBase64Packet(data.substr(1), binaryType);
-	    }
-
-	    if (utf8decode) {
-	      data = tryDecode(data);
-	      if (data === false) {
-	        return err;
-	      }
-	    }
-	    var type = data.charAt(0);
-
-	    if (Number(type) != type || !packetslist[type]) {
-	      return err;
-	    }
-
-	    if (data.length > 1) {
-	      return { type: packetslist[type], data: data.substring(1) };
-	    } else {
-	      return { type: packetslist[type] };
-	    }
-	  }
-
-	  var asArray = new Uint8Array(data);
-	  var type = asArray[0];
-	  var rest = sliceBuffer(data, 1);
-	  if (Blob && binaryType === 'blob') {
-	    rest = new Blob([rest]);
-	  }
-	  return { type: packetslist[type], data: rest };
-	};
-
-	function tryDecode(data) {
-	  try {
-	    data = utf8.decode(data);
-	  } catch (e) {
-	    return false;
-	  }
-	  return data;
-	}
-
-	/**
-	 * Decodes a packet encoded in a base64 string
-	 *
-	 * @param {String} base64 encoded message
-	 * @return {Object} with `type` and `data` (if any)
-	 */
-
-	exports.decodeBase64Packet = function(msg, binaryType) {
-	  var type = packetslist[msg.charAt(0)];
-	  if (!base64encoder) {
-	    return { type: type, data: { base64: true, data: msg.substr(1) } };
-	  }
-
-	  var data = base64encoder.decode(msg.substr(1));
-
-	  if (binaryType === 'blob' && Blob) {
-	    data = new Blob([data]);
-	  }
-
-	  return { type: type, data: data };
-	};
-
-	/**
-	 * Encodes multiple messages (payload).
-	 *
-	 *     <length>:data
-	 *
-	 * Example:
-	 *
-	 *     11:hello world2:hi
-	 *
-	 * If any contents are binary, they will be encoded as base64 strings. Base64
-	 * encoded strings are marked with a b before the length specifier
-	 *
-	 * @param {Array} packets
-	 * @api private
-	 */
-
-	exports.encodePayload = function (packets, supportsBinary, callback) {
-	  if (typeof supportsBinary == 'function') {
-	    callback = supportsBinary;
-	    supportsBinary = null;
-	  }
-
-	  var isBinary = hasBinary(packets);
-
-	  if (supportsBinary && isBinary) {
-	    if (Blob && !dontSendBlobs) {
-	      return exports.encodePayloadAsBlob(packets, callback);
-	    }
-
-	    return exports.encodePayloadAsArrayBuffer(packets, callback);
-	  }
-
-	  if (!packets.length) {
-	    return callback('0:');
-	  }
-
-	  function setLengthHeader(message) {
-	    return message.length + ':' + message;
-	  }
-
-	  function encodeOne(packet, doneCallback) {
-	    exports.encodePacket(packet, !isBinary ? false : supportsBinary, true, function(message) {
-	      doneCallback(null, setLengthHeader(message));
-	    });
-	  }
-
-	  map(packets, encodeOne, function(err, results) {
-	    return callback(results.join(''));
-	  });
-	};
-
-	/**
-	 * Async array map using after
-	 */
-
-	function map(ary, each, done) {
-	  var result = new Array(ary.length);
-	  var next = after(ary.length, done);
-
-	  var eachWithIndex = function(i, el, cb) {
-	    each(el, function(error, msg) {
-	      result[i] = msg;
-	      cb(error, result);
-	    });
-	  };
-
-	  for (var i = 0; i < ary.length; i++) {
-	    eachWithIndex(i, ary[i], next);
-	  }
-	}
-
-	/*
-	 * Decodes data when a payload is maybe expected. Possible binary contents are
-	 * decoded from their base64 representation
-	 *
-	 * @param {String} data, callback method
-	 * @api public
-	 */
-
-	exports.decodePayload = function (data, binaryType, callback) {
-	  if (typeof data != 'string') {
-	    return exports.decodePayloadAsBinary(data, binaryType, callback);
-	  }
-
-	  if (typeof binaryType === 'function') {
-	    callback = binaryType;
-	    binaryType = null;
-	  }
-
-	  var packet;
-	  if (data == '') {
-	    // parser error - ignoring payload
-	    return callback(err, 0, 1);
-	  }
-
-	  var length = ''
-	    , n, msg;
-
-	  for (var i = 0, l = data.length; i < l; i++) {
-	    var chr = data.charAt(i);
-
-	    if (':' != chr) {
-	      length += chr;
-	    } else {
-	      if ('' == length || (length != (n = Number(length)))) {
-	        // parser error - ignoring payload
-	        return callback(err, 0, 1);
-	      }
-
-	      msg = data.substr(i + 1, n);
-
-	      if (length != msg.length) {
-	        // parser error - ignoring payload
-	        return callback(err, 0, 1);
-	      }
-
-	      if (msg.length) {
-	        packet = exports.decodePacket(msg, binaryType, true);
-
-	        if (err.type == packet.type && err.data == packet.data) {
-	          // parser error in individual packet - ignoring payload
-	          return callback(err, 0, 1);
-	        }
-
-	        var ret = callback(packet, i + n, l);
-	        if (false === ret) return;
-	      }
-
-	      // advance cursor
-	      i += n;
-	      length = '';
-	    }
-	  }
-
-	  if (length != '') {
-	    // parser error - ignoring payload
-	    return callback(err, 0, 1);
-	  }
-
-	};
-
-	/**
-	 * Encodes multiple messages (payload) as binary.
-	 *
-	 * <1 = binary, 0 = string><number from 0-9><number from 0-9>[...]<number
-	 * 255><data>
-	 *
-	 * Example:
-	 * 1 3 255 1 2 3, if the binary contents are interpreted as 8 bit integers
-	 *
-	 * @param {Array} packets
-	 * @return {ArrayBuffer} encoded payload
-	 * @api private
-	 */
-
-	exports.encodePayloadAsArrayBuffer = function(packets, callback) {
-	  if (!packets.length) {
-	    return callback(new ArrayBuffer(0));
-	  }
-
-	  function encodeOne(packet, doneCallback) {
-	    exports.encodePacket(packet, true, true, function(data) {
-	      return doneCallback(null, data);
-	    });
-	  }
-
-	  map(packets, encodeOne, function(err, encodedPackets) {
-	    var totalLength = encodedPackets.reduce(function(acc, p) {
-	      var len;
-	      if (typeof p === 'string'){
-	        len = p.length;
-	      } else {
-	        len = p.byteLength;
-	      }
-	      return acc + len.toString().length + len + 2; // string/binary identifier + separator = 2
-	    }, 0);
-
-	    var resultArray = new Uint8Array(totalLength);
-
-	    var bufferIndex = 0;
-	    encodedPackets.forEach(function(p) {
-	      var isString = typeof p === 'string';
-	      var ab = p;
-	      if (isString) {
-	        var view = new Uint8Array(p.length);
-	        for (var i = 0; i < p.length; i++) {
-	          view[i] = p.charCodeAt(i);
-	        }
-	        ab = view.buffer;
-	      }
-
-	      if (isString) { // not true binary
-	        resultArray[bufferIndex++] = 0;
-	      } else { // true binary
-	        resultArray[bufferIndex++] = 1;
-	      }
-
-	      var lenStr = ab.byteLength.toString();
-	      for (var i = 0; i < lenStr.length; i++) {
-	        resultArray[bufferIndex++] = parseInt(lenStr[i]);
-	      }
-	      resultArray[bufferIndex++] = 255;
-
-	      var view = new Uint8Array(ab);
-	      for (var i = 0; i < view.length; i++) {
-	        resultArray[bufferIndex++] = view[i];
-	      }
-	    });
-
-	    return callback(resultArray.buffer);
-	  });
-	};
-
-	/**
-	 * Encode as Blob
-	 */
-
-	exports.encodePayloadAsBlob = function(packets, callback) {
-	  function encodeOne(packet, doneCallback) {
-	    exports.encodePacket(packet, true, true, function(encoded) {
-	      var binaryIdentifier = new Uint8Array(1);
-	      binaryIdentifier[0] = 1;
-	      if (typeof encoded === 'string') {
-	        var view = new Uint8Array(encoded.length);
-	        for (var i = 0; i < encoded.length; i++) {
-	          view[i] = encoded.charCodeAt(i);
-	        }
-	        encoded = view.buffer;
-	        binaryIdentifier[0] = 0;
-	      }
-
-	      var len = (encoded instanceof ArrayBuffer)
-	        ? encoded.byteLength
-	        : encoded.size;
-
-	      var lenStr = len.toString();
-	      var lengthAry = new Uint8Array(lenStr.length + 1);
-	      for (var i = 0; i < lenStr.length; i++) {
-	        lengthAry[i] = parseInt(lenStr[i]);
-	      }
-	      lengthAry[lenStr.length] = 255;
-
-	      if (Blob) {
-	        var blob = new Blob([binaryIdentifier.buffer, lengthAry.buffer, encoded]);
-	        doneCallback(null, blob);
-	      }
-	    });
-	  }
-
-	  map(packets, encodeOne, function(err, results) {
-	    return callback(new Blob(results));
-	  });
-	};
-
-	/*
-	 * Decodes data when a payload is maybe expected. Strings are decoded by
-	 * interpreting each byte as a key code for entries marked to start with 0. See
-	 * description of encodePayloadAsBinary
-	 *
-	 * @param {ArrayBuffer} data, callback method
-	 * @api public
-	 */
-
-	exports.decodePayloadAsBinary = function (data, binaryType, callback) {
-	  if (typeof binaryType === 'function') {
-	    callback = binaryType;
-	    binaryType = null;
-	  }
-
-	  var bufferTail = data;
-	  var buffers = [];
-
-	  var numberTooLong = false;
-	  while (bufferTail.byteLength > 0) {
-	    var tailArray = new Uint8Array(bufferTail);
-	    var isString = tailArray[0] === 0;
-	    var msgLength = '';
-
-	    for (var i = 1; ; i++) {
-	      if (tailArray[i] == 255) break;
-
-	      if (msgLength.length > 310) {
-	        numberTooLong = true;
-	        break;
-	      }
-
-	      msgLength += tailArray[i];
-	    }
-
-	    if(numberTooLong) return callback(err, 0, 1);
-
-	    bufferTail = sliceBuffer(bufferTail, 2 + msgLength.length);
-	    msgLength = parseInt(msgLength);
-
-	    var msg = sliceBuffer(bufferTail, 0, msgLength);
-	    if (isString) {
-	      try {
-	        msg = String.fromCharCode.apply(null, new Uint8Array(msg));
-	      } catch (e) {
-	        // iPhone Safari doesn't let you apply to typed arrays
-	        var typed = new Uint8Array(msg);
-	        msg = '';
-	        for (var i = 0; i < typed.length; i++) {
-	          msg += String.fromCharCode(typed[i]);
-	        }
-	      }
-	    }
-
-	    buffers.push(msg);
-	    bufferTail = sliceBuffer(bufferTail, msgLength);
-	  }
-
-	  var total = buffers.length;
-	  buffers.forEach(function(buffer, i) {
-	    callback(exports.decodePacket(buffer, binaryType, true), i, total);
-	  });
-	};
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 28 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Gets the keys for an object.
-	 *
-	 * @return {Array} keys
-	 * @api private
-	 */
-
-	module.exports = Object.keys || function keys (obj){
-	  var arr = [];
-	  var has = Object.prototype.hasOwnProperty;
-
-	  for (var i in obj) {
-	    if (has.call(obj, i)) {
-	      arr.push(i);
-	    }
-	  }
-	  return arr;
-	};
-
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {
-	/*
-	 * Module requirements.
-	 */
-
-	var isArray = __webpack_require__(15);
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = hasBinary;
-
-	/**
-	 * Checks for binary data.
-	 *
-	 * Right now only Buffer and ArrayBuffer are supported..
-	 *
-	 * @param {Object} anything
-	 * @api public
-	 */
-
-	function hasBinary(data) {
-
-	  function _hasBinary(obj) {
-	    if (!obj) return false;
-
-	    if ( (global.Buffer && global.Buffer.isBuffer && global.Buffer.isBuffer(obj)) ||
-	         (global.ArrayBuffer && obj instanceof ArrayBuffer) ||
-	         (global.Blob && obj instanceof Blob) ||
-	         (global.File && obj instanceof File)
-	        ) {
-	      return true;
-	    }
-
-	    if (isArray(obj)) {
-	      for (var i = 0; i < obj.length; i++) {
-	          if (_hasBinary(obj[i])) {
-	              return true;
-	          }
-	      }
-	    } else if (obj && 'object' == typeof obj) {
-	      // see: https://github.com/Automattic/has-binary/pull/4
-	      if (obj.toJSON && 'function' == typeof obj.toJSON) {
-	        obj = obj.toJSON();
-	      }
-
-	      for (var key in obj) {
-	        if (Object.prototype.hasOwnProperty.call(obj, key) && _hasBinary(obj[key])) {
-	          return true;
-	        }
-	      }
-	    }
-
-	    return false;
-	  }
-
-	  return _hasBinary(data);
-	}
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 30 */
-/***/ function(module, exports) {
-
-	/**
-	 * An abstraction for slicing an arraybuffer even when
-	 * ArrayBuffer.prototype.slice is not supported
-	 *
-	 * @api public
-	 */
-
-	module.exports = function(arraybuffer, start, end) {
-	  var bytes = arraybuffer.byteLength;
-	  start = start || 0;
-	  end = end || bytes;
-
-	  if (arraybuffer.slice) { return arraybuffer.slice(start, end); }
-
-	  if (start < 0) { start += bytes; }
-	  if (end < 0) { end += bytes; }
-	  if (end > bytes) { end = bytes; }
-
-	  if (start >= bytes || start >= end || bytes === 0) {
-	    return new ArrayBuffer(0);
-	  }
-
-	  var abv = new Uint8Array(arraybuffer);
-	  var result = new Uint8Array(end - start);
-	  for (var i = start, ii = 0; i < end; i++, ii++) {
-	    result[ii] = abv[i];
-	  }
-	  return result.buffer;
-	};
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports) {
-
-	module.exports = after
-
-	function after(count, callback, err_cb) {
-	    var bail = false
-	    err_cb = err_cb || noop
-	    proxy.count = count
-
-	    return (count === 0) ? callback() : proxy
-
-	    function proxy(err, result) {
-	        if (proxy.count <= 0) {
-	            throw new Error('after called too many times')
-	        }
-	        --proxy.count
-
-	        // after first error, rest are passed to err_cb
-	        if (err) {
-	            bail = true
-	            callback(err)
-	            // future error callbacks will go to error handler
-	            callback = err_cb
-	        } else if (proxy.count === 0 && !bail) {
-	            callback(null, result)
-	        }
-	    }
-	}
-
-	function noop() {}
-
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! https://mths.be/wtf8 v1.0.0 by @mathias */
-	;(function(root) {
-
-		// Detect free variables `exports`
-		var freeExports = typeof exports == 'object' && exports;
-
-		// Detect free variable `module`
-		var freeModule = typeof module == 'object' && module &&
-			module.exports == freeExports && module;
-
-		// Detect free variable `global`, from Node.js or Browserified code,
-		// and use it as `root`
-		var freeGlobal = typeof global == 'object' && global;
-		if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal) {
-			root = freeGlobal;
-		}
-
-		/*--------------------------------------------------------------------------*/
-
-		var stringFromCharCode = String.fromCharCode;
-
-		// Taken from https://mths.be/punycode
-		function ucs2decode(string) {
-			var output = [];
-			var counter = 0;
-			var length = string.length;
-			var value;
-			var extra;
-			while (counter < length) {
-				value = string.charCodeAt(counter++);
-				if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
-					// high surrogate, and there is a next character
-					extra = string.charCodeAt(counter++);
-					if ((extra & 0xFC00) == 0xDC00) { // low surrogate
-						output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
-					} else {
-						// unmatched surrogate; only append this code unit, in case the next
-						// code unit is the high surrogate of a surrogate pair
-						output.push(value);
-						counter--;
-					}
-				} else {
-					output.push(value);
-				}
-			}
-			return output;
-		}
-
-		// Taken from https://mths.be/punycode
-		function ucs2encode(array) {
-			var length = array.length;
-			var index = -1;
-			var value;
-			var output = '';
-			while (++index < length) {
-				value = array[index];
-				if (value > 0xFFFF) {
-					value -= 0x10000;
-					output += stringFromCharCode(value >>> 10 & 0x3FF | 0xD800);
-					value = 0xDC00 | value & 0x3FF;
-				}
-				output += stringFromCharCode(value);
-			}
-			return output;
-		}
-
-		/*--------------------------------------------------------------------------*/
-
-		function createByte(codePoint, shift) {
-			return stringFromCharCode(((codePoint >> shift) & 0x3F) | 0x80);
-		}
-
-		function encodeCodePoint(codePoint) {
-			if ((codePoint & 0xFFFFFF80) == 0) { // 1-byte sequence
-				return stringFromCharCode(codePoint);
-			}
-			var symbol = '';
-			if ((codePoint & 0xFFFFF800) == 0) { // 2-byte sequence
-				symbol = stringFromCharCode(((codePoint >> 6) & 0x1F) | 0xC0);
-			}
-			else if ((codePoint & 0xFFFF0000) == 0) { // 3-byte sequence
-				symbol = stringFromCharCode(((codePoint >> 12) & 0x0F) | 0xE0);
-				symbol += createByte(codePoint, 6);
-			}
-			else if ((codePoint & 0xFFE00000) == 0) { // 4-byte sequence
-				symbol = stringFromCharCode(((codePoint >> 18) & 0x07) | 0xF0);
-				symbol += createByte(codePoint, 12);
-				symbol += createByte(codePoint, 6);
-			}
-			symbol += stringFromCharCode((codePoint & 0x3F) | 0x80);
-			return symbol;
-		}
-
-		function wtf8encode(string) {
-			var codePoints = ucs2decode(string);
-			var length = codePoints.length;
-			var index = -1;
-			var codePoint;
-			var byteString = '';
-			while (++index < length) {
-				codePoint = codePoints[index];
-				byteString += encodeCodePoint(codePoint);
-			}
-			return byteString;
-		}
-
-		/*--------------------------------------------------------------------------*/
-
-		function readContinuationByte() {
-			if (byteIndex >= byteCount) {
-				throw Error('Invalid byte index');
-			}
-
-			var continuationByte = byteArray[byteIndex] & 0xFF;
-			byteIndex++;
-
-			if ((continuationByte & 0xC0) == 0x80) {
-				return continuationByte & 0x3F;
-			}
-
-			// If we end up here, it’s not a continuation byte.
-			throw Error('Invalid continuation byte');
-		}
-
-		function decodeSymbol() {
-			var byte1;
-			var byte2;
-			var byte3;
-			var byte4;
-			var codePoint;
-
-			if (byteIndex > byteCount) {
-				throw Error('Invalid byte index');
-			}
-
-			if (byteIndex == byteCount) {
-				return false;
-			}
-
-			// Read the first byte.
-			byte1 = byteArray[byteIndex] & 0xFF;
-			byteIndex++;
-
-			// 1-byte sequence (no continuation bytes)
-			if ((byte1 & 0x80) == 0) {
-				return byte1;
-			}
-
-			// 2-byte sequence
-			if ((byte1 & 0xE0) == 0xC0) {
-				var byte2 = readContinuationByte();
-				codePoint = ((byte1 & 0x1F) << 6) | byte2;
-				if (codePoint >= 0x80) {
-					return codePoint;
-				} else {
-					throw Error('Invalid continuation byte');
-				}
-			}
-
-			// 3-byte sequence (may include unpaired surrogates)
-			if ((byte1 & 0xF0) == 0xE0) {
-				byte2 = readContinuationByte();
-				byte3 = readContinuationByte();
-				codePoint = ((byte1 & 0x0F) << 12) | (byte2 << 6) | byte3;
-				if (codePoint >= 0x0800) {
-					return codePoint;
-				} else {
-					throw Error('Invalid continuation byte');
-				}
-			}
-
-			// 4-byte sequence
-			if ((byte1 & 0xF8) == 0xF0) {
-				byte2 = readContinuationByte();
-				byte3 = readContinuationByte();
-				byte4 = readContinuationByte();
-				codePoint = ((byte1 & 0x0F) << 0x12) | (byte2 << 0x0C) |
-					(byte3 << 0x06) | byte4;
-				if (codePoint >= 0x010000 && codePoint <= 0x10FFFF) {
-					return codePoint;
-				}
-			}
-
-			throw Error('Invalid WTF-8 detected');
-		}
-
-		var byteArray;
-		var byteCount;
-		var byteIndex;
-		function wtf8decode(byteString) {
-			byteArray = ucs2decode(byteString);
-			byteCount = byteArray.length;
-			byteIndex = 0;
-			var codePoints = [];
-			var tmp;
-			while ((tmp = decodeSymbol()) !== false) {
-				codePoints.push(tmp);
-			}
-			return ucs2encode(codePoints);
-		}
-
-		/*--------------------------------------------------------------------------*/
-
-		var wtf8 = {
-			'version': '1.0.0',
-			'encode': wtf8encode,
-			'decode': wtf8decode
-		};
-
-		// Some AMD build optimizers, like r.js, check for specific condition patterns
-		// like the following:
-		if (
-			true
-		) {
-			!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-				return wtf8;
-			}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-		}	else if (freeExports && !freeExports.nodeType) {
-			if (freeModule) { // in Node.js or RingoJS v0.8.0+
-				freeModule.exports = wtf8;
-			} else { // in Narwhal or RingoJS v0.7.0-
-				var object = {};
-				var hasOwnProperty = object.hasOwnProperty;
-				for (var key in wtf8) {
-					hasOwnProperty.call(wtf8, key) && (freeExports[key] = wtf8[key]);
-				}
-			}
-		} else { // in Rhino or a web browser
-			root.wtf8 = wtf8;
-		}
-
-	}(this));
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)(module), (function() { return this; }())))
-
-/***/ },
-/* 33 */
-/***/ function(module, exports) {
-
-	/*
-	 * base64-arraybuffer
-	 * https://github.com/niklasvh/base64-arraybuffer
-	 *
-	 * Copyright (c) 2012 Niklas von Hertzen
-	 * Licensed under the MIT license.
-	 */
-	(function(){
-	  "use strict";
-
-	  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-	  // Use a lookup table to find the index.
-	  var lookup = new Uint8Array(256);
-	  for (var i = 0; i < chars.length; i++) {
-	    lookup[chars.charCodeAt(i)] = i;
-	  }
-
-	  exports.encode = function(arraybuffer) {
-	    var bytes = new Uint8Array(arraybuffer),
-	    i, len = bytes.length, base64 = "";
-
-	    for (i = 0; i < len; i+=3) {
-	      base64 += chars[bytes[i] >> 2];
-	      base64 += chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
-	      base64 += chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
-	      base64 += chars[bytes[i + 2] & 63];
-	    }
-
-	    if ((len % 3) === 2) {
-	      base64 = base64.substring(0, base64.length - 1) + "=";
-	    } else if (len % 3 === 1) {
-	      base64 = base64.substring(0, base64.length - 2) + "==";
-	    }
-
-	    return base64;
-	  };
-
-	  exports.decode =  function(base64) {
-	    var bufferLength = base64.length * 0.75,
-	    len = base64.length, i, p = 0,
-	    encoded1, encoded2, encoded3, encoded4;
-
-	    if (base64[base64.length - 1] === "=") {
-	      bufferLength--;
-	      if (base64[base64.length - 2] === "=") {
-	        bufferLength--;
-	      }
-	    }
-
-	    var arraybuffer = new ArrayBuffer(bufferLength),
-	    bytes = new Uint8Array(arraybuffer);
-
-	    for (i = 0; i < len; i+=4) {
-	      encoded1 = lookup[base64.charCodeAt(i)];
-	      encoded2 = lookup[base64.charCodeAt(i+1)];
-	      encoded3 = lookup[base64.charCodeAt(i+2)];
-	      encoded4 = lookup[base64.charCodeAt(i+3)];
-
-	      bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
-	      bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
-	      bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
-	    }
-
-	    return arraybuffer;
-	  };
-	})();
-
-
-/***/ },
-/* 34 */
-/***/ function(module, exports) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Create a blob builder even when vendor prefixes exist
-	 */
-
-	var BlobBuilder = global.BlobBuilder
-	  || global.WebKitBlobBuilder
-	  || global.MSBlobBuilder
-	  || global.MozBlobBuilder;
-
-	/**
-	 * Check if Blob constructor is supported
-	 */
-
-	var blobSupported = (function() {
-	  try {
-	    var a = new Blob(['hi']);
-	    return a.size === 2;
-	  } catch(e) {
-	    return false;
-	  }
-	})();
-
-	/**
-	 * Check if Blob constructor supports ArrayBufferViews
-	 * Fails in Safari 6, so we need to map to ArrayBuffers there.
-	 */
-
-	var blobSupportsArrayBufferView = blobSupported && (function() {
-	  try {
-	    var b = new Blob([new Uint8Array([1,2])]);
-	    return b.size === 2;
-	  } catch(e) {
-	    return false;
-	  }
-	})();
-
-	/**
-	 * Check if BlobBuilder is supported
-	 */
-
-	var blobBuilderSupported = BlobBuilder
-	  && BlobBuilder.prototype.append
-	  && BlobBuilder.prototype.getBlob;
-
-	/**
-	 * Helper function that maps ArrayBufferViews to ArrayBuffers
-	 * Used by BlobBuilder constructor and old browsers that didn't
-	 * support it in the Blob constructor.
-	 */
-
-	function mapArrayBufferViews(ary) {
-	  for (var i = 0; i < ary.length; i++) {
-	    var chunk = ary[i];
-	    if (chunk.buffer instanceof ArrayBuffer) {
-	      var buf = chunk.buffer;
-
-	      // if this is a subarray, make a copy so we only
-	      // include the subarray region from the underlying buffer
-	      if (chunk.byteLength !== buf.byteLength) {
-	        var copy = new Uint8Array(chunk.byteLength);
-	        copy.set(new Uint8Array(buf, chunk.byteOffset, chunk.byteLength));
-	        buf = copy.buffer;
-	      }
-
-	      ary[i] = buf;
-	    }
-	  }
-	}
-
-	function BlobBuilderConstructor(ary, options) {
-	  options = options || {};
-
-	  var bb = new BlobBuilder();
-	  mapArrayBufferViews(ary);
-
-	  for (var i = 0; i < ary.length; i++) {
-	    bb.append(ary[i]);
-	  }
-
-	  return (options.type) ? bb.getBlob(options.type) : bb.getBlob();
-	};
-
-	function BlobConstructor(ary, options) {
-	  mapArrayBufferViews(ary);
-	  return new Blob(ary, options || {});
-	};
-
-	module.exports = (function() {
-	  if (blobSupported) {
-	    return blobSupportsArrayBufferView ? global.Blob : BlobConstructor;
-	  } else if (blobBuilderSupported) {
-	    return BlobBuilderConstructor;
-	  } else {
-	    return undefined;
-	  }
-	})();
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * Expose `Emitter`.
-	 */
-
-	if (true) {
-	  module.exports = Emitter;
-	}
-
-	/**
-	 * Initialize a new `Emitter`.
-	 *
-	 * @api public
-	 */
-
-	function Emitter(obj) {
-	  if (obj) return mixin(obj);
-	};
-
-	/**
-	 * Mixin the emitter properties.
-	 *
-	 * @param {Object} obj
-	 * @return {Object}
-	 * @api private
-	 */
-
-	function mixin(obj) {
-	  for (var key in Emitter.prototype) {
-	    obj[key] = Emitter.prototype[key];
-	  }
-	  return obj;
-	}
-
-	/**
-	 * Listen on the given `event` with `fn`.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.on =
-	Emitter.prototype.addEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-	    .push(fn);
-	  return this;
-	};
-
-	/**
-	 * Adds an `event` listener that will be invoked a single
-	 * time then automatically removed.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.once = function(event, fn){
-	  function on() {
-	    this.off(event, on);
-	    fn.apply(this, arguments);
-	  }
-
-	  on.fn = fn;
-	  this.on(event, on);
-	  return this;
-	};
-
-	/**
-	 * Remove the given callback for `event` or all
-	 * registered callbacks.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.off =
-	Emitter.prototype.removeListener =
-	Emitter.prototype.removeAllListeners =
-	Emitter.prototype.removeEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-
-	  // all
-	  if (0 == arguments.length) {
-	    this._callbacks = {};
-	    return this;
-	  }
-
-	  // specific event
-	  var callbacks = this._callbacks['$' + event];
-	  if (!callbacks) return this;
-
-	  // remove all handlers
-	  if (1 == arguments.length) {
-	    delete this._callbacks['$' + event];
-	    return this;
-	  }
-
-	  // remove specific handler
-	  var cb;
-	  for (var i = 0; i < callbacks.length; i++) {
-	    cb = callbacks[i];
-	    if (cb === fn || cb.fn === fn) {
-	      callbacks.splice(i, 1);
-	      break;
-	    }
-	  }
-	  return this;
-	};
-
-	/**
-	 * Emit `event` with the given args.
-	 *
-	 * @param {String} event
-	 * @param {Mixed} ...
-	 * @return {Emitter}
-	 */
-
-	Emitter.prototype.emit = function(event){
-	  this._callbacks = this._callbacks || {};
-	  var args = [].slice.call(arguments, 1)
-	    , callbacks = this._callbacks['$' + event];
-
-	  if (callbacks) {
-	    callbacks = callbacks.slice(0);
-	    for (var i = 0, len = callbacks.length; i < len; ++i) {
-	      callbacks[i].apply(this, args);
-	    }
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Return array of callbacks for `event`.
-	 *
-	 * @param {String} event
-	 * @return {Array}
-	 * @api public
-	 */
-
-	Emitter.prototype.listeners = function(event){
-	  this._callbacks = this._callbacks || {};
-	  return this._callbacks['$' + event] || [];
-	};
-
-	/**
-	 * Check if this emitter has `event` handlers.
-	 *
-	 * @param {String} event
-	 * @return {Boolean}
-	 * @api public
-	 */
-
-	Emitter.prototype.hasListeners = function(event){
-	  return !! this.listeners(event).length;
-	};
-
-
-/***/ },
-/* 36 */
-/***/ function(module, exports) {
-
-	/**
-	 * Compiles a querystring
-	 * Returns string representation of the object
-	 *
-	 * @param {Object}
-	 * @api private
-	 */
-
-	exports.encode = function (obj) {
-	  var str = '';
-
-	  for (var i in obj) {
-	    if (obj.hasOwnProperty(i)) {
-	      if (str.length) str += '&';
-	      str += encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]);
-	    }
-	  }
-
-	  return str;
-	};
-
-	/**
-	 * Parses a simple querystring into an object
-	 *
-	 * @param {String} qs
-	 * @api private
-	 */
-
-	exports.decode = function(qs){
-	  var qry = {};
-	  var pairs = qs.split('&');
-	  for (var i = 0, l = pairs.length; i < l; i++) {
-	    var pair = pairs[i].split('=');
-	    qry[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-	  }
-	  return qry;
-	};
-
-
-/***/ },
-/* 37 */
-/***/ function(module, exports) {
-
-	
-	module.exports = function(a, b){
-	  var fn = function(){};
-	  fn.prototype = b.prototype;
-	  a.prototype = new fn;
-	  a.prototype.constructor = a;
-	};
-
-/***/ },
-/* 38 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
-	  , length = 64
-	  , map = {}
-	  , seed = 0
-	  , i = 0
-	  , prev;
-
-	/**
-	 * Return a string representing the specified number.
-	 *
-	 * @param {Number} num The number to convert.
-	 * @returns {String} The string representation of the number.
-	 * @api public
-	 */
-	function encode(num) {
-	  var encoded = '';
-
-	  do {
-	    encoded = alphabet[num % length] + encoded;
-	    num = Math.floor(num / length);
-	  } while (num > 0);
-
-	  return encoded;
-	}
-
-	/**
-	 * Return the integer value specified by the given string.
-	 *
-	 * @param {String} str The string to convert.
-	 * @returns {Number} The integer value represented by the string.
-	 * @api public
-	 */
-	function decode(str) {
-	  var decoded = 0;
-
-	  for (i = 0; i < str.length; i++) {
-	    decoded = decoded * length + map[str.charAt(i)];
-	  }
-
-	  return decoded;
-	}
-
-	/**
-	 * Yeast: A tiny growing id generator.
-	 *
-	 * @returns {String} A unique id.
-	 * @api public
-	 */
-	function yeast() {
-	  var now = encode(+new Date());
-
-	  if (now !== prev) return seed = 0, prev = now;
-	  return now +'.'+ encode(seed++);
-	}
-
-	//
-	// Map each character to its index.
-	//
-	for (; i < length; i++) map[alphabet[i]] = i;
-
-	//
-	// Expose the `yeast`, `encode` and `decode` functions.
-	//
-	yeast.encode = encode;
-	yeast.decode = decode;
-	module.exports = yeast;
-
-
-/***/ },
-/* 39 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {
-	/**
-	 * Module requirements.
-	 */
-
-	var Polling = __webpack_require__(25);
-	var inherit = __webpack_require__(37);
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = JSONPPolling;
-
-	/**
-	 * Cached regular expressions.
-	 */
-
-	var rNewline = /\n/g;
-	var rEscapedNewline = /\\n/g;
-
-	/**
-	 * Global JSONP callbacks.
-	 */
-
-	var callbacks;
-
-	/**
-	 * Noop.
-	 */
-
-	function empty () { }
-
-	/**
-	 * JSONP Polling constructor.
-	 *
-	 * @param {Object} opts.
-	 * @api public
-	 */
-
-	function JSONPPolling (opts) {
-	  Polling.call(this, opts);
-
-	  this.query = this.query || {};
-
-	  // define global callbacks array if not present
-	  // we do this here (lazily) to avoid unneeded global pollution
-	  if (!callbacks) {
-	    // we need to consider multiple engines in the same page
-	    if (!global.___eio) global.___eio = [];
-	    callbacks = global.___eio;
-	  }
-
-	  // callback identifier
-	  this.index = callbacks.length;
-
-	  // add callback to jsonp global
-	  var self = this;
-	  callbacks.push(function (msg) {
-	    self.onData(msg);
-	  });
-
-	  // append to query string
-	  this.query.j = this.index;
-
-	  // prevent spurious errors from being emitted when the window is unloaded
-	  if (global.document && global.addEventListener) {
-	    global.addEventListener('beforeunload', function () {
-	      if (self.script) self.script.onerror = empty;
-	    }, false);
-	  }
-	}
-
-	/**
-	 * Inherits from Polling.
-	 */
-
-	inherit(JSONPPolling, Polling);
-
-	/*
-	 * JSONP only supports binary as base64 encoded strings
-	 */
-
-	JSONPPolling.prototype.supportsBinary = false;
-
-	/**
-	 * Closes the socket.
-	 *
-	 * @api private
-	 */
-
-	JSONPPolling.prototype.doClose = function () {
-	  if (this.script) {
-	    this.script.parentNode.removeChild(this.script);
-	    this.script = null;
-	  }
-
-	  if (this.form) {
-	    this.form.parentNode.removeChild(this.form);
-	    this.form = null;
-	    this.iframe = null;
-	  }
-
-	  Polling.prototype.doClose.call(this);
-	};
-
-	/**
-	 * Starts a poll cycle.
-	 *
-	 * @api private
-	 */
-
-	JSONPPolling.prototype.doPoll = function () {
-	  var self = this;
-	  var script = document.createElement('script');
-
-	  if (this.script) {
-	    this.script.parentNode.removeChild(this.script);
-	    this.script = null;
-	  }
-
-	  script.async = true;
-	  script.src = this.uri();
-	  script.onerror = function (e) {
-	    self.onError('jsonp poll error', e);
-	  };
-
-	  var insertAt = document.getElementsByTagName('script')[0];
-	  if (insertAt) {
-	    insertAt.parentNode.insertBefore(script, insertAt);
-	  } else {
-	    (document.head || document.body).appendChild(script);
-	  }
-	  this.script = script;
-
-	  var isUAgecko = 'undefined' !== typeof navigator && /gecko/i.test(navigator.userAgent);
-
-	  if (isUAgecko) {
-	    setTimeout(function () {
-	      var iframe = document.createElement('iframe');
-	      document.body.appendChild(iframe);
-	      document.body.removeChild(iframe);
-	    }, 100);
-	  }
-	};
-
-	/**
-	 * Writes with a hidden iframe.
-	 *
-	 * @param {String} data to send
-	 * @param {Function} called upon flush.
-	 * @api private
-	 */
-
-	JSONPPolling.prototype.doWrite = function (data, fn) {
-	  var self = this;
-
-	  if (!this.form) {
-	    var form = document.createElement('form');
-	    var area = document.createElement('textarea');
-	    var id = this.iframeId = 'eio_iframe_' + this.index;
-	    var iframe;
-
-	    form.className = 'socketio';
-	    form.style.position = 'absolute';
-	    form.style.top = '-1000px';
-	    form.style.left = '-1000px';
-	    form.target = id;
-	    form.method = 'POST';
-	    form.setAttribute('accept-charset', 'utf-8');
-	    area.name = 'd';
-	    form.appendChild(area);
-	    document.body.appendChild(form);
-
-	    this.form = form;
-	    this.area = area;
-	  }
-
-	  this.form.action = this.uri();
-
-	  function complete () {
-	    initIframe();
-	    fn();
-	  }
-
-	  function initIframe () {
-	    if (self.iframe) {
-	      try {
-	        self.form.removeChild(self.iframe);
-	      } catch (e) {
-	        self.onError('jsonp polling iframe removal error', e);
-	      }
-	    }
-
-	    try {
-	      // ie6 dynamic iframes with target="" support (thanks Chris Lambacher)
-	      var html = '<iframe src="javascript:0" name="' + self.iframeId + '">';
-	      iframe = document.createElement(html);
-	    } catch (e) {
-	      iframe = document.createElement('iframe');
-	      iframe.name = self.iframeId;
-	      iframe.src = 'javascript:0';
-	    }
-
-	    iframe.id = self.iframeId;
-
-	    self.form.appendChild(iframe);
-	    self.iframe = iframe;
-	  }
-
-	  initIframe();
-
-	  // escape \n to prevent it from being converted into \r\n by some UAs
-	  // double escaping is required for escaped new lines because unescaping of new lines can be done safely on server-side
-	  data = data.replace(rEscapedNewline, '\\\n');
-	  this.area.value = data.replace(rNewline, '\\n');
-
-	  try {
-	    this.form.submit();
-	  } catch (e) {}
-
-	  if (this.iframe.attachEvent) {
-	    this.iframe.onreadystatechange = function () {
-	      if (self.iframe.readyState === 'complete') {
-	        complete();
-	      }
-	    };
-	  } else {
-	    this.iframe.onload = complete;
-	  }
-	};
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Module dependencies.
-	 */
-
-	var Transport = __webpack_require__(26);
-	var parser = __webpack_require__(27);
-	var parseqs = __webpack_require__(36);
-	var inherit = __webpack_require__(37);
-	var yeast = __webpack_require__(38);
-	var debug = __webpack_require__(3)('engine.io-client:websocket');
-	var BrowserWebSocket = global.WebSocket || global.MozWebSocket;
-	var NodeWebSocket;
-	if (typeof window === 'undefined') {
-	  try {
-	    NodeWebSocket = __webpack_require__(41);
-	  } catch (e) { }
-	}
-
-	/**
-	 * Get either the `WebSocket` or `MozWebSocket` globals
-	 * in the browser or try to resolve WebSocket-compatible
-	 * interface exposed by `ws` for Node-like environment.
-	 */
-
-	var WebSocket = BrowserWebSocket;
-	if (!WebSocket && typeof window === 'undefined') {
-	  WebSocket = NodeWebSocket;
-	}
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = WS;
-
-	/**
-	 * WebSocket transport constructor.
-	 *
-	 * @api {Object} connection options
-	 * @api public
-	 */
-
-	function WS (opts) {
-	  var forceBase64 = (opts && opts.forceBase64);
-	  if (forceBase64) {
-	    this.supportsBinary = false;
-	  }
-	  this.perMessageDeflate = opts.perMessageDeflate;
-	  this.usingBrowserWebSocket = BrowserWebSocket && !opts.forceNode;
-	  if (!this.usingBrowserWebSocket) {
-	    WebSocket = NodeWebSocket;
-	  }
-	  Transport.call(this, opts);
-	}
-
-	/**
-	 * Inherits from Transport.
-	 */
-
-	inherit(WS, Transport);
-
-	/**
-	 * Transport name.
-	 *
-	 * @api public
-	 */
-
-	WS.prototype.name = 'websocket';
-
-	/*
-	 * WebSockets support binary
-	 */
-
-	WS.prototype.supportsBinary = true;
-
-	/**
-	 * Opens socket.
-	 *
-	 * @api private
-	 */
-
-	WS.prototype.doOpen = function () {
-	  if (!this.check()) {
-	    // let probe timeout
-	    return;
-	  }
-
-	  var uri = this.uri();
-	  var protocols = void (0);
-	  var opts = {
-	    agent: this.agent,
-	    perMessageDeflate: this.perMessageDeflate
-	  };
-
-	  // SSL options for Node.js client
-	  opts.pfx = this.pfx;
-	  opts.key = this.key;
-	  opts.passphrase = this.passphrase;
-	  opts.cert = this.cert;
-	  opts.ca = this.ca;
-	  opts.ciphers = this.ciphers;
-	  opts.rejectUnauthorized = this.rejectUnauthorized;
-	  if (this.extraHeaders) {
-	    opts.headers = this.extraHeaders;
-	  }
-	  if (this.localAddress) {
-	    opts.localAddress = this.localAddress;
-	  }
-
-	  try {
-	    this.ws = this.usingBrowserWebSocket ? new WebSocket(uri) : new WebSocket(uri, protocols, opts);
-	  } catch (err) {
-	    return this.emit('error', err);
-	  }
-
-	  if (this.ws.binaryType === undefined) {
-	    this.supportsBinary = false;
-	  }
-
-	  if (this.ws.supports && this.ws.supports.binary) {
-	    this.supportsBinary = true;
-	    this.ws.binaryType = 'nodebuffer';
-	  } else {
-	    this.ws.binaryType = 'arraybuffer';
-	  }
-
-	  this.addEventListeners();
-	};
-
-	/**
-	 * Adds event listeners to the socket
-	 *
-	 * @api private
-	 */
-
-	WS.prototype.addEventListeners = function () {
-	  var self = this;
-
-	  this.ws.onopen = function () {
-	    self.onOpen();
-	  };
-	  this.ws.onclose = function () {
-	    self.onClose();
-	  };
-	  this.ws.onmessage = function (ev) {
-	    self.onData(ev.data);
-	  };
-	  this.ws.onerror = function (e) {
-	    self.onError('websocket error', e);
-	  };
-	};
-
-	/**
-	 * Writes data to socket.
-	 *
-	 * @param {Array} array of packets.
-	 * @api private
-	 */
-
-	WS.prototype.write = function (packets) {
-	  var self = this;
-	  this.writable = false;
-
-	  // encodePacket efficient as it uses WS framing
-	  // no need for encodePayload
-	  var total = packets.length;
-	  for (var i = 0, l = total; i < l; i++) {
-	    (function (packet) {
-	      parser.encodePacket(packet, self.supportsBinary, function (data) {
-	        if (!self.usingBrowserWebSocket) {
-	          // always create a new object (GH-437)
-	          var opts = {};
-	          if (packet.options) {
-	            opts.compress = packet.options.compress;
-	          }
-
-	          if (self.perMessageDeflate) {
-	            var len = 'string' === typeof data ? global.Buffer.byteLength(data) : data.length;
-	            if (len < self.perMessageDeflate.threshold) {
-	              opts.compress = false;
-	            }
-	          }
-	        }
-
-	        // Sometimes the websocket has already been closed but the browser didn't
-	        // have a chance of informing us about it yet, in that case send will
-	        // throw an error
-	        try {
-	          if (self.usingBrowserWebSocket) {
-	            // TypeError is thrown when passing the second argument on Safari
-	            self.ws.send(data);
-	          } else {
-	            self.ws.send(data, opts);
-	          }
-	        } catch (e) {
-	          debug('websocket closed before onclose event');
-	        }
-
-	        --total || done();
-	      });
-	    })(packets[i]);
-	  }
-
-	  function done () {
-	    self.emit('flush');
-
-	    // fake drain
-	    // defer to next tick to allow Socket to clear writeBuffer
-	    setTimeout(function () {
-	      self.writable = true;
-	      self.emit('drain');
-	    }, 0);
-	  }
-	};
-
-	/**
-	 * Called upon close
-	 *
-	 * @api private
-	 */
-
-	WS.prototype.onClose = function () {
-	  Transport.prototype.onClose.call(this);
-	};
-
-	/**
-	 * Closes socket.
-	 *
-	 * @api private
-	 */
-
-	WS.prototype.doClose = function () {
-	  if (typeof this.ws !== 'undefined') {
-	    this.ws.close();
-	  }
-	};
-
-	/**
-	 * Generates uri for connection.
-	 *
-	 * @api private
-	 */
-
-	WS.prototype.uri = function () {
-	  var query = this.query || {};
-	  var schema = this.secure ? 'wss' : 'ws';
-	  var port = '';
-
-	  // avoid port if default for schema
-	  if (this.port && (('wss' === schema && Number(this.port) !== 443) ||
-	    ('ws' === schema && Number(this.port) !== 80))) {
-	    port = ':' + this.port;
-	  }
-
-	  // append timestamp to URI
-	  if (this.timestampRequests) {
-	    query[this.timestampParam] = yeast();
-	  }
-
-	  // communicate binary support capabilities
-	  if (!this.supportsBinary) {
-	    query.b64 = 1;
-	  }
-
-	  query = parseqs.encode(query);
-
-	  // prepend ? to query
-	  if (query.length) {
-	    query = '?' + query;
-	  }
-
-	  var ipv6 = this.hostname.indexOf(':') !== -1;
-	  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
-	};
-
-	/**
-	 * Feature detection for WebSocket.
-	 *
-	 * @return {Boolean} whether this transport is available.
-	 * @api public
-	 */
-
-	WS.prototype.check = function () {
-	  return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
-	};
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 41 */
-/***/ function(module, exports) {
-
-	/* (ignored) */
-
-/***/ },
-/* 42 */
-/***/ function(module, exports) {
-
-	
-	var indexOf = [].indexOf;
-
-	module.exports = function(arr, obj){
-	  if (indexOf) return arr.indexOf(obj);
-	  for (var i = 0; i < arr.length; ++i) {
-	    if (arr[i] === obj) return i;
-	  }
-	  return -1;
-	};
-
-/***/ },
-/* 43 */
-/***/ function(module, exports) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * JSON parse.
-	 *
-	 * @see Based on jQuery#parseJSON (MIT) and JSON2
-	 * @api private
-	 */
-
-	var rvalidchars = /^[\],:{}\s]*$/;
-	var rvalidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
-	var rvalidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
-	var rvalidbraces = /(?:^|:|,)(?:\s*\[)+/g;
-	var rtrimLeft = /^\s+/;
-	var rtrimRight = /\s+$/;
-
-	module.exports = function parsejson(data) {
-	  if ('string' != typeof data || !data) {
-	    return null;
-	  }
-
-	  data = data.replace(rtrimLeft, '').replace(rtrimRight, '');
-
-	  // Attempt to parse using the native JSON parser first
-	  if (global.JSON && JSON.parse) {
-	    return JSON.parse(data);
-	  }
-
-	  if (rvalidchars.test(data.replace(rvalidescape, '@')
-	      .replace(rvalidtokens, ']')
-	      .replace(rvalidbraces, ''))) {
-	    return (new Function('return ' + data))();
-	  }
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 44 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	/**
-	 * Module dependencies.
-	 */
-
-	var parser = __webpack_require__(7);
-	var Emitter = __webpack_require__(35);
-	var toArray = __webpack_require__(45);
-	var on = __webpack_require__(46);
-	var bind = __webpack_require__(47);
-	var debug = __webpack_require__(3)('socket.io-client:socket');
-	var hasBin = __webpack_require__(29);
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = exports = Socket;
-
-	/**
-	 * Internal events (blacklisted).
-	 * These events can't be emitted by the user.
-	 *
-	 * @api private
-	 */
-
-	var events = {
-	  connect: 1,
-	  connect_error: 1,
-	  connect_timeout: 1,
-	  connecting: 1,
-	  disconnect: 1,
-	  error: 1,
-	  reconnect: 1,
-	  reconnect_attempt: 1,
-	  reconnect_failed: 1,
-	  reconnect_error: 1,
-	  reconnecting: 1,
-	  ping: 1,
-	  pong: 1
-	};
-
-	/**
-	 * Shortcut to `Emitter#emit`.
-	 */
-
-	var emit = Emitter.prototype.emit;
-
-	/**
-	 * `Socket` constructor.
-	 *
-	 * @api public
-	 */
-
-	function Socket(io, nsp, opts) {
-	  this.io = io;
-	  this.nsp = nsp;
-	  this.json = this; // compat
-	  this.ids = 0;
-	  this.acks = {};
-	  this.receiveBuffer = [];
-	  this.sendBuffer = [];
-	  this.connected = false;
-	  this.disconnected = true;
-	  if (opts && opts.query) {
-	    this.query = opts.query;
-	  }
-	  if (this.io.autoConnect) this.open();
-	}
-
-	/**
-	 * Mix in `Emitter`.
-	 */
-
-	Emitter(Socket.prototype);
-
-	/**
-	 * Subscribe to open, close and packet events
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.subEvents = function () {
-	  if (this.subs) return;
-
-	  var io = this.io;
-	  this.subs = [on(io, 'open', bind(this, 'onopen')), on(io, 'packet', bind(this, 'onpacket')), on(io, 'close', bind(this, 'onclose'))];
-	};
-
-	/**
-	 * "Opens" the socket.
-	 *
-	 * @api public
-	 */
-
-	Socket.prototype.open = Socket.prototype.connect = function () {
-	  if (this.connected) return this;
-
-	  this.subEvents();
-	  this.io.open(); // ensure open
-	  if ('open' === this.io.readyState) this.onopen();
-	  this.emit('connecting');
-	  return this;
-	};
-
-	/**
-	 * Sends a `message` event.
-	 *
-	 * @return {Socket} self
-	 * @api public
-	 */
-
-	Socket.prototype.send = function () {
-	  var args = toArray(arguments);
-	  args.unshift('message');
-	  this.emit.apply(this, args);
-	  return this;
-	};
-
-	/**
-	 * Override `emit`.
-	 * If the event is in `events`, it's emitted normally.
-	 *
-	 * @param {String} event name
-	 * @return {Socket} self
-	 * @api public
-	 */
-
-	Socket.prototype.emit = function (ev) {
-	  if (events.hasOwnProperty(ev)) {
-	    emit.apply(this, arguments);
-	    return this;
-	  }
-
-	  var args = toArray(arguments);
-	  var parserType = parser.EVENT; // default
-	  if (hasBin(args)) {
-	    parserType = parser.BINARY_EVENT;
-	  } // binary
-	  var packet = { type: parserType, data: args };
-
-	  packet.options = {};
-	  packet.options.compress = !this.flags || false !== this.flags.compress;
-
-	  // event ack callback
-	  if ('function' === typeof args[args.length - 1]) {
-	    debug('emitting packet with ack id %d', this.ids);
-	    this.acks[this.ids] = args.pop();
-	    packet.id = this.ids++;
-	  }
-
-	  if (this.connected) {
-	    this.packet(packet);
-	  } else {
-	    this.sendBuffer.push(packet);
-	  }
-
-	  delete this.flags;
-
-	  return this;
-	};
-
-	/**
-	 * Sends a packet.
-	 *
-	 * @param {Object} packet
-	 * @api private
-	 */
-
-	Socket.prototype.packet = function (packet) {
-	  packet.nsp = this.nsp;
-	  this.io.packet(packet);
-	};
-
-	/**
-	 * Called upon engine `open`.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.onopen = function () {
-	  debug('transport is open - connecting');
-
-	  // write connect packet if necessary
-	  if ('/' !== this.nsp) {
-	    if (this.query) {
-	      this.packet({ type: parser.CONNECT, query: this.query });
-	    } else {
-	      this.packet({ type: parser.CONNECT });
-	    }
-	  }
-	};
-
-	/**
-	 * Called upon engine `close`.
-	 *
-	 * @param {String} reason
-	 * @api private
-	 */
-
-	Socket.prototype.onclose = function (reason) {
-	  debug('close (%s)', reason);
-	  this.connected = false;
-	  this.disconnected = true;
-	  delete this.id;
-	  this.emit('disconnect', reason);
-	};
-
-	/**
-	 * Called with socket packet.
-	 *
-	 * @param {Object} packet
-	 * @api private
-	 */
-
-	Socket.prototype.onpacket = function (packet) {
-	  if (packet.nsp !== this.nsp) return;
-
-	  switch (packet.type) {
-	    case parser.CONNECT:
-	      this.onconnect();
-	      break;
-
-	    case parser.EVENT:
-	      this.onevent(packet);
-	      break;
-
-	    case parser.BINARY_EVENT:
-	      this.onevent(packet);
-	      break;
-
-	    case parser.ACK:
-	      this.onack(packet);
-	      break;
-
-	    case parser.BINARY_ACK:
-	      this.onack(packet);
-	      break;
-
-	    case parser.DISCONNECT:
-	      this.ondisconnect();
-	      break;
-
-	    case parser.ERROR:
-	      this.emit('error', packet.data);
-	      break;
-	  }
-	};
-
-	/**
-	 * Called upon a server event.
-	 *
-	 * @param {Object} packet
-	 * @api private
-	 */
-
-	Socket.prototype.onevent = function (packet) {
-	  var args = packet.data || [];
-	  debug('emitting event %j', args);
-
-	  if (null != packet.id) {
-	    debug('attaching ack callback to event');
-	    args.push(this.ack(packet.id));
-	  }
-
-	  if (this.connected) {
-	    emit.apply(this, args);
-	  } else {
-	    this.receiveBuffer.push(args);
-	  }
-	};
-
-	/**
-	 * Produces an ack callback to emit with an event.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.ack = function (id) {
-	  var self = this;
-	  var sent = false;
-	  return function () {
-	    // prevent double callbacks
-	    if (sent) return;
-	    sent = true;
-	    var args = toArray(arguments);
-	    debug('sending ack %j', args);
-
-	    var type = hasBin(args) ? parser.BINARY_ACK : parser.ACK;
-	    self.packet({
-	      type: type,
-	      id: id,
-	      data: args
-	    });
-	  };
-	};
-
-	/**
-	 * Called upon a server acknowlegement.
-	 *
-	 * @param {Object} packet
-	 * @api private
-	 */
-
-	Socket.prototype.onack = function (packet) {
-	  var ack = this.acks[packet.id];
-	  if ('function' === typeof ack) {
-	    debug('calling ack %s with %j', packet.id, packet.data);
-	    ack.apply(this, packet.data);
-	    delete this.acks[packet.id];
-	  } else {
-	    debug('bad ack %s', packet.id);
-	  }
-	};
-
-	/**
-	 * Called upon server connect.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.onconnect = function () {
-	  this.connected = true;
-	  this.disconnected = false;
-	  this.emit('connect');
-	  this.emitBuffered();
-	};
-
-	/**
-	 * Emit buffered events (received and emitted).
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.emitBuffered = function () {
-	  var i;
-	  for (i = 0; i < this.receiveBuffer.length; i++) {
-	    emit.apply(this, this.receiveBuffer[i]);
-	  }
-	  this.receiveBuffer = [];
-
-	  for (i = 0; i < this.sendBuffer.length; i++) {
-	    this.packet(this.sendBuffer[i]);
-	  }
-	  this.sendBuffer = [];
-	};
-
-	/**
-	 * Called upon server disconnect.
-	 *
-	 * @api private
-	 */
-
-	Socket.prototype.ondisconnect = function () {
-	  debug('server disconnect (%s)', this.nsp);
-	  this.destroy();
-	  this.onclose('io server disconnect');
-	};
-
-	/**
-	 * Called upon forced client/server side disconnections,
-	 * this method ensures the manager stops tracking us and
-	 * that reconnections don't get triggered for this.
-	 *
-	 * @api private.
-	 */
-
-	Socket.prototype.destroy = function () {
-	  if (this.subs) {
-	    // clean subscriptions to avoid reconnections
-	    for (var i = 0; i < this.subs.length; i++) {
-	      this.subs[i].destroy();
-	    }
-	    this.subs = null;
-	  }
-
-	  this.io.destroy(this);
-	};
-
-	/**
-	 * Disconnects the socket manually.
-	 *
-	 * @return {Socket} self
-	 * @api public
-	 */
-
-	Socket.prototype.close = Socket.prototype.disconnect = function () {
-	  if (this.connected) {
-	    debug('performing disconnect (%s)', this.nsp);
-	    this.packet({ type: parser.DISCONNECT });
-	  }
-
-	  // remove socket from pool
-	  this.destroy();
-
-	  if (this.connected) {
-	    // fire events
-	    this.onclose('io client disconnect');
-	  }
-	  return this;
-	};
-
-	/**
-	 * Sets the compress flag.
-	 *
-	 * @param {Boolean} if `true`, compresses the sending data
-	 * @return {Socket} self
-	 * @api public
-	 */
-
-	Socket.prototype.compress = function (compress) {
-	  this.flags = this.flags || {};
-	  this.flags.compress = compress;
-	  return this;
-	};
-
-/***/ },
-/* 45 */
-/***/ function(module, exports) {
-
-	module.exports = toArray
-
-	function toArray(list, index) {
-	    var array = []
-
-	    index = index || 0
-
-	    for (var i = index || 0; i < list.length; i++) {
-	        array[i - index] = list[i]
-	    }
-
-	    return array
-	}
-
-
-/***/ },
-/* 46 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	/**
-	 * Module exports.
-	 */
-
-	module.exports = on;
-
-	/**
-	 * Helper for subscriptions.
-	 *
-	 * @param {Object|EventEmitter} obj with `Emitter` mixin or `EventEmitter`
-	 * @param {String} event name
-	 * @param {Function} callback
-	 * @api public
-	 */
-
-	function on(obj, ev, fn) {
-	  obj.on(ev, fn);
-	  return {
-	    destroy: function destroy() {
-	      obj.removeListener(ev, fn);
-	    }
-	  };
-		}
-
-/***/ },
-/* 47 */
-/***/ function(module, exports) {
-
-	/**
-	 * Slice reference.
-	 */
-
-	var slice = [].slice;
-
-	/**
-	 * Bind `obj` to `fn`.
-	 *
-	 * @param {Object} obj
-	 * @param {Function|String} fn or string
-	 * @return {Function}
-	 * @api public
-	 */
-
-	module.exports = function(obj, fn){
-	  if ('string' == typeof fn) fn = obj[fn];
-	  if ('function' != typeof fn) throw new Error('bind() requires a function');
-	  var args = slice.call(arguments, 2);
-	  return function(){
-	    return fn.apply(obj, args.concat(slice.call(arguments)));
-	  }
-	};
-
-
-/***/ },
-/* 48 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Expose `Backoff`.
-	 */
-
-	module.exports = Backoff;
-
-	/**
-	 * Initialize backoff timer with `opts`.
-	 *
-	 * - `min` initial timeout in milliseconds [100]
-	 * - `max` max timeout [10000]
-	 * - `jitter` [0]
-	 * - `factor` [2]
-	 *
-	 * @param {Object} opts
-	 * @api public
-	 */
-
-	function Backoff(opts) {
-	  opts = opts || {};
-	  this.ms = opts.min || 100;
-	  this.max = opts.max || 10000;
-	  this.factor = opts.factor || 2;
-	  this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
-	  this.attempts = 0;
-	}
-
-	/**
-	 * Return the backoff duration.
-	 *
-	 * @return {Number}
-	 * @api public
-	 */
-
-	Backoff.prototype.duration = function(){
-	  var ms = this.ms * Math.pow(this.factor, this.attempts++);
-	  if (this.jitter) {
-	    var rand =  Math.random();
-	    var deviation = Math.floor(rand * this.jitter * ms);
-	    ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
-	  }
-	  return Math.min(ms, this.max) | 0;
-	};
-
-	/**
-	 * Reset the number of attempts.
-	 *
-	 * @api public
-	 */
-
-	Backoff.prototype.reset = function(){
-	  this.attempts = 0;
-	};
-
-	/**
-	 * Set the minimum duration
-	 *
-	 * @api public
-	 */
-
-	Backoff.prototype.setMin = function(min){
-	  this.ms = min;
-	};
-
-	/**
-	 * Set the maximum duration
-	 *
-	 * @api public
-	 */
-
-	Backoff.prototype.setMax = function(max){
-	  this.max = max;
-	};
-
-	/**
-	 * Set the jitter
-	 *
-	 * @api public
-	 */
-
-	Backoff.prototype.setJitter = function(jitter){
-	  this.jitter = jitter;
-	};
-
-
-
-/***/ }
-/******/ ])
-});
-;
-//# sourceMappingURL=socket.io.js.map
 /**
  * To use sails.io.js in an AMD environment (e.g. with require.js),
  * replace this file with the sails.io.js file from the root of:
@@ -78967,18 +70766,3310 @@ angular.module('ngSails', ['ng']);
 	 */
 e.exports=function(e){function t(){function e(e){return null!==e&&e===e.window}function t(t){return e(t)?t:9===t.nodeType&&t.defaultView}function n(e){var n,r,i={top:0,left:0},o=e&&e.ownerDocument;return n=o.documentElement,"undefined"!=typeof e.getBoundingClientRect&&(i=e.getBoundingClientRect()),r=t(o),{top:i.top+r.pageYOffset-n.clientTop,left:i.left+r.pageXOffset-n.clientLeft}}function r(e){var t=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(e);return t?{r:parseInt(t[1],16),g:parseInt(t[2],16),b:parseInt(t[3],16)}:null}function i(e){var t="";for(var n in e)e.hasOwnProperty(n)&&(t+=n+":"+e[n]+";");return t}var o,a=a||{};if(document&&document.querySelectorAll&&document.querySelectorAll.bind)try{o=document.querySelectorAll.bind(document)}catch(l){}else if(window&&window.angular&&window.angular.element)o=window.angular.element;else{var s=function(e,t,n){var r=e.length;t=null==t?0:0>t?Math.max(r+t,0):Math.min(t,r),n=null==n?r:0>n?Math.max(r+n,0):Math.min(n,r);for(var i=[];n>t;)i.push(e[t++]);return i},f=function(e,t,n){var r=s(arguments,2);return function(){return e.apply(t,r.concat(s(arguments)))}};o=f(document.querySelectorAll,document)}if(!o)throw new Error("ionic material ink module could not create reference of DOM nodes");var c={duration:500,show:function(e){if(2===e.button)return!1;var t=this,o=document.createElement("div"),a=this.dataset.inkColor,l=this.dataset.inkOpacity,s=a||l;o.className="ink-ripple",t.appendChild(o);var f=n(t),u=e.pageY-f.top,d=e.pageX-f.left,p="scale("+t.clientWidth/100*2.5+")";"touches"in e&&(u=e.touches[0].pageY-f.top,d=e.touches[0].pageX-f.left),o.setAttribute("data-hold",Date.now()),o.setAttribute("data-scale",p),o.setAttribute("data-x",d),o.setAttribute("data-y",u);var m={top:u+"px",left:d+"px"};if(o.className=o.className+" ink-notransition",s){var h;if(a){var y=r(a);h=y.r+","+y.g+","+y.b}else h="0,0,0";l||(l=.2);var g="rgba("+h+","+l+")";m["background-color"]=g}o.setAttribute("style",i(m)),o.className=o.className.replace("ink-notransition",""),m["-webkit-transform"]=p,m["-moz-transform"]=p,m["-ms-transform"]=p,m["-o-transform"]=p,m.transform=p,m.opacity="1",m["-webkit-transition-duration"]=c.duration+"ms",m["-moz-transition-duration"]=c.duration+"ms",m["-o-transition-duration"]=c.duration+"ms",m["transition-duration"]=c.duration+"ms",o.setAttribute("style",i(m))},hide:function(){for(var e=this,t=(1.4*e.clientWidth,null),n=e.children.length,r=0;n>r;r++)-1===e.children[r].className.indexOf("ink-ripple")||(t=e.children[r]);if(!t)return!1;var o=t.getAttribute("data-x"),a=t.getAttribute("data-y"),l=t.getAttribute("data-scale"),s=Date.now()-Number(t.getAttribute("data-hold")),f=500-s;0>f&&(f=0),setTimeout(function(){var n={top:a+"px",left:o+"px",opacity:"0","-webkit-transition-duration":c.duration+"ms","-moz-transition-duration":c.duration+"ms","-o-transition-duration":c.duration+"ms","transition-duration":c.duration+"ms","-webkit-transform":l,"-moz-transform":l,"-ms-transform":l,"-o-transform":l,transform:l};t.setAttribute("style",i(n)),setTimeout(function(){try{e.removeChild(t)}catch(n){return!1}},c.duration)},f)},wrapInput:function(e){for(var t=0;t<e.length;t++){var n=e[t];if("input"===n.tagName.toLowerCase()){var r=n.parentNode;if("i"===r.tagName.toLowerCase()&&-1!==r.className.indexOf("ink")&&-1!==r.className.indexOf("tab-item")&&-1!==r.className.indexOf("button-fab")&&-1!==r.className.indexOf("button-raised")&&-1!==r.className.indexOf("button-flat")&&-1!==r.className.indexOf("button-clear")&&-1!==r.className.indexOf("button")&&-1!==r.className.indexOf("item"))return!1;var i=document.createElement("i");i.className=n.className+" ink-input-wrapper";var o=n.getAttribute("style");o||(o=""),i.setAttribute("style",o),n.className="ink-button-input",n.removeAttribute("style"),r.replaceChild(i,n),i.appendChild(n)}}}};return a.displayEffect=function(e){e=e||{},"duration"in e&&(c.duration=e.duration);var t=".ink,.tab-item,.button-fab,.button-raised,.button-flat,.button-clear,a.item,.popup .button";c.wrapInput(o(t)),Array.prototype.forEach.call(o(t),function(e){"ontouchstart"in window?(e.addEventListener("touchstart",c.show,!1),e.addEventListener("touchend",c.hide,!1),e.addEventListener("touchcancel",c.hide,!1)):(e.addEventListener("mousedown",c.show,!1),e.addEventListener("mouseup",c.hide,!1),e.addEventListener("mouseleave",c.hide,!1))})},a}e.factory("ionicMaterialInk",t),t.inject=[]}},function(e,t,n){e.exports=function(e){function t(){"use strict";function e(){return window.innerHeight}function t(e,t){for(var n=0;t>n;n++){var r=e[n];r.className+=" in",r.className+=" done"}}function n(n){var r={finishDelayThrottle:2,finishSpeedPercent:.5,leftOffsetPercentage:.8,selector:".animate-blinds .item",startVelocity:1100};"undefined"==typeof n&&(n={}),n.finishDelayThrottle=n.finishDelayThrottle||r.finishDelayThrottle,n.finishSpeedPercent=n.finishSpeedPercent||r.finishSpeedPercent,n.leftOffsetPercentage=n.leftOffsetPercentage||r.leftOffsetPercentage,n.startVelocity=n.startVelocity||r.startVelocity,"undefined"==typeof n.selector&&(n.selector=r.selector);var i="undefined"==typeof n.selector||""===n.selector;if(i)return console.log("invalid blinds selector"),!1;for(var o=document.querySelectorAll(n.selector),a=o.length,l=0,s=e(),f=0;a>f&&o[f].offsetTop<s;f++)l+=1;for(var c=n.startVelocity,f=0;l>f;f++){var u=o[f],d=u.getBoundingClientRect(),p=d.left*n.leftOffsetPercentage+d.top,m=parseFloat(p/c).toFixed(2);u.style.webkitTransitionDelay=m+"s",u.style.transitionDelay=m+"s",u.className+=" in"}setTimeout(function(){for(var e=0;l>e;e++){var t=o[e],r=t.getBoundingClientRect(),i=r.left*n.leftOffsetPercentage+r.top;parseFloat(i/c/n.finishDelayThrottle).toFixed(2);o[e].className+=" done"}},c*n.finishSpeedPercent),t(o,a)}function r(n){var r={finishDelayThrottle:2,finishSpeedPercent:.72,leftOffsetPercentage:.8,selector:".animate-fade-slide-in .item",startVelocity:1100};"undefined"==typeof n&&(n={}),n.finishDelayThrottle=n.finishDelayThrottle||r.finishDelayThrottle,n.finishSpeedPercent=n.finishSpeedPercent||r.finishSpeedPercent,n.leftOffsetPercentage=n.leftOffsetPercentage||r.leftOffsetPercentage,n.startVelocity=n.startVelocity||r.startVelocity,"undefined"==typeof n.selector&&(n.selector=r.selector);var i="undefined"==typeof n.selector||""===n.selector;if(i)return console.log("invalid fadeSlideIn selector"),!1;for(var o=document.querySelectorAll(n.selector),a=o.length,l=0,s=e(),f=0;a>f&&o[f].offsetTop<s;f++)l+=1;for(var c=n.startVelocity,f=0;l>f;f++){var u=o[f],d=u.getBoundingClientRect(),p=d.left*n.leftOffsetPercentage+d.top,m=parseFloat(p/c).toFixed(2);u.style.webkitTransitionDelay=m+"s",u.style.transitionDelay=m+"s",u.className+=" in"}setTimeout(function(){for(var e=0;l>e;e++){var t=o[e],r=t.getBoundingClientRect(),i=r.left*n.leftOffsetPercentage+r.top,a=i/c/n.finishDelayThrottle;parseFloat(a).toFixed(2)}o[0].className+=" done"},c*n.finishSpeedPercent),t(o,a)}function i(n){var r={finishDelayThrottle:2,finishSpeedPercent:.72,leftOffsetPercentage:.8,selector:".animate-fade-slide-in-right .item",startVelocity:1100};"undefined"==typeof n&&(n={}),n.finishDelayThrottle=n.finishDelayThrottle||r.finishDelayThrottle,n.finishSpeedPercent=n.finishSpeedPercent||r.finishSpeedPercent,n.leftOffsetPercentage=n.leftOffsetPercentage||r.leftOffsetPercentage,n.startVelocity=n.startVelocity||r.startVelocity,"undefined"==typeof n.selector&&(n.selector=r.selector);var i="undefined"==typeof n.selector||""===n.selector;if(i)return console.log("invalid fadeSlideInRight selector"),!1;for(var o=document.querySelectorAll(n.selector),a=o.length,l=0,s=e(),f=0;a>f&&o[f].offsetTop<s;f++)l+=1;for(var c=n.startVelocity,f=0;l>f;f++){var u=o[f],d=u.getBoundingClientRect(),p=d.left*n.leftOffsetPercentage+d.top,m=parseFloat(p/c).toFixed(2);u.style.webkitTransitionDelay=m+"s",u.style.transitionDelay=m+"s",u.className+=" in"}setTimeout(function(){for(var e=0;l>e;e++){var t=o[e],r=t.getBoundingClientRect(),i=r.left*n.leftOffsetPercentage+r.top,a=i/c/n.finishDelayThrottle;parseFloat(a).toFixed(2)}o[0].className+=" done"},c*n.finishSpeedPercent),t(o,a)}function o(n){var r={finishDelayThrottle:2,finishSpeedPercent:.72,leftOffsetPercentage:.8,selector:".animate-ripple .item",startVelocity:1100};"undefined"==typeof n&&(n={}),n.finishDelayThrottle=n.finishDelayThrottle||r.finishDelayThrottle,n.finishSpeedPercent=n.finishSpeedPercent||r.finishSpeedPercent,n.leftOffsetPercentage=n.leftOffsetPercentage||r.leftOffsetPercentage,n.startVelocity=n.startVelocity||r.startVelocity,"undefined"==typeof n.selector&&(n.selector=r.selector);var i="undefined"==typeof n.selector||""===n.selector;if(i)return console.log("invalid ripple selector"),!1;for(var o=document.querySelectorAll(n.selector),a=o.length,l=0,s=e(),f=0;f<o.length&&o[f].offsetTop<s;f++)l+=1;for(var c=n.startVelocity,f=0;l>f;f++){var u=o[f],d=u.getBoundingClientRect(),p=d.left*n.leftOffsetPercentage+d.top,m=parseFloat(p/c).toFixed(2);u.style.webkitTransitionDelay=m+"s",u.style.transitionDelay=m+"s",u.className+=" in"}setTimeout(function(){for(var e=0;l>e;e++){var t=o[e],r=t.getBoundingClientRect(),i=r.left*n.leftOffsetPercentage+r.top,a=i/c/n.finishDelayThrottle;parseFloat(a).toFixed(2)}o[0].className+=" done"},c*n.finishSpeedPercent),t(o,a)}function a(e){"string"==typeof e&&(e={selector:e});var t="undefined"==typeof e.selector||""===e.selector;if(t)return console.log("invalid pushDown selector"),!1;for(var n=document.querySelectorAll(e.selector),r=n.length,i=0;r>i;i++){var o=n[i],a="animate-pan-in-left",l=o.className.lastIndexOf(a);o.className=o.className.substr(0,l)}}function l(e){"string"==typeof e&&(e={selector:e});var t="undefined"==typeof e.selector||""===e.selector;if(t)return console.log("invalid pushDown selector"),!1;for(var n=document.querySelectorAll(e.selector),r=n.length,i=0;r>i;i++){var o=n[i],a=e.selector.split(".")[1],l=o.className.lastIndexOf(a);o.className=o.className.substr(0,l)}}function s(e){"string"==typeof e&&(e={selector:e});var t="undefined"==typeof e.selector||""===e.selector;if(t)return console.log("invalid pushDown selector"),!1;for(var n=document.querySelectorAll(e.selector),r=n.length,i=0;r>i;i++){var o=n[i],a=e.selector.split(".")[1],l=o.className.lastIndexOf(a);o.className=o.className.substr(0,l)}}var f={blinds:n,fadeSlideIn:r,fadeSlideInRight:i,panInLeft:a,pushDown:l,ripple:o,slideUp:s};return f}e.factory("ionicMaterialMotion",t),t.$inject=[]}}])});
 //# sourceMappingURL=ionic.material.min.js.map
-!function(e){"use strict";function t(e){if(window.angular){var t=window.angular.module("ionic.native",[]);for(var n in e){var o="$cordova"+n,r=e[n];!function(e,n,o){t.service(e,[function(){var e=window.angular.copy(n);return e.prototype.name=o,e}])}(o,r,n)}}}function n(e,t){for(var n=0,t=t.split("."),o=t.length;n<o;n++){if(!e)return null;e=e[t[n]]}return e}function o(e,t){return t={exports:{}},e(t,t.exports),t.exports}function r(e){return"function"==typeof e}function u(e){return null!=e&&"object"==typeof e}function i(){try{return Xe.apply(this,arguments)}catch(e){return st.errorObject.e=e,st.errorObject}}function s(e){return Xe=e,i}function c(e,t,n){if(e){if(e instanceof Mt.Subscriber)return e;if(e[Lt.$$rxSubscriber])return e[Lt.$$rxSubscriber]()}return e||t||n?new Mt.Subscriber(e,t,n):new Mt.Subscriber}function a(e){var t,n=e.Symbol;return"function"==typeof n?n.observable?t=n.observable:(t=n("observable"),n.observable=t):t="@@observable",t}function l(e,t,n,o){if(void 0===t&&(t={}),t.sync)return e;if("reverse"===t.callbackOrder)e.unshift(o),e.unshift(n);else if("node"===t.callbackStyle)e.push(function(e,t){e?o(e):n(t)});else if("object"===t.callbackStyle&&t.successName&&t.errorName){var r={};r[t.successName]=n,r[t.errorName]=o,e.push(r)}else if("undefined"!=typeof t.successIndex||"undefined"!=typeof t.errorIndex){var u=function(){t.successIndex>e.length?e[t.successIndex]=n:e.splice(t.successIndex,0,n)},i=function(){t.errorIndex>e.length?e[t.errorIndex]=o:e.splice(t.errorIndex,0,o)};t.successIndex>t.errorIndex?(i(),u()):(u(),i())}else e.push(n),e.push(o);return e}function p(e,t,n,o,r,u){void 0===o&&(o={}),n=l(n,o,r,u);var i=Kt(e.pluginRef);return i&&"undefined"!==i[t]?i[t].apply(i,n):window.cordova?(Zt(e,t),{error:"plugin_not_installed"}):(Qt(e.pluginName,t),{error:"cordova_not_available"})}function f(e){var t=function(){return window.Promise?new Promise(function(t,n){e(t,n)}):void console.error("No Promise support or polyfill found. To enable Ionic Native support, please add the es6-promise polyfill before this script, or run with a library like Angular 1/2 or on a recent browser.")};if(window.angular){var n=window.angular.element(document.querySelector("[ng-app]")||document.body).injector();if(n){var o=n.get("$q");return o(function(t,n){e(t,n)})}return console.warn("Angular 1 was detected but $q couldn't be retrieved. This is usually when the app is not bootstrapped on the html or body tag. Falling back to native promises which won't trigger an automatic digest when promises resolve."),t()}return t()}function d(e,t,n,o){void 0===o&&(o={});var r,u,i=f(function(i,s){r=p(e,t,n,o,i,s),u=s});return r&&r.error&&(i.catch(function(){}),u(r.error)),i}function h(e,t,n,o){return void 0===o&&(o={}),f(function(r,u){var i=p(e,t,n,o);i&&i.error&&u(i.error),i.then(r).catch(u)})}function g(e,t,o,r){return void 0===r&&(r={}),new Jt(function(u){var i=p(e,t,o,r,u.next.bind(u),u.error.bind(u));return i&&i.error&&u.error(i.error),function(){try{if(r.clearFunction)return r.clearWithArgs?p(e,r.clearFunction,o,r,u.next.bind(u),u.error.bind(u)):n(window,e.pluginRef)[r.clearFunction].call(e,i)}catch(n){console.warn("Unable to clear the previous observable watch for",e.pluginName,t),console.error(n)}}})}function y(e,t,n,o,r,u){return void 0===o&&(o={}),n=l(n,o,r,u),e._objectInstance[t].apply(e._objectInstance,n)}function b(e,t,n){return void 0===n&&(n={}),function(){for(var o=[],r=0;r<arguments.length;r++)o[r-0]=arguments[r];return n.sync?y(e,t,o,n):n.observable?new Jt(function(r){var u=y(e,t,o,n,r.next.bind(r),r.error.bind(r));return function(){try{return n.clearWithArgs?e._objectInstance[n.clearFunction].apply(e._objectInstance,o):e._objectInstance[n.clearFunction].call(e,u)}catch(n){console.warn("Unable to clear the previous observable watch for",e.pluginName,t),console.error(n)}}}):f(n.otherPromise?function(r,u){var i=y(e,t,o,n,r,u);i.then(r,u)}:function(r,u){y(e,t,o,n,r,u)})}}function v(e){return new Jt(function(t){return window.addEventListener(e,t.next.bind(t),!1),function(){return window.removeEventListener(e,t.next.bind(t),!1)}})}function A(e,t,n,o){return void 0===o&&(o={}),new Jt(function(n){var o=Kt(e.pluginRef);if(!o)return window.cordova||(Qt(e.pluginName,t),n.error({error:"cordova_not_available"})),Zt(e,t),void n.error({error:"plugin_not_installed"});var r=o[t];return r?void(o[t]=n.next.bind(n)):(n.error({error:"no_such_method"}),void n.complete())})}function E(e){return function(t){for(var n in e)t[n]=e[n];return t.installed=function(t){return!!Kt(e.pluginRef)},t.getPlugin=function(){return Kt(e.pluginRef)},t.checkInstall=function(){var n=Kt(e.pluginRef);return!!n||(Zt(t),!1)},t}}function m(e){return void 0===e&&(e={}),function(t,n,o){return{value:function(){for(var t=[],o=0;o<arguments.length;o++)t[o-0]=arguments[o];return en(this,n,e).apply(this,t)}}}}function w(e){return void 0===e&&(e={}),function(t,n){return{value:function(){for(var t=[],o=0;o<arguments.length;o++)t[o-0]=arguments[o];return b(this,n,e).apply(this,t)}}}}function C(e,t){var n=function(){var n=Kt(e.pluginRef);return!!n||(Zt(e,t),!1)};Object.defineProperty(e,t,{get:function(){return n()?Kt(e.pluginRef)[t]:{}},set:function(o){n()&&(Kt(e.pluginRef)[t]=o)}})}function O(e,t){Object.defineProperty(e,t,{get:function(){return this._objectInstance[t]},set:function(e){this._objectInstance[t]=e}})}function _(e){return void 0===e&&(e={}),function(t,n,o){return{value:function(){for(var t=[],o=0;o<arguments.length;o++)t[o-0]=arguments[o];return A(this,n,e)}}}}function S(e){var t=new Xn;for(var n in e)"function"!=typeof e[n]&&(t[n]=e[n]);return t}function D(e){return e.meta.status>=400}function F(e){return Oi.test(e)}function R(e){var t=e.trim().match(_i);if(!t)throw new Error("Invalid semantic version.");var n={major:Number(t[1])};return t[2]&&(n.minor=Number(t[2])),t[3]&&(n.patch=Number(t[3])),n}function P(){}function B(e){var t={}.toString.call(e);switch(t){case"[object File]":case"[object Blob]":case"[object FormData]":return!0;default:return!1}}function j(e){return e===Object(e)}function I(e){if(!j(e))return e;var t=[];for(var n in e)null!=e[n]&&x(t,n,e[n]);return t.join("&")}function x(e,t,n){return Array.isArray(n)?n.forEach(function(n){x(e,t,n)}):void e.push(encodeURIComponent(t)+"="+encodeURIComponent(n))}function T(e){for(var t,n,o={},r=e.split("&"),u=0,i=r.length;u<i;++u)n=r[u],t=n.split("="),o[decodeURIComponent(t[0])]=decodeURIComponent(t[1]);return o}function k(e){var t,n,o,r,u=e.split(/\r?\n/),i={};u.pop();for(var s=0,c=u.length;s<c;++s)n=u[s],t=n.indexOf(":"),o=n.slice(0,t).toLowerCase(),r=Hi(n.slice(t+1)),i[o]=r;return i}function N(e){return/[\/+]json\b/.test(e)}function M(e){return e.split(/ *; */).shift()}function L(e){return zi(e.split(/ *; */),function(e,t){var n=t.split(/ *= */),o=n.shift(),r=n.shift();return o&&r&&(e[o]=r),e},{})}function W(e,t){t=t||{},this.req=e,this.xhr=this.req.xhr,this.text="HEAD"!=this.req.method&&(""===this.xhr.responseType||"text"===this.xhr.responseType)||"undefined"==typeof this.xhr.responseType?this.xhr.responseText:null,this.statusText=this.req.xhr.statusText,this.setStatusProperties(this.xhr.status),this.header=this.headers=k(this.xhr.getAllResponseHeaders()),this.header["content-type"]=this.xhr.getResponseHeader("content-type"),this.setHeaderProperties(this.header),this.body="HEAD"!=this.req.method?this.parseBody(this.text?this.text:this.xhr.response):null}function q(e,t){var n=this;Vi.call(this),this._query=this._query||[],this.method=e,this.url=t,this.header={},this._header={},this.on("end",function(){var e=null,t=null;try{t=new W(n)}catch(t){return e=new Error("Parser is unable to parse the response"),e.parse=!0,e.original=t,e.rawResponse=n.xhr&&n.xhr.responseText?n.xhr.responseText:null,n.callback(e)}if(n.emit("response",t),e)return n.callback(e,t);if(t.status>=200&&t.status<300)return n.callback(e,t);var o=new Error(t.statusText||"Unsuccessful HTTP response");o.original=e,o.response=t,o.status=t.status,n.callback(o,t)})}function U(e,t){return"function"==typeof t?new q("GET",e).end(t):1==arguments.length?new q("GET",e):new q(e,t)}function V(e,t){var n=U("DELETE",e);return t&&n.end(t),n}function z(e){return"function"==typeof e}function H(e){return null!=e&&"object"==typeof e}function G(){try{return Gi.apply(this,arguments)}catch(e){return fs.errorObject.e=e,fs.errorObject}}function $(e){return Gi=e,G}function Y(e){return e.reduce(function(e,t){return e.concat(t instanceof _s.UnsubscriptionError?t.errors:t)},[])}function X(e,t,n){if(e){if(e instanceof Gs.Subscriber)return e;if(e[$s.$$rxSubscriber])return e[$s.$$rxSubscriber]()}return e||t||n?new Gs.Subscriber(e,t,n):new Gs.Subscriber(Ys.empty)}function J(e){var t,n=e.Symbol;return"function"==typeof n?n.observable?t=n.observable:(t=n("observable"),n.observable=t):t="@@observable",t}function K(e){return e&&"function"==typeof e.schedule}function Z(e){return e&&"function"!=typeof e.subscribe&&"function"==typeof e.then}function Q(e){var t=e.value,n=e.subscriber;n.closed||(n.next(t),n.complete())}function ee(e){var t=e.err,n=e.subscriber;n.closed||n.error(t)}function te(e){var t=e.Symbol;if("function"==typeof t)return t.iterator||(t.iterator=t("iterator polyfill")),t.iterator;var n=e.Set;if(n&&"function"==typeof(new n)["@@iterator"])return"@@iterator";var o=e.Map;if(o)for(var r=Object.getOwnPropertyNames(o.prototype),u=0;u<r.length;++u){var i=r[u];if("entries"!==i&&"size"!==i&&o.prototype[i]===o.prototype.entries)return i}return"@@iterator"}function ne(e){var t=e[$c.$$iterator];if(!t&&"string"==typeof e)return new Jc(e);if(!t&&void 0!==e.length)return new Kc(e);if(!t)throw new TypeError("object is not iterable");return e[$c.$$iterator]()}function oe(e){var t=+e.length;return isNaN(t)?0:0!==t&&re(t)?(t=ue(t)*Math.floor(Math.abs(t)),t<=0?0:t>Zc?Zc:t):t}function re(e){return"number"==typeof e&&Hc.root.isFinite(e)}function ue(e){var t=+e;return 0===t?t:isNaN(t)?t:t<0?-1:1}function ie(e,t){return void 0===t&&(t=0),this.lift(new ga(e,t))}function se(e,t,n,o){var r=new rl.InnerSubscriber(e,n,o);if(r.closed)return null;if(t instanceof nl.Observable)return t._isScalar?(r.next(t.value),r.complete(),null):t.subscribe(r);if(Qa.isArray(t)){for(var u=0,i=t.length;u<i&&!r.closed;u++)r.next(t[u]);r.closed||r.complete()}else{if(el.isPromise(t))return t.then(function(e){r.closed||(r.next(e),r.complete())},function(e){return r.error(e)}).then(null,function(e){Za.root.setTimeout(function(){throw e})}),r;if(t&&"function"==typeof t[ol.$$iterator])for(var s=t[ol.$$iterator]();;){var c=s.next();if(c.done){r.complete();break}if(r.next(c.value),r.closed)break}else if(t&&"function"==typeof t[ul.$$observable]){var a=t[ul.$$observable]();if("function"==typeof a.subscribe)return a.subscribe(new rl.InnerSubscriber(e,n,o));r.error(new TypeError("Provided object does not correctly implement Symbol.observable"))}else{var l=tl.isObject(t)?"an invalid object":"'"+t+"'",p="You provided "+l+" where a stream was expected. You can provide an Observable, Promise, Array, or Iterable.";r.error(new TypeError(p))}}return null}function ce(e){var t=new fl(e),n=this.lift(t);return t.caught=n}function ae(e,t,n){return void 0===n&&(n=Number.POSITIVE_INFINITY),"number"==typeof t&&(n=t,t=null),this.lift(new ml(e,t,n))}function le(e,t){return this.lift(new Sl.MergeMapOperator(e,t,1))}function pe(e,t){if("function"!=typeof e)throw new TypeError("argument is not a function. Are you looking for `mapTo()`?");return this.lift(new xl(e,t))}function fe(e,t){return this.lift(new Vl(e,t))}function de(e,t,n){return this.lift(new Kl(e,t,n))}function he(e,t){var n;if(n="function"==typeof e?e:function(){return e},"function"==typeof t)return this.lift(new Ob(n,t));var o=Object.create(this,wb.connectableObservableDescriptor);return o.source=this,o.subjectFactory=n,o}function ge(e,t,n){return void 0===e&&(e=Number.POSITIVE_INFINITY),void 0===t&&(t=Number.POSITIVE_INFINITY),Fb.multicast.call(this,new Db.ReplaySubject(e,t,n))}function ye(e,t){var n=!1;return arguments.length>=2&&(n=!0),this.lift(new kb(e,t,n))}function be(){return this.lift(new zb)}function ve(e){return void 0===e&&(e=null),this.lift(new Zb(e))}function Ae(){}function Ee(){return this.lift(new av)}function me(e){return void 0===e&&(e=Number.POSITIVE_INFINITY),this.lift(new vv(e))}function we(){for(var e=[],t=0;t<arguments.length;t++)e[t-0]=arguments[t];return this.lift.call(Ce.apply(void 0,[this].concat(e)))}function Ce(){for(var e=[],t=0;t<arguments.length;t++)e[t-0]=arguments[t];var n=Number.POSITIVE_INFINITY,o=null,r=e[e.length-1];return _v.isScheduler(r)?(o=e.pop(),e.length>1&&"number"==typeof e[e.length-1]&&(n=e.pop())):"number"==typeof r&&(n=e.pop()),null===o&&1===e.length?e[0]:new Cv.ArrayObservable(e,o).lift(new Ov.MergeAllOperator(n))}function Oe(e){return 0===e?new Wv.EmptyObservable:this.lift(new Uv(e))}function _e(e){for(var t=[],n=1;n<arguments.length;n++)t[n-1]=arguments[n];for(var o=t.length,r=0;r<o;r++){var u=t[r];for(var i in u)u.hasOwnProperty(i)&&(e[i]=u[i])}return e}function Se(e){return e.Object.assign||_e}function De(e){return!XA.isArray(e)&&e-parseFloat(e)+1>=0}function Fe(e){return e instanceof Date&&!isNaN(+e)}function Re(e,t,n){return this.lift(new SE(e,t,n,this))}function Pe(){return new jE.Subject}function Be(){return BE.multicast.call(this,Pe).refCount()}function je(){for(var e=[],t=0;t<arguments.length;t++)e[t-0]=arguments[t];return this.lift.call(Ie.apply(void 0,[this].concat(e)))}function Ie(){for(var e=[],t=0;t<arguments.length;t++)e[t-0]=arguments[t];var n=null,o=e;return NE.isScheduler(o[e.length-1])&&(n=o.pop()),null===n&&1===e.length?e[0]:new ME.ArrayObservable(e,n).lift(new LE.MergeAllOperator(1))}function xe(e){return this.lift(new YE(e))}function Te(e){return e?em.multicast.call(this,function(){return new QE.Subject},e):em.multicast.call(this,new QE.Subject)}function ke(e,t){return this.lift(new am(e,t))}function Ne(){if(bm.root.XMLHttpRequest){var e=new bm.root.XMLHttpRequest;return"withCredentials"in e&&(e.withCredentials=!!this.withCredentials),e}if(bm.root.XDomainRequest)return new bm.root.XDomainRequest;throw new Error("CORS is not supported by your browser")}function Me(){if(bm.root.XMLHttpRequest)return new bm.root.XMLHttpRequest;var e=void 0;try{for(var t=["Msxml2.XMLHTTP","Microsoft.XMLHTTP","Msxml2.XMLHTTP.4.0"],n=0;n<3;n++)try{if(e=t[n],new bm.root.ActiveXObject(e))break}catch(e){}return new bm.root.ActiveXObject(e)}catch(e){throw new Error("XMLHttpRequest is not supported by your browser")}}function Le(e,t){return void 0===t&&(t=null),new Fm({method:"GET",url:e,headers:t})}function We(e,t,n){return new Fm({method:"POST",url:e,body:t,headers:n})}function qe(e,t){return new Fm({method:"DELETE",url:e,headers:t})}function Ue(e,t,n){return new Fm({method:"PUT",url:e,body:t,headers:n})}function Ve(e,t){return new Fm({method:"GET",url:e,responseType:"json",headers:t}).lift(new wm.MapOperator(function(e,t){return e.response},null))}function ze(){for(var e=[],t=0;t<arguments.length;t++)e[t-0]=arguments[t];var n=null;return"function"==typeof e[e.length-1]&&(n=e.pop()),1===e.length&&cw.isArray(e[0])&&(e=e[0]),e.unshift(this),this.lift.call(new sw.ArrayObservable(e),new dw(n))}function He(){for(var e=[],t=0;t<arguments.length;t++)e[t-0]=arguments[t];var n=null,o=null;return vw.isScheduler(e[e.length-1])&&(o=e.pop()),"function"==typeof e[e.length-1]&&(n=e.pop()),1===e.length&&Aw.isArray(e[0])&&(e=e[0]),new Ew.ArrayObservable(e,o).lift(new mw.CombineLatestOperator(n))}function Ge(e){return Dw(e)===!0&&"[object Object]"===Object.prototype.toString.call(e)}function $e(e,t,n){var o=n.get;n.get=function(){if("undefined"!=typeof o&&"undefined"==typeof tC[t]){var e=o.apply(this,arguments);tC[t]=e}return tC[t]},n.set=function(e){}}function Ye(){if("undefined"!=typeof angular){var e=new nC;angular.element(document).ready(function(){e.core.init(),e.cordova.bootstrap()}),angular.module("ionic.cloud",[]).provider("$ionicCloudConfig",function(){var t=e.config;this.register=function(e){t.register(e)},this.$get=function(){return t}}).provider("$ionicCloud",["$ionicCloudConfigProvider",function(t){this.init=function(e){t.register(e)},this.$get=[function(){return e.core}]}]).factory("$ionicCloudClient",[function(){return e.client}]).factory("$ionicUser",[function(){return e.singleUserService.current()}]).factory("$ionicAuth",[function(){return e.auth}]).factory("$ionicFacebookAuth",[function(){return e.facebookAuth}]).factory("$ionicGoogleAuth",[function(){return e.googleAuth}]).factory("$ionicPush",[function(){return e.push}]).factory("$ionicDeploy",[function(){return e.deploy}]).factory("$ionicDB",["$timeout",function(t){return e.database._digest=function(){return t(function(){},0)},e.database}]).run(["$window","$q","$rootScope",function(e,t,n){if("undefined"==typeof e.Promise)e.Promise=t;else{var o=Ci.prototype.init;Ci.prototype.init=function(){o.apply(this,arguments),this.promise=t.when(this.promise)}}var r=Tw.prototype.emit;Tw.prototype.emit=function(e,t){return n.$broadcast("cloud:"+e,t),r.apply(this,arguments)}}])}}var Xe,Je,Ke="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof self?self:{},Ze=o(function(e,t){var n={boolean:!1,function:!0,object:!0,number:!1,string:!1,undefined:!1};t.root=n[typeof self]&&self||n[typeof window]&&window;var o=n[typeof Ke]&&Ke;!o||o.global!==o&&o.window!==o||(t.root=o)}),Qe=r,et={isFunction:Qe},tt=Array.isArray||function(e){return e&&"number"==typeof e.length},nt={isArray:tt},ot=u,rt={isObject:ot},ut={e:{}},it={errorObject:ut},st=it,ct=s,at={tryCatch:ct},lt=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},pt=function(e){function t(t){e.call(this),this.errors=t;var n=Error.call(this,t?t.length+" errors occurred during unsubscription:\n  "+t.map(function(e,t){return t+1+") "+e.toString()}).join("\n  "):"");this.name=n.name="UnsubscriptionError",this.stack=n.stack,this.message=n.message}return lt(t,e),t}(Error),ft=pt,dt={UnsubscriptionError:ft},ht=nt,gt=rt,yt=et,bt=at,vt=it,At=dt,Et=function(){function e(e){this.closed=!1,e&&(this._unsubscribe=e)}return e.prototype.unsubscribe=function(){var e,t=!1;if(!this.closed){this.closed=!0;var n=this,o=n._unsubscribe,r=n._subscriptions;if(this._subscriptions=null,yt.isFunction(o)){var u=bt.tryCatch(o).call(this);u===vt.errorObject&&(t=!0,(e=e||[]).push(vt.errorObject.e))}if(ht.isArray(r))for(var i=-1,s=r.length;++i<s;){var c=r[i];if(gt.isObject(c)){var u=bt.tryCatch(c.unsubscribe).call(c);if(u===vt.errorObject){t=!0,e=e||[];var a=vt.errorObject.e;a instanceof At.UnsubscriptionError?e=e.concat(a.errors):e.push(a)}}}if(t)throw new At.UnsubscriptionError(e)}},e.prototype.add=function(t){if(!t||t===e.EMPTY)return e.EMPTY;if(t===this)return this;var n=t;switch(typeof t){case"function":n=new e(t);case"object":if(n.closed||"function"!=typeof n.unsubscribe)break;this.closed?n.unsubscribe():(this._subscriptions||(this._subscriptions=[])).push(n);break;default:throw new Error("unrecognized teardown "+t+" added to Subscription.")}return n},e.prototype.remove=function(t){if(null!=t&&t!==this&&t!==e.EMPTY){var n=this._subscriptions;if(n){var o=n.indexOf(t);o!==-1&&n.splice(o,1)}}},e.EMPTY=function(e){return e.closed=!0,e}(new e),e}(),mt=Et,wt={Subscription:mt},Ct={closed:!0,next:function(e){},error:function(e){throw e},complete:function(){}},Ot={empty:Ct},_t=Ze,St=_t.root.Symbol,Dt="function"==typeof St&&"function"==typeof St.for?St.for("rxSubscriber"):"@@rxSubscriber",Ft={$$rxSubscriber:Dt},Rt=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Pt=et,Bt=wt,jt=Ot,It=Ft,xt=function(e){function t(n,o,r){switch(e.call(this),this.syncErrorValue=null,this.syncErrorThrown=!1,this.syncErrorThrowable=!1,this.isStopped=!1,arguments.length){case 0:this.destination=jt.empty;break;case 1:if(!n){this.destination=jt.empty;break}if("object"==typeof n){n instanceof t?(this.destination=n,this.destination.add(this)):(this.syncErrorThrowable=!0,this.destination=new kt(this,n));break}default:this.syncErrorThrowable=!0,this.destination=new kt(this,n,o,r)}}return Rt(t,e),t.prototype[It.$$rxSubscriber]=function(){return this},t.create=function(e,n,o){var r=new t(e,n,o);return r.syncErrorThrowable=!1,r},t.prototype.next=function(e){this.isStopped||this._next(e)},t.prototype.error=function(e){this.isStopped||(this.isStopped=!0,this._error(e))},t.prototype.complete=function(){this.isStopped||(this.isStopped=!0,this._complete())},t.prototype.unsubscribe=function(){this.closed||(this.isStopped=!0,e.prototype.unsubscribe.call(this))},t.prototype._next=function(e){this.destination.next(e)},t.prototype._error=function(e){this.destination.error(e),this.unsubscribe()},t.prototype._complete=function(){this.destination.complete(),this.unsubscribe()},t}(Bt.Subscription),Tt=xt,kt=function(e){function t(t,n,o,r){e.call(this),this._parent=t;var u,i=this;Pt.isFunction(n)?u=n:n&&(i=n,u=n.next,o=n.error,r=n.complete,Pt.isFunction(i.unsubscribe)&&this.add(i.unsubscribe.bind(i)),i.unsubscribe=this.unsubscribe.bind(this)),this._context=i,this._next=u,this._error=o,this._complete=r}return Rt(t,e),t.prototype.next=function(e){if(!this.isStopped&&this._next){var t=this._parent;t.syncErrorThrowable?this.__tryOrSetError(t,this._next,e)&&this.unsubscribe():this.__tryOrUnsub(this._next,e)}},t.prototype.error=function(e){if(!this.isStopped){var t=this._parent;if(this._error)t.syncErrorThrowable?(this.__tryOrSetError(t,this._error,e),this.unsubscribe()):(this.__tryOrUnsub(this._error,e),this.unsubscribe());else{if(!t.syncErrorThrowable)throw this.unsubscribe(),e;t.syncErrorValue=e,t.syncErrorThrown=!0,this.unsubscribe()}}},t.prototype.complete=function(){if(!this.isStopped){var e=this._parent;this._complete?e.syncErrorThrowable?(this.__tryOrSetError(e,this._complete),this.unsubscribe()):(this.__tryOrUnsub(this._complete),this.unsubscribe()):this.unsubscribe()}},t.prototype.__tryOrUnsub=function(e,t){try{e.call(this._context,t)}catch(e){throw this.unsubscribe(),e}},t.prototype.__tryOrSetError=function(e,t,n){try{t.call(this._context,n)}catch(t){return e.syncErrorValue=t,e.syncErrorThrown=!0,!0}return!1},t.prototype._unsubscribe=function(){var e=this._parent;this._context=null,this._parent=null,e.unsubscribe()},t}(xt),Nt={Subscriber:Tt},Mt=Nt,Lt=Ft,Wt=c,qt={toSubscriber:Wt},Ut=Ze,Vt=a,zt=a(Ut.root),Ht={getSymbolObservable:Vt,$$observable:zt},Gt=Ze,$t=qt,Yt=Ht,Xt=function(){function e(e){this._isScalar=!1,e&&(this._subscribe=e)}return e.prototype.lift=function(t){var n=new e;return n.source=this,n.operator=t,n},e.prototype.subscribe=function(e,t,n){var o=this.operator,r=$t.toSubscriber(e,t,n);if(o?o.call(r,this):r.add(this._subscribe(r)),r.syncErrorThrowable&&(r.syncErrorThrowable=!1,r.syncErrorThrown))throw r.syncErrorValue;return r},e.prototype.forEach=function(e,t){var n=this;if(t||(Gt.root.Rx&&Gt.root.Rx.config&&Gt.root.Rx.config.Promise?t=Gt.root.Rx.config.Promise:Gt.root.Promise&&(t=Gt.root.Promise)),!t)throw new Error("no Promise impl found");return new t(function(t,o){var r=n.subscribe(function(t){if(r)try{e(t)}catch(e){o(e),r.unsubscribe()}else e(t)},o,t)})},e.prototype._subscribe=function(e){return this.source.subscribe(e)},e.prototype[Yt.$$observable]=function(){return this},e.create=function(t){return new e(t)},e}(),Jt=Xt,Kt=function(e){return n(window,e)},Zt=function(e,t){var n=e.pluginName,o=e.plugin;t?console.warn("Native: tried calling "+n+"."+t+", but the "+n+" plugin is not installed."):console.warn("Native: tried accessing the "+n+" plugin but it's not installed."),console.warn("Install the "+n+" plugin: 'ionic plugin add "+o+"'")},Qt=function(e,t){t?console.warn("Native: tried calling "+e+"."+t+", but Cordova is not available. Make sure to include cordova.js or run in a device/simulator"):console.warn("Native: tried accessing the "+e+" plugin but Cordova is not available. Make sure to include cordova.js or run in a device/simulator")},en=function(e,t,n){return void 0===n&&(n={}),function(){for(var o=[],r=0;r<arguments.length;r++)o[r-0]=arguments[r];return n.sync?p(e,t,o,n):n.observable?g(e,t,o,n):n.eventObservable&&n.event?v(n.event):n.otherPromise?h(e,t,o,n):d(e,t,o,n)}},tn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},nn=function(){function e(){}return e.show=function(e){},e.hide=function(e){},tn([m()],e,"show",null),tn([m()],e,"hide",null),e=tn([E({pluginName:"ActionSheet",plugin:"cordova-plugin-actionsheet",pluginRef:"plugins.actionsheet",repo:"https://github.com/EddyVerbruggen/cordova-plugin-actionsheet",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),on=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},rn=function(){function e(){}return e.createBanner=function(e){},e.removeBanner=function(){},e.showBanner=function(e){},e.showBannerAtXY=function(e,t){},e.hideBanner=function(){},e.prepareInterstitial=function(e){},e.showInterstitial=function(){},e.prepareRewardVideoAd=function(e){},e.showRewardVideoAd=function(){},e.setOptions=function(e){},e.getAdSettings=function(){},e.onAdFailLoad=function(){},e.onAdLoaded=function(){},e.onAdPresent=function(){},e.onAdLeaveApp=function(){},e.onAdDismiss=function(){},e.AD_POSITION={NO_CHANGE:0,TOP_LEFT:1,TOP_CENTER:2,TOP_RIGHT:3,LEFT:4,CENTER:5,RIGHT:6,BOTTOM_LEFT:7,BOTTOM_CENTER:8,BOTTOM_RIGHT:9,POS_XY:10},on([m()],e,"createBanner",null),on([m({sync:!0})],e,"removeBanner",null),on([m({sync:!0})],e,"showBanner",null),on([m({sync:!0})],e,"showBannerAtXY",null),on([m({sync:!0})],e,"hideBanner",null),on([m()],e,"prepareInterstitial",null),on([m({sync:!0})],e,"showInterstitial",null),on([m()],e,"prepareRewardVideoAd",null),on([m({sync:!0})],e,"showRewardVideoAd",null),on([m()],e,"setOptions",null),on([m()],e,"getAdSettings",null),on([m({eventObservable:!0,event:"onAdFailLoad"})],e,"onAdFailLoad",null),on([m({eventObservable:!0,event:"onAdLoaded"})],e,"onAdLoaded",null),on([m({eventObservable:!0,event:"onAdPresent"})],e,"onAdPresent",null),on([m({eventObservable:!0,event:"onAdLeaveApp"})],e,"onAdLeaveApp",null),on([m({eventObservable:!0,event:"onAdDismiss"})],e,"onAdDismiss",null),e=on([E({pluginName:"AdMob",plugin:"cordova-plugin-admobpro",pluginRef:"AdMob",repo:"https://github.com/floatinghotpot/cordova-admob-pro",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),un=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},sn=function(){function e(){}return e.encrypt=function(e){},e.decrypt=function(e){},e.isAvailable=function(){},e.delete=function(e){},un([m()],e,"encrypt",null),un([m()],e,"decrypt",null),un([m()],e,"isAvailable",null),un([m()],e,"delete",null),e=un([E({pluginName:"AndroidFingerprintAuth",plugin:"cordova-plugin-android-fingerprint-auth",pluginRef:"FingerprintAuth",repo:"https://github.com/mjwheatley/cordova-plugin-android-fingerprint-auth"})],e)}(),cn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},an=function(){function e(){}return e.check=function(e){},cn([m()],e,"check",null),e=cn([E({pluginName:"AppAvailability",plugin:"cordova-plugin-appavailability",pluginRef:"appAvailability",repo:"https://github.com/ohh2ahh/AppAvailability",platforms:["Android","iOS"]})],e)}(),ln=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},pn=function(){function e(){}return e.promptForRating=function(e){},ln([C],e,"preferences",void 0),ln([m()],e,"promptForRating",null),e=ln([E({pluginName:"AppRate",plugin:"cordova-plugin-apprate",pluginRef:"AppRate",repo:"https://github.com/pushandplay/cordova-plugin-apprate",platforms:["Android","iOS"]})],e)}(),fn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},dn=function(){function e(){}return e.getAppName=function(){},e.getPackageName=function(){},e.getVersionCode=function(){},e.getVersionNumber=function(){},fn([m()],e,"getAppName",null),fn([m()],e,"getPackageName",null),fn([m()],e,"getVersionCode",null),fn([m()],e,"getVersionNumber",null),e=fn([E({pluginName:"AppVersion",plugin:"cordova-plugin-app-version",pluginRef:"cordova.getAppVersion",repo:"https://github.com/whiteoctober/cordova-plugin-app-version",platforms:["Android","iOS"]})],e)}(),hn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},gn=function(){function e(){}return e.clear=function(){},e.set=function(e){},e.get=function(){},e.increase=function(e){},e.decrease=function(e){},e.hasPermission=function(){},e.registerPermission=function(){},hn([m()],e,"clear",null),hn([m()],e,"set",null),hn([m()],e,"get",null),hn([m()],e,"increase",null),hn([m()],e,"decrease",null),hn([m()],e,"hasPermission",null),hn([m()],e,"registerPermission",null),e=hn([E({pluginName:"Badge",plugin:"cordova-plugin-badge",pluginRef:"cordova.plugins.notification.badge",repo:"https://github.com/katzer/cordova-plugin-badge",platforms:["Android","iOS","Browser","Windows","Amazon FireOS","Windows Phone 8"]})],e)}(),yn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},bn=function(){function e(){}return e.configure=function(e,t,n){},e.start=function(){},e.stop=function(){},e.finish=function(){},e.changePace=function(e){},e.setConfig=function(e){},e.getStationaryLocation=function(){},e.onStationary=function(){},e.isLocationEnabled=function(){},e.showAppSettings=function(){},e.showLocationSettings=function(){},e.watchLocationMode=function(){},e.stopWatchingLocationMode=function(){},e.getLocations=function(){},e.getValidLocations=function(){},e.deleteLocation=function(e){},e.deleteAllLocations=function(){},e.switchMode=function(e){},e.getLogEntries=function(e){},e.LocationProvider={ANDROID_DISTANCE_FILTER_PROVIDER:0,ANDROID_ACTIVITY_PROVIDER:1},e.Accuracy={HIGH:0,MEDIUM:10,LOW:100,PASSIVE:1e3},e.Mode={BACKGROUND:0,FOREGROUND:1},yn([m({sync:!0})],e,"configure",null),yn([m()],e,"start",null),yn([m()],e,"stop",null),yn([m()],e,"finish",null),yn([m()],e,"changePace",null),
-yn([m({callbackOrder:"reverse"})],e,"setConfig",null),yn([m()],e,"getStationaryLocation",null),yn([m()],e,"onStationary",null),yn([m()],e,"isLocationEnabled",null),yn([m({sync:!0})],e,"showAppSettings",null),yn([m({sync:!0})],e,"showLocationSettings",null),yn([m()],e,"watchLocationMode",null),yn([m()],e,"stopWatchingLocationMode",null),yn([m()],e,"getLocations",null),yn([m()],e,"getValidLocations",null),yn([m()],e,"deleteLocation",null),yn([m()],e,"deleteAllLocations",null),yn([m()],e,"switchMode",null),yn([m()],e,"getLogEntries",null),e=yn([E({pluginName:"BackgroundGeolocation",plugin:"cordova-plugin-mauron85-background-geolocation",pluginRef:"backgroundGeolocation",repo:"https://github.com/mauron85/cordova-plugin-background-geolocation",platforms:["iOS","Android","Windows Phone 8"]})],e)}(),vn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},An=function(){function e(){}return e.enable=function(){},e.disable=function(){},e.isEnabled=function(){},e.isActive=function(){},e.setDefaults=function(e){},e.configure=function(e){},e.onactivate=function(){},e.ondeactivate=function(){},e.onfailure=function(){},vn([m({sync:!0})],e,"enable",null),vn([m()],e,"disable",null),vn([m({sync:!0})],e,"isEnabled",null),vn([m({sync:!0})],e,"isActive",null),vn([m({platforms:["Android"]})],e,"setDefaults",null),vn([m({platforms:["Android"]})],e,"configure",null),vn([_()],e,"onactivate",null),vn([_()],e,"ondeactivate",null),vn([_()],e,"onfailure",null),e=vn([E({pluginName:"BackgroundMode",plugin:"cordova-plugin-background-mode",pluginRef:"cordova.plugins.backgroundMode",repo:"https://github.com/katzer/cordova-plugin-background-mode",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),En=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},mn=function(){function e(){}return e.scan=function(e){},e.encode=function(e,t){},e.Encode={TEXT_TYPE:"TEXT_TYPE",EMAIL_TYPE:"EMAIL_TYPE",PHONE_TYPE:"PHONE_TYPE",SMS_TYPE:"SMS_TYPE"},En([m({callbackOrder:"reverse"})],e,"scan",null),En([m()],e,"encode",null),e=En([E({pluginName:"BarcodeScanner",plugin:"phonegap-plugin-barcodescanner",pluginRef:"cordova.plugins.barcodeScanner",repo:"https://github.com/phonegap/phonegap-plugin-barcodescanner",platforms:["Android","iOS","Windows Phone 8","Windows 10","Windows 8","BlackBerry 10","Browser"]})],e)}(),wn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Cn=function(){function e(){}return e.base64ToGallery=function(e,t){},wn([m({successIndex:2,errorIndex:3})],e,"base64ToGallery",null),e=wn([E({pluginName:"Base64ToGallery",plugin:"cordova-base64-to-gallery",pluginRef:"cordova",repo:"https://github.com/Nexxa/cordova-base64-to-gallery",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),On=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},_n=function(){function e(){}return e.onChange=function(){},e.onLow=function(){},e.onCritical=function(){},On([m({eventObservable:!0,event:"batterystatus"})],e,"onChange",null),On([m({eventObservable:!0,event:"batterylow"})],e,"onLow",null),On([m({eventObservable:!0,event:"batterycritical"})],e,"onCritical",null),e=On([E({pluginName:"BatteryStatus",plugin:"cordova-plugin-battery-status",repo:"https://github.com/apache/cordova-plugin-battery-status",platforms:["Amazon Fire OS","iOS","Android","BlackBerry 10","Windows Phone 7","Windows Phone 8","Windows","Firefox OS","Browser"]})],e)}(),Sn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Dn=function(){function e(){}return e.setBrightness=function(e){},e.getBrightness=function(){},e.setKeepScreenOn=function(e){},Sn([m()],e,"setBrightness",null),Sn([m()],e,"getBrightness",null),Sn([m()],e,"setKeepScreenOn",null),e=Sn([E({pluginName:"Brightness",plugin:"cordova-plugin-brightness",pluginRef:"cordova.plugins.brightness",repo:"https://github.com/mgcrea/cordova-plugin-brightness",platforms:["Android","iOS"]})],e)}(),Fn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Rn=function(){function e(){}return e.scan=function(e,t){},e.startScan=function(e){},e.startScanWithOptions=function(e,t){},e.stopScan=function(){},e.connect=function(e){},e.disconnect=function(e){},e.read=function(e,t,n){},e.write=function(e,t,n,o){},e.writeWithoutResponse=function(e,t,n,o){},e.startNotification=function(e,t,n){},e.stopNotification=function(e,t,n){},e.isConnected=function(e){},e.isEnabled=function(){},e.showBluetoothSettings=function(){},e.enable=function(){},Fn([m({observable:!0})],e,"scan",null),Fn([m({observable:!0,clearFunction:"stopScan",clearWithArgs:!1})],e,"startScan",null),Fn([m({observable:!0,clearFunction:"stopScan",clearWithArgs:!1})],e,"startScanWithOptions",null),Fn([m()],e,"stopScan",null),Fn([m({observable:!0,clearFunction:"disconnect",clearWithArgs:!0})],e,"connect",null),Fn([m()],e,"disconnect",null),Fn([m()],e,"read",null),Fn([m()],e,"write",null),Fn([m()],e,"writeWithoutResponse",null),Fn([m({observable:!0,clearFunction:"stopNotification",clearWithArgs:!0})],e,"startNotification",null),Fn([m()],e,"stopNotification",null),Fn([m()],e,"isConnected",null),Fn([m()],e,"isEnabled",null),Fn([m()],e,"showBluetoothSettings",null),Fn([m()],e,"enable",null),e=Fn([E({pluginName:"BLE",plugin:"cordova-plugin-ble-central",pluginRef:"ble",repo:"https://github.com/don/cordova-plugin-ble-central",platforms:["iOS","Android"]})],e)}(),Pn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Bn=function(){function e(){}return e.connect=function(e){},e.connectInsecure=function(e){},e.write=function(e){},e.available=function(){},e.read=function(){},e.readUntil=function(e){},e.subscribe=function(e){},e.subscribeRawData=function(){},e.clear=function(){},e.list=function(){},e.isEnabled=function(){},e.isConnected=function(){},e.readRSSI=function(){},e.showBluetoothSettings=function(){},e.enable=function(){},e.discoverUnpaired=function(){},e.setDeviceDiscoveredListener=function(){},e.setName=function(e){},e.setDiscoverable=function(e){},Pn([m({platforms:["Android","iOS","Windows Phone"],observable:!0,clearFunction:"disconnect"})],e,"connect",null),Pn([m({platforms:["Android"],observable:!0,clearFunction:"disconnect"})],e,"connectInsecure",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"write",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"available",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"read",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"readUntil",null),Pn([m({platforms:["Android","iOS","Windows Phone"],observable:!0,clearFunction:"unsubscribe"})],e,"subscribe",null),Pn([m({platforms:["Android","iOS","Windows Phone"],observable:!0,clearFunction:"unsubscribeRawData"})],e,"subscribeRawData",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"clear",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"list",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"isEnabled",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"isConnected",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"readRSSI",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"showBluetoothSettings",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"enable",null),Pn([m({platforms:["Android","iOS","Windows Phone"]})],e,"discoverUnpaired",null),Pn([m({platforms:["Android","iOS","Windows Phone"],observable:!0,clearFunction:"clearDeviceDiscoveredListener"})],e,"setDeviceDiscoveredListener",null),Pn([m({platforms:["Android"],sync:!0})],e,"setName",null),Pn([m({platforms:["Android"],sync:!0})],e,"setDiscoverable",null),e=Pn([E({pluginName:"BluetoothSerial",repo:"https://github.com/don/BluetoothSerial",plugin:"cordova-plugin-bluetooth-serial",pluginRef:"bluetoothSerial",platforms:["Android","iOS","Windows Phone","Browser"]})],e)}(),jn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},In=function(){function e(){}return e.hasReadWritePermission=function(){},e.hasReadPermission=function(){},e.hasWritePermission=function(){},e.requestWritePermission=function(){},e.requestReadPermission=function(){},e.requestReadWritePermission=function(){},e.createCalendar=function(e){},e.deleteCalendar=function(e){},e.getCalendarOptions=function(){},e.createEvent=function(e,t,n,o,r){},e.createEventWithOptions=function(e,t,n,o,r,u){},e.createEventInteractively=function(e,t,n,o,r){},e.createEventInteractivelyWithOptions=function(e,t,n,o,r,u){},e.findEvent=function(e,t,n,o,r){},e.findEventWithOptions=function(e,t,n,o,r,u){},e.listEventsInRange=function(e,t){},e.listCalendars=function(){},e.findAllEventsInNamedCalendar=function(e){},e.modifyEvent=function(e,t,n,o,r,u,i,s,c,a){},e.modifyEventWithOptions=function(e,t,n,o,r,u,i,s,c,a,l,p){},e.deleteEvent=function(e,t,n,o,r){},e.deleteEventFromNamedCalendar=function(e,t,n,o,r,u){},e.openCalendar=function(e){},jn([m()],e,"hasReadWritePermission",null),jn([m()],e,"hasReadPermission",null),jn([m()],e,"hasWritePermission",null),jn([m()],e,"requestWritePermission",null),jn([m()],e,"requestReadPermission",null),jn([m()],e,"requestReadWritePermission",null),jn([m()],e,"createCalendar",null),jn([m()],e,"deleteCalendar",null),jn([m({sync:!0})],e,"getCalendarOptions",null),jn([m()],e,"createEvent",null),jn([m()],e,"createEventWithOptions",null),jn([m()],e,"createEventInteractively",null),jn([m()],e,"createEventInteractivelyWithOptions",null),jn([m()],e,"findEvent",null),jn([m()],e,"findEventWithOptions",null),jn([m({platforms:["Android"]})],e,"listEventsInRange",null),jn([m()],e,"listCalendars",null),jn([m({platforms:["iOS"]})],e,"findAllEventsInNamedCalendar",null),jn([m({platforms:["iOS"]})],e,"modifyEvent",null),jn([m({platforms:["iOS"]})],e,"modifyEventWithOptions",null),jn([m()],e,"deleteEvent",null),jn([m({platforms:["iOS"]})],e,"deleteEventFromNamedCalendar",null),jn([m()],e,"openCalendar",null),e=jn([E({pluginName:"Calendar",plugin:"cordova-plugin-calendar",pluginRef:"plugins.calendar",repo:"https://github.com/EddyVerbruggen/Calendar-PhoneGap-Plugin",platforms:["Android","iOS"]})],e)}(),xn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Tn=function(){function e(){}return e.callNumber=function(e,t){},xn([m({callbackOrder:"reverse"})],e,"callNumber",null),e=xn([E({pluginName:"CallNumber",plugin:"call-number",pluginRef:"plugins.CallNumber",repo:"https://github.com/Rohfosho/CordovaCallNumberPlugin",platforms:["iOS","Android"]})],e)}(),kn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Nn=function(){function e(){}return e.getPicture=function(e){},e.cleanup=function(){},e.DestinationType={DATA_URL:0,FILE_URI:1,NATIVE_URI:2},e.EncodingType={JPEG:0,PNG:1},e.MediaType={PICTURE:0,VIDEO:1,ALLMEDIA:2},e.PictureSourceType={PHOTOLIBRARY:0,CAMERA:1,SAVEDPHOTOALBUM:2},e.PopoverArrowDirection={ARROW_UP:1,ARROW_DOWN:2,ARROW_LEFT:4,ARROW_RIGHT:8,ARROW_ANY:15},e.Direction={BACK:0,FRONT:1},kn([m({callbackOrder:"reverse"})],e,"getPicture",null),kn([m({platforms:["iOS"]})],e,"cleanup",null),e=kn([E({pluginName:"Camera",plugin:"cordova-plugin-camera",pluginRef:"navigator.camera",repo:"https://github.com/apache/cordova-plugin-camera",platforms:["Android","BlackBerry","Browser","Firefox","FireOS","iOS","Windows","Windows Phone 8","Ubuntu"]})],e)}(),Mn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Ln=function(){function e(){}return e.startCamera=function(e,t,n,o,r,u){},e.stopCamera=function(){},e.takePicture=function(e){},e.setOnPictureTakenHandler=function(){},e.switchCamera=function(){},e.show=function(){},e.hide=function(){},e.disable=function(){},e.setColorEffect=function(e){},Mn([m({sync:!0})],e,"startCamera",null),Mn([m({sync:!0})],e,"stopCamera",null),Mn([m({sync:!0})],e,"takePicture",null),Mn([m({observable:!0})],e,"setOnPictureTakenHandler",null),Mn([m({sync:!0})],e,"switchCamera",null),Mn([m({sync:!0})],e,"show",null),Mn([m({sync:!0})],e,"hide",null),Mn([m({sync:!0})],e,"disable",null),Mn([m({sync:!0})],e,"setColorEffect",null),e=Mn([E({pluginName:"CameraPreview",plugin:"cordova-plugin-camera-preview",pluginRef:"cordova.plugins.camerapreview",repo:"https://github.com/cordova-plugin-camera-preview/cordova-plugin-camera-preview",platforms:["Android","iOS"]})],e)}(),Wn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},qn=function(){function e(){}return e.canScan=function(){},e.scan=function(e){},e.version=function(){},Wn([m()],e,"canScan",null),Wn([m()],e,"scan",null),Wn([m()],e,"version",null),e=Wn([E({pluginName:"CardIO",plugin:"card.io.cordova.mobilesdk",pluginRef:"CardIO",repo:"https://github.com/card-io/card.io-Cordova-Plugin",platforms:["iOS","Android"]})],e)}(),Un=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Vn=function(){function e(){}return e.copy=function(e){},e.paste=function(){},Un([m()],e,"copy",null),Un([m()],e,"paste",null),e=Un([E({pluginName:"Clipboard",plugin:"https://github.com/VersoSolutions/CordovaClipboard.git",pluginRef:"cordova.plugins.clipboard",repo:"https://github.com/VersoSolutions/CordovaClipboard",platforms:["Amazon Fire OS","iOS","Android","BlackBerry 10","Windows Phone 7","Windows Phone 8","Windows","Firefox OS","Browser"]})],e)}(),zn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i};!function(e){e[e.UP_TO_DATE=0]="UP_TO_DATE",e[e.UPDATE_INSTALLED=1]="UPDATE_INSTALLED",e[e.UPDATE_IGNORED=2]="UPDATE_IGNORED",e[e.ERROR=3]="ERROR",e[e.IN_PROGRESS=4]="IN_PROGRESS",e[e.CHECKING_FOR_UPDATE=5]="CHECKING_FOR_UPDATE",e[e.AWAITING_USER_ACTION=6]="AWAITING_USER_ACTION",e[e.DOWNLOADING_PACKAGE=7]="DOWNLOADING_PACKAGE",e[e.INSTALLING_UPDATE=8]="INSTALLING_UPDATE"}(Je||(Je={}));var Hn;!function(e){e[e.IMMEDIATE=0]="IMMEDIATE",e[e.ON_NEXT_RESTART=1]="ON_NEXT_RESTART",e[e.ON_NEXT_RESUME=2]="ON_NEXT_RESUME"}(Hn||(Hn={}));var Gn,$n=function(){function e(){}return e.getCurrentPackage=function(){},e.getPendingPackage=function(){},e.checkForUpdate=function(e){},e.notifyApplicationReady=function(){},e.restartApplication=function(){},e.sync=function(e,t){},zn([m()],e,"getCurrentPackage",null),zn([m()],e,"getPendingPackage",null),zn([m({callbackOrder:"reverse"})],e,"checkForUpdate",null),zn([m()],e,"notifyApplicationReady",null),zn([m()],e,"restartApplication",null),zn([m({observable:!0,successIndex:0,errorIndex:3})],e,"sync",null),e=zn([E({pluginName:"CodePush",plugin:"cordova-plugin-code-push",pluginRef:"codePush",repo:"https://github.com/Microsoft/cordova-plugin-code-push",platforms:["Android","iOS"]})],e)}(),Yn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Xn=function(){function e(){this._objectInstance=navigator.contacts.create()}return e.prototype.clone=function(){var t=new e;for(var n in this){if("id"===n)return;t[n]=this[n]}return t},e.prototype.remove=function(){},e.prototype.save=function(){var e=this;return f(function(t,n){e._objectInstance.save(function(n){e._objectInstance=n,t(e)},n)})},Yn([O],e.prototype,"id",void 0),Yn([O],e.prototype,"displayName",void 0),Yn([O],e.prototype,"name",void 0),Yn([O],e.prototype,"nickname",void 0),Yn([O],e.prototype,"phoneNumbers",void 0),Yn([O],e.prototype,"emails",void 0),Yn([O],e.prototype,"addresses",void 0),Yn([O],e.prototype,"ims",void 0),Yn([O],e.prototype,"organizations",void 0),Yn([O],e.prototype,"birthday",void 0),Yn([O],e.prototype,"note",void 0),Yn([O],e.prototype,"photos",void 0),Yn([O],e.prototype,"categories",void 0),Yn([O],e.prototype,"urls",void 0),Yn([w()],e.prototype,"remove",null),e}(),Jn=function(){function e(){}return e.create=function(){return new Xn},e.find=function(e,t){return f(function(n,o){navigator.contacts.find(e,function(e){n(e.map(S))},o,t)})},e.pickContact=function(){return f(function(e,t){navigator.contacts.pickContact(function(t){return e(S(t))},t)})},e=Yn([E({pluginName:"Contacts",plugin:"cordova-plugin-contacts",pluginRef:"navigator.contacts",repo:"https://github.com/apache/cordova-plugin-contacts"})],e)}(),Kn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Zn=function(){function e(){}return e.crop=function(e,t){},Kn([m({callbackOrder:"reverse"})],e,"crop",null),e=Kn([E({pluginName:"Crop",plugin:"cordova-plugin-crop",pluginRef:"plugins",repo:"https://github.com/jeduan/cordova-plugin-crop"})],e)}(),Qn=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},eo=function(){function e(){}return e.show=function(e){},e.ANDROID_THEMES={THEME_TRADITIONAL:1,THEME_HOLO_DARK:2,THEME_HOLO_LIGHT:3,THEME_DEVICE_DEFAULT_DARK:4,THEME_DEVICE_DEFAULT_LIGHT:5},Qn([m()],e,"show",null),e=Qn([E({pluginName:"DatePicker",plugin:"cordova-plugin-datepicker",pluginRef:"datePicker",repo:"https://github.com/VitaliiBlagodir/cordova-plugin-datepicker",platforms:["Android","iOS","Windows"]})],e)}(),to=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},no=function(){function e(){}return e.start=function(){},e.stop=function(){},e.isListening=function(){},e.delete=function(){},to([m({observable:!0,clearFunction:"stop"})],e,"start",null),to([m()],e,"stop",null),to([m()],e,"isListening",null),to([m()],e,"delete",null),e=to([E({pluginName:"DBMeter",plugin:"cordova-plugin-dbmeter",pluginRef:"DBMeter",repo:"https://github.com/akofman/cordova-plugin-dbmeter",platforms:["iOS","Android"]})],e)}(),oo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},ro=function(){function e(){}return e.route=function(e){},e.routeWithNavController=function(e,t){},oo([m({observable:!0})],e,"route",null),oo([m({observable:!0})],e,"routeWithNavController",null),e=oo([E({pluginName:"Deeplinks",plugin:"ionic-plugin-deeplinks",pluginRef:"IonicDeeplink",repo:"https://github.com/driftyco/ionic-plugin-deeplinks",platforms:["iOS","Android"],install:"ionic plugin add ionic-plugin-deeplinks --variable URL_SCHEME=myapp --variable DEEPLINK_SCHEME=https --variable DEEPLINK_HOST=example.com --variable ANDROID_PATH_PREFIX=/"})],e)}(),uo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},io=function(){function e(){}return uo([C],e,"cordova",void 0),uo([C],e,"model",void 0),uo([C],e,"platform",void 0),uo([C],e,"uuid",void 0),uo([C],e,"version",void 0),uo([C],e,"manufacturer",void 0),uo([C],e,"isVirtual",void 0),uo([C],e,"serial",void 0),e=uo([E({pluginName:"Device",plugin:"cordova-plugin-device",pluginRef:"device",repo:"https://github.com/apache/cordova-plugin-device"})],e)}(),so=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},co=function(){function e(){}return e.acoustic=function(){},e.haptic=function(e){},e.isFeedbackEnabled=function(){},so([m({sync:!0})],e,"acoustic",null),so([m({sync:!0})],e,"haptic",null),so([m()],e,"isFeedbackEnabled",null),e=so([E({pluginName:"DeviceFeedback",plugin:"cordova-plugin-velda-devicefeedback",pluginRef:"plugins.deviceFeedback",repo:"https://github.com/VVelda/device-feedback",platforms:["Android"]})],e)}(),ao=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},lo=function(){function e(){}return e.get=function(){},e.getByType=function(e){},e.getEmails=function(){},e.getEmail=function(){},ao([m()],e,"get",null),ao([m()],e,"getByType",null),ao([m()],e,"getEmails",null),ao([m()],e,"getEmail",null),e=ao([E({pluginName:"DeviceAccounts",plugin:"https://github.com/loicknuchel/cordova-device-accounts.git",pluginRef:"plugins.DeviceAccounts",repo:"https://github.com/loicknuchel/cordova-device-accounts",platforms:["Android"]})],e)}(),po=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},fo=function(){function e(){}return e.getCurrentAcceleration=function(){},e.watchAcceleration=function(e){},po([m()],e,"getCurrentAcceleration",null),po([m({callbackOrder:"reverse",observable:!0,clearFunction:"clearWatch"})],e,"watchAcceleration",null),e=po([E({pluginName:"DeviceMotion",plugin:"cordova-plugin-device-motion",pluginRef:"navigator.accelerometer",repo:"https://github.com/apache/cordova-plugin-device-motion"})],e)}(),ho=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},go=function(){function e(){}return e.getCurrentHeading=function(){},e.watchHeading=function(e){},ho([m()],e,"getCurrentHeading",null),ho([m({callbackOrder:"reverse",observable:!0,clearFunction:"clearWatch"})],e,"watchHeading",null),e=ho([E({pluginName:"DeviceOrientation",plugin:"cordova-plugin-device-orientation",pluginRef:"navigator.compass",repo:"https://github.com/apache/cordova-plugin-device-orientation"})],e)}(),yo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},bo=function(){function e(){}return e.isLocationAvailable=function(){},e.isWifiAvailable=function(){},e.isCameraAvailable=function(){},e.isBluetoothAvailable=function(){},e.switchToLocationSettings=function(){},e.switchToMobileDataSettings=function(){},e.switchToBluetoothSettings=function(){},e.switchToWifiSettings=function(){},e.isWifiEnabled=function(){},e.setWifiState=function(e){},e.setBluetoothState=function(e){},e.isLocationEnabled=function(){},e.isLocationAuthorized=function(){},e.getLocationAuthorizationStatus=function(){},e.requestLocationAuthorization=function(e){},e.isCameraPresent=function(){},e.isCameraAuthorized=function(){},e.getCameraAuthorizationStatus=function(){},e.requestCameraAuthorization=function(){},e.isMicrophoneAuthorized=function(){},e.getMicrophoneAuthorizationStatus=function(){},e.requestMicrophoneAuthorization=function(){},e.isContactsAuthorized=function(){},e.getContactsAuthorizationStatus=function(){},e.requestContactsAuthorization=function(){},e.isCalendarAuthorized=function(){},e.getCalendarAuthorizationStatus=function(){},e.requestCalendarAuthorization=function(){},e.switchToSettings=function(){},e.getBluetoothState=function(){},e.registerBluetoothStateChangeHandler=function(e){},e.registerLocationStateChangeHandler=function(e){},e.isGpsLocationAvailable=function(){},e.isGpsLocationEnabled=function(){},e.isNetworkLocationAvailable=function(){},e.isNetworkLocationEnabled=function(){},e.getLocationMode=function(){},e.getPermissionAuthorizationStatus=function(e){},e.getPermissionsAuthorizationStatus=function(e){},e.requestRuntimePermission=function(e){},e.requestRuntimePermissions=function(e){},e.isRequestingPermission=function(){},e.registerPermissionRequestCompleteHandler=function(e){},e.isBluetoothEnabled=function(){},e.hasBluetoothSupport=function(){},e.hasBluetoothLESupport=function(){},e.hasBluetoothLEPeripheralSupport=function(){},e.isCameraRollAuthorized=function(){},e.getCameraRollAuthorizationStatus=function(){},e.requestCameraRollAuthorization=function(){},e.isRemoteNotificationsEnabled=function(){},e.isRegisteredForRemoteNotifications=function(){},e.getRemoteNotificationTypes=function(){},e.isRemindersAuthorized=function(){},e.getRemindersAuthorizationStatus=function(){},e.requestRemindersAuthorization=function(){},e.isBackgroundRefreshAuthorized=function(){},e.getBackgroundRefreshStatus=function(){},e.permission={READ_CALENDAR:"READ_CALENDAR",WRITE_CALENDAR:"WRITE_CALENDAR",CAMERA:"CAMERA",READ_CONTACTS:"READ_CONTACTS",WRITE_CONTACTS:"WRITE_CONTACTS",GET_ACCOUNTS:"GET_ACCOUNTS",ACCESS_FINE_LOCATION:"ACCESS_FINE_LOCATION",ACCESS_COARSE_LOCATION:"ACCESS_COARSE_LOCATION",RECORD_AUDIO:"RECORD_AUDIO",READ_PHONE_STATE:"READ_PHONE_STATE",CALL_PHONE:"CALL_PHONE",ADD_VOICEMAIL:"ADD_VOICEMAIL",USE_SIP:"USE_SIP",PROCESS_OUTGOING_CALLS:"PROCESS_OUTGOING_CALLS",READ_CALL_LOG:"READ_CALL_LOG",WRITE_CALL_LOG:"WRITE_CALL_LOG",SEND_SMS:"SEND_SMS",RECEIVE_SMS:"RECEIVE_SMS",READ_SMS:"READ_SMS",RECEIVE_WAP_PUSH:"RECEIVE_WAP_PUSH",RECEIVE_MMS:"RECEIVE_MMS",WRITE_EXTERNAL_STORAGE:"WRITE_EXTERNAL_STORAGE",READ_EXTERNAL_STORAGE:"READ_EXTERNAL_STORAGE",BODY_SENSORS:"BODY_SENSORS"},e.locationAuthorizationMode={ALWAYS:"always",WHEN_IN_USE:"when_in_use"},e.permissionGroups={CALENDAR:["READ_CALENDAR","WRITE_CALENDAR"],CAMERA:["CAMERA"],CONTACTS:["READ_CONTACTS","WRITE_CONTACTS","GET_ACCOUNTS"],LOCATION:["ACCESS_FINE_LOCATION","ACCESS_COARSE_LOCATION"],MICROPHONE:["RECORD_AUDIO"],PHONE:["READ_PHONE_STATE","CALL_PHONE","ADD_VOICEMAIL","USE_SIP","PROCESS_OUTGOING_CALLS","READ_CALL_LOG","WRITE_CALL_LOG"],SENSORS:["BODY_SENSORS"],SMS:["SEND_SMS","RECEIVE_SMS","READ_SMS","RECEIVE_WAP_PUSH","RECEIVE_MMS"],STORAGE:["READ_EXTERNAL_STORAGE","WRITE_EXTERNAL_STORAGE"]},e.locationMode={HIGH_ACCURACY:"high_accuracy",DEVICE_ONLY:"device_only",BATTERY_SAVING:"battery_saving",LOCATION_OFF:"location_off"},e.bluetoothState={UNKNOWN:"unknown",RESETTING:"resetting",UNSUPPORTED:"unsupported",UNAUTHORIZED:"unauthorized",POWERED_OFF:"powered_off",POWERED_ON:"powered_on",POWERING_OFF:"powering_off",POWERING_ON:"powering_on"},yo([C],e,"permissionStatus",void 0),yo([m()],e,"isLocationAvailable",null),yo([m()],e,"isWifiAvailable",null),yo([m()],e,"isCameraAvailable",null),yo([m()],e,"isBluetoothAvailable",null),yo([m({sync:!0,platforms:["Android","Windows 10"]})],e,"switchToLocationSettings",null),yo([m({sync:!0,platforms:["Android","Windows 10"]})],e,"switchToMobileDataSettings",null),yo([m({sync:!0,platforms:["Android","Windows 10"]})],e,"switchToBluetoothSettings",null),yo([m({sync:!0,platforms:["Android","Windows 10"]})],e,"switchToWifiSettings",null),yo([m({platforms:["Android","Windows 10"]})],e,"isWifiEnabled",null),yo([m({callbackOrder:"reverse",platforms:["Android","Windows 10"]})],e,"setWifiState",null),yo([m({callbackOrder:"reverse",platforms:["Android","Windows 10"]})],e,"setBluetoothState",null),yo([m({platforms:["Android","iOS"]})],e,"isLocationEnabled",null),yo([m()],e,"isLocationAuthorized",null),yo([m({platforms:["Android","iOS"]})],e,"getLocationAuthorizationStatus",null),yo([m({platforms:["Android","iOS"],callbackOrder:"reverse"})],e,"requestLocationAuthorization",null),yo([m({platforms:["Android","iOS"]
-})],e,"isCameraPresent",null),yo([m({platforms:["Android","iOS"]})],e,"isCameraAuthorized",null),yo([m({platforms:["Android","iOS"]})],e,"getCameraAuthorizationStatus",null),yo([m({platforms:["Android","iOS"]})],e,"requestCameraAuthorization",null),yo([m({platforms:["Android","iOS"]})],e,"isMicrophoneAuthorized",null),yo([m({platforms:["Android","iOS"]})],e,"getMicrophoneAuthorizationStatus",null),yo([m({platforms:["Android","iOS"]})],e,"requestMicrophoneAuthorization",null),yo([m({platforms:["Android","iOS"]})],e,"isContactsAuthorized",null),yo([m({platforms:["Android","iOS"]})],e,"getContactsAuthorizationStatus",null),yo([m({platforms:["Android","iOS"]})],e,"requestContactsAuthorization",null),yo([m({platforms:["Android","iOS"]})],e,"isCalendarAuthorized",null),yo([m({platforms:["Android","iOS"]})],e,"getCalendarAuthorizationStatus",null),yo([m({platforms:["Android","iOS"]})],e,"requestCalendarAuthorization",null),yo([m({platforms:["Android","iOS"]})],e,"switchToSettings",null),yo([m({platforms:["Android","iOS"]})],e,"getBluetoothState",null),yo([m({platforms:["Android","iOS"],sync:!0})],e,"registerBluetoothStateChangeHandler",null),yo([m({platforms:["Android","iOS"],sync:!0})],e,"registerLocationStateChangeHandler",null),yo([m({platforms:["Android"]})],e,"isGpsLocationAvailable",null),yo([m({platforms:["Android"]})],e,"isGpsLocationEnabled",null),yo([m({platforms:["Android"]})],e,"isNetworkLocationAvailable",null),yo([m({platforms:["Android"]})],e,"isNetworkLocationEnabled",null),yo([m({platforms:["Android"]})],e,"getLocationMode",null),yo([m({platforms:["Android"],callbackOrder:"reverse"})],e,"getPermissionAuthorizationStatus",null),yo([m({platforms:["Android"],callbackOrder:"reverse"})],e,"getPermissionsAuthorizationStatus",null),yo([m({platforms:["Android"],callbackOrder:"reverse"})],e,"requestRuntimePermission",null),yo([m({platforms:["Android"],callbackOrder:"reverse"})],e,"requestRuntimePermissions",null),yo([m({sync:!0})],e,"isRequestingPermission",null),yo([m({sync:!0})],e,"registerPermissionRequestCompleteHandler",null),yo([m({platforms:["Android"]})],e,"isBluetoothEnabled",null),yo([m({platforms:["Android"]})],e,"hasBluetoothSupport",null),yo([m({platforms:["Android"]})],e,"hasBluetoothLESupport",null),yo([m({platforms:["Android"]})],e,"hasBluetoothLEPeripheralSupport",null),yo([m({platforms:["iOS"]})],e,"isCameraRollAuthorized",null),yo([m({platforms:["iOS"]})],e,"getCameraRollAuthorizationStatus",null),yo([m({platforms:["iOS"]})],e,"requestCameraRollAuthorization",null),yo([m({platforms:["iOS"]})],e,"isRemoteNotificationsEnabled",null),yo([m({platforms:["iOS"]})],e,"isRegisteredForRemoteNotifications",null),yo([m({platforms:["iOS"]})],e,"getRemoteNotificationTypes",null),yo([m({platforms:["iOS"]})],e,"isRemindersAuthorized",null),yo([m({platforms:["iOS"]})],e,"getRemindersAuthorizationStatus",null),yo([m({platforms:["iOS"]})],e,"requestRemindersAuthorization",null),yo([m({platforms:["iOS"]})],e,"isBackgroundRefreshAuthorized",null),yo([m({platforms:["iOS"]})],e,"getBackgroundRefreshStatus",null),e=yo([E({pluginName:"Diagnostic",plugin:"cordova.plugins.diagnostic",pluginRef:"cordova.plugins.diagnostic",repo:"https://github.com/dpa99c/cordova-diagnostic-plugin"})],e)}(),vo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Ao=function(){function e(){}return e.alert=function(e,t,n){void 0===t&&(t="Alert"),void 0===n&&(n="OK")},e.confirm=function(e,t,n){void 0===t&&(t="Confirm"),void 0===n&&(n=["OK","Cancel"])},e.prompt=function(e,t,n,o){void 0===t&&(t="Prompt"),void 0===n&&(n=["OK","Cancel"]),void 0===o&&(o="")},e.beep=function(e){},vo([m({successIndex:1,errorIndex:4})],e,"alert",null),vo([m({successIndex:1,errorIndex:4})],e,"confirm",null),vo([m({successIndex:1,errorIndex:5})],e,"prompt",null),vo([m({sync:!0})],e,"beep",null),e=vo([E({pluginName:"Dialogs",plugin:"cordova-plugin-dialogs",pluginRef:"navigator.notification",repo:"https://github.com/apache/cordova-plugin-dialogs.git"})],e)}(),Eo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},mo=function(){function e(){}return e.isAvailable=function(e){return new Promise(function(t,n){e?cordova.plugins.email.isAvailable(e,function(e){e?t():n()}):cordova.plugins.email.isAvailable(function(e){e?t():n()})})},e.addAlias=function(e,t){},e.open=function(e,t){},Eo([m()],e,"addAlias",null),Eo([m({successIndex:1,errorIndex:3})],e,"open",null),e=Eo([E({pluginName:"EmailComposer",plugin:"cordova-plugin-email",pluginRef:"cordova.plugins.email",repo:"https://github.com/hypery2k/cordova-email-plugin",platforms:["Android","iOS"]})],e)}(),wo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Co=function(){function e(){}return e.requestWhenInUseAuthorization=function(){},e.requestAlwaysAuthorization=function(){},e.authorizationStatus=function(){},e.startAdvertisingAsBeacon=function(e,t,n,o){},e.stopAdvertisingAsBeacon=function(){},e.enableAnalytics=function(e){},e.isAnalyticsEnabled=function(){},e.isAuthorized=function(){},e.setupAppIDAndAppToken=function(e,t){},e.startEstimoteBeaconDiscovery=function(){},e.stopEstimoteBeaconDiscovery=function(){},e.startRangingBeaconsInRegion=function(e){},e.stopRangingBeaconsInRegion=function(e){},e.startRangingSecureBeaconsInRegion=function(e){},e.stopRangingSecureBeaconsInRegion=function(e){},e.startMonitoringForRegion=function(e,t){},e.stopMonitoringForRegion=function(e){},e.startSecureMonitoringForRegion=function(e,t){},e.stopSecureMonitoringForRegion=function(e){},e.connectToBeacon=function(e){},e.disconnectConnectedBeacon=function(){},e.writeConnectedProximityUUID=function(e){},e.writeConnectedMajor=function(e){},e.writeConnectedMinor=function(e){},e.ProximityUnknown=0,e.ProximityImmediate=1,e.ProximityNear=2,e.ProximityFar=3,e.BeaconColorUnknown=0,e.BeaconColorMintCocktail=1,e.BeaconColorIcyMarshmallow=2,e.BeaconColorBlueberryPie=3,e.BeaconColorSweetBeetroot=4,e.BeaconColorCandyFloss=5,e.BeaconColorLemonTart=6,e.BeaconColorVanillaJello=7,e.BeaconColorLiquoriceSwirl=8,e.BeaconColorWhite=9,e.BeaconColorTransparent=10,e.RegionStateUnknown="unknown",e.RegionStateOutside="outside",e.RegionStateInside="inside",wo([m()],e,"requestWhenInUseAuthorization",null),wo([m()],e,"requestAlwaysAuthorization",null),wo([m()],e,"authorizationStatus",null),wo([m({clearFunction:"stopAdvertisingAsBeacon"})],e,"startAdvertisingAsBeacon",null),wo([m()],e,"stopAdvertisingAsBeacon",null),wo([m()],e,"enableAnalytics",null),wo([m()],e,"isAnalyticsEnabled",null),wo([m()],e,"isAuthorized",null),wo([m()],e,"setupAppIDAndAppToken",null),wo([m({observable:!0,clearFunction:"stopEstimoteBeaconDiscovery"})],e,"startEstimoteBeaconDiscovery",null),wo([m()],e,"stopEstimoteBeaconDiscovery",null),wo([m({observable:!0,clearFunction:"stopRangingBeaconsInRegion",clearWithArgs:!0})],e,"startRangingBeaconsInRegion",null),wo([m()],e,"stopRangingBeaconsInRegion",null),wo([m({observable:!0,clearFunction:"stopRangingSecureBeaconsInRegion",clearWithArgs:!0})],e,"startRangingSecureBeaconsInRegion",null),wo([m()],e,"stopRangingSecureBeaconsInRegion",null),wo([m({observable:!0,clearFunction:"stopMonitoringForRegion",clearWithArgs:!0,successIndex:1,errorIndex:2})],e,"startMonitoringForRegion",null),wo([m()],e,"stopMonitoringForRegion",null),wo([m({observable:!0,clearFunction:"stopSecureMonitoringForRegion",clearWithArgs:!0,successIndex:1,errorIndex:2})],e,"startSecureMonitoringForRegion",null),wo([m()],e,"stopSecureMonitoringForRegion",null),wo([m()],e,"connectToBeacon",null),wo([m()],e,"disconnectConnectedBeacon",null),wo([m()],e,"writeConnectedProximityUUID",null),wo([m()],e,"writeConnectedMajor",null),wo([m()],e,"writeConnectedMinor",null),e=wo([E({pluginName:"EstimoteBeacons",plugin:"cordova-plugin-estimote",pluginRef:"estimote.beacons",repo:"https://github.com/evothings/phonegap-estimotebeacons",platforms:["iOS","Android"]})],e)}(),Oo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},_o=function(){function e(){}return e.browserInit=function(e,t){},e.login=function(e){},e.logout=function(){},e.getLoginStatus=function(){},e.getAccessToken=function(){},e.showDialog=function(e){},e.api=function(e,t){},e.logEvent=function(e,t,n){},e.logPurchase=function(e,t){},e.appInvite=function(e){},Oo([m()],e,"browserInit",null),Oo([m()],e,"login",null),Oo([m()],e,"logout",null),Oo([m()],e,"getLoginStatus",null),Oo([m()],e,"getAccessToken",null),Oo([m()],e,"showDialog",null),Oo([m()],e,"api",null),Oo([m()],e,"logEvent",null),Oo([m()],e,"logPurchase",null),Oo([m()],e,"appInvite",null),e=Oo([E({pluginName:"Facebook",plugin:"cordova-plugin-facebook4",pluginRef:"facebookConnectPlugin",repo:"https://github.com/jeduan/cordova-plugin-facebook4",install:'ionic plugin add cordova-plugin-facebook4 --variable APP_ID="123456789" --variable APP_NAME="myApplication"'})],e)}(),So=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Do=function(){function e(){}return e.getFreeDiskSpace=function(){return new Promise(function(e,t){cordova&&cordova.exec?cordova.exec(e,t,"File","getFreeDiskSpace",[]):(Zt({pluginName:"File",plugin:"cordova-plugin-file"}),t({error:"plugin_not_installed"}))})},e.checkDir=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="directory cannot start with /",Promise.reject(o)}var r=t+n;return e.resolveDirectoryUrl(r).then(function(){return!0})},e.createDir=function(t,n,o){if(/^\//.test(n)){var r=new FileError(5);return r.message="directory cannot start with /",Promise.reject(r)}var u={create:!0};return o||(u.exclusive=!0),e.resolveDirectoryUrl(t).then(function(t){return e.getDirectory(t,n,u)})},e.removeDir=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="directory cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getDirectory(t,n,{create:!1})}).then(function(t){return e.remove(t)})},e.moveDir=function(t,n,o,r){var u=this;if(r=r||n,/^\//.test(r)){var i=new FileError(5);return i.message="directory cannot start with /",Promise.reject(i)}return this.resolveDirectoryUrl(t).then(function(e){return u.getDirectory(e,n,{create:!1})}).then(function(t){return u.resolveDirectoryUrl(o).then(function(n){return e.move(t,n,r)})})},e.copyDir=function(t,n,o,r){var u=this;if(/^\//.test(r)){var i=new FileError(5);return i.message="directory cannot start with /",Promise.reject(i)}return this.resolveDirectoryUrl(t).then(function(e){return u.getDirectory(e,n,{create:!1})}).then(function(t){return u.resolveDirectoryUrl(o).then(function(n){return e.copy(t,n,r)})})},e.listDir=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="directory cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getDirectory(t,n,{create:!1,exclusive:!1})}).then(function(t){var n=t.createReader();return e.readEntries(n)})},e.removeRecursively=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="directory cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getDirectory(t,n,{create:!1})}).then(function(t){return e.rimraf(t)})},e.checkFile=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="file cannot start with /",Promise.reject(o)}return e.resolveLocalFilesystemUrl(t+n).then(function(e){if(e.isFile)return!0;var t=new FileError(13);return t.message="input is not a file",Promise.reject(t)})},e.createFile=function(t,n,o){if(/^\//.test(n)){var r=new FileError(5);return r.message="file-name cannot start with /",Promise.reject(r)}var u={create:!0};return o||(u.exclusive=!0),e.resolveDirectoryUrl(t).then(function(t){return e.getFile(t,n,u)})},e.removeFile=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="file-name cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getFile(t,n,{create:!1})}).then(function(t){return e.remove(t)})},e.writeFile=function(t,n,o,r){if(void 0===r&&(r={}),/^\//.test(n)){var u=new FileError(5);return u.message="file-name cannot start with /",Promise.reject(u)}var i={create:!r.append,exclusive:!r.replace};return e.resolveDirectoryUrl(t).then(function(t){return e.getFile(t,n,i)}).then(function(t){return e.writeFileEntry(t,o,r)})},e.writeFileEntry=function(t,n,o){return e.createWriter(t).then(function(t){return o.append&&t.seek(t.length),o.truncate&&t.truncate(o.truncate),e.write(t,n)}).then(function(){return t})},e.writeExistingFile=function(t,n,o){return e.writeFile(t,n,o,{create:!1})},e.readAsText=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="file-name cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getFile(t,n,{create:!1})}).then(function(e){var t=new FileReader;return new Promise(function(n,o){t.onloadend=function(){void 0!==t.result||null!==t.result?n(t.result):o(void 0!==t.error||null!==t.error?t.error:{code:null,message:"READER_ONLOADEND_ERR"})},e.file(function(e){t.readAsText(e)},function(e){o(e)})})})},e.readAsDataURL=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="file-name cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getFile(t,n,{create:!1})}).then(function(e){var t=new FileReader;return new Promise(function(n,o){t.onloadend=function(){void 0!==t.result||null!==t.result?n(t.result):o(void 0!==t.error||null!==t.error?t.error:{code:null,message:"READER_ONLOADEND_ERR"})},e.file(function(e){t.readAsDataURL(e)},function(e){o(e)})})})},e.readAsBinaryString=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="file-name cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getFile(t,n,{create:!1})}).then(function(e){var t=new FileReader;return new Promise(function(n,o){t.onloadend=function(){void 0!==t.result||null!==t.result?n(t.result):o(void 0!==t.error||null!==t.error?t.error:{code:null,message:"READER_ONLOADEND_ERR"})},e.file(function(e){t.readAsBinaryString(e)},function(e){o(e)})})})},e.readAsArrayBuffer=function(t,n){if(/^\//.test(n)){var o=new FileError(5);return o.message="file-name cannot start with /",Promise.reject(o)}return e.resolveDirectoryUrl(t).then(function(t){return e.getFile(t,n,{create:!1})}).then(function(e){var t=new FileReader;return new Promise(function(n,o){t.onloadend=function(){void 0!==t.result||null!==t.result?n(t.result):o(void 0!==t.error||null!==t.error?t.error:{code:null,message:"READER_ONLOADEND_ERR"})},e.file(function(e){t.readAsArrayBuffer(e)},function(e){o(e)})})})},e.moveFile=function(t,n,o,r){var u=this;if(r=r||n,/^\//.test(r)){var i=new FileError(5);return i.message="file name cannot start with /",Promise.reject(i)}return this.resolveDirectoryUrl(t).then(function(e){return u.getFile(e,n,{create:!1})}).then(function(t){return u.resolveDirectoryUrl(o).then(function(n){return e.move(t,n,r)})})},e.copyFile=function(t,n,o,r){var u=this;if(r=r||n,/^\//.test(r)){var i=new FileError(5);return i.message="file name cannot start with /",Promise.reject(i)}return this.resolveDirectoryUrl(t).then(function(e){return u.getFile(e,n,{create:!1})}).then(function(t){return u.resolveDirectoryUrl(o).then(function(n){return e.copy(t,n,r)})})},e.fillErrorMessage=function(t){t.message=e.cordovaFileError[t.code]},e.resolveLocalFilesystemUrl=function(t){return new Promise(function(n,o){try{window.resolveLocalFileSystemURL(t,function(e){n(e)},function(t){e.fillErrorMessage(t),o(t)})}catch(t){e.fillErrorMessage(t),o(t)}})},e.resolveDirectoryUrl=function(t){return e.resolveLocalFilesystemUrl(t).then(function(e){if(e.isDirectory)return e;var t=new FileError(13);return t.message="input is not a directory",Promise.reject(t)})},e.getDirectory=function(t,n,o){return new Promise(function(r,u){try{t.getDirectory(n,o,function(e){r(e)},function(t){e.fillErrorMessage(t),u(t)})}catch(t){e.fillErrorMessage(t),u(t)}})},e.getFile=function(t,n,o){return new Promise(function(r,u){try{t.getFile(n,o,r,function(t){e.fillErrorMessage(t),u(t)})}catch(t){e.fillErrorMessage(t),u(t)}})},e.remove=function(t){return new Promise(function(n,o){t.remove(function(){n({success:!0,fileRemoved:t})},function(t){e.fillErrorMessage(t),o(t)})})},e.move=function(t,n,o){return new Promise(function(r,u){t.moveTo(n,o,function(e){r(e)},function(t){e.fillErrorMessage(t),u(t)})})},e.copy=function(t,n,o){return new Promise(function(r,u){t.copyTo(n,o,function(e){r(e)},function(t){e.fillErrorMessage(t),u(t)})})},e.readEntries=function(t){return new Promise(function(n,o){t.readEntries(function(e){n(e)},function(t){e.fillErrorMessage(t),o(t)})})},e.rimraf=function(t){return new Promise(function(n,o){t.removeRecursively(function(){n({success:!0,fileRemoved:t})},function(t){e.fillErrorMessage(t),o(t)})})},e.createWriter=function(t){return new Promise(function(n,o){t.createWriter(function(e){n(e)},function(t){e.fillErrorMessage(t),o(t)})})},e.write=function(e,t){return t instanceof Blob?this.writeFileInChunks(e,t):new Promise(function(n,o){e.onwriteend=function(t){e.error?o(e.error):n(t)},e.write(t)})},e.writeFileInChunks=function(e,t){function n(){var n=Math.min(o,t.size-r),u=t.slice(r,r+n);r+=n,e.write(u)}var o=1048576,r=0;return new Promise(function(o,u){e.onerror=u,e.onwrite=function(){r<t.size?n():o()},n()})},e.cordovaFileError={1:"NOT_FOUND_ERR",2:"SECURITY_ERR",3:"ABORT_ERR",4:"NOT_READABLE_ERR",5:"ENCODING_ERR",6:"NO_MODIFICATION_ALLOWED_ERR",7:"INVALID_STATE_ERR",8:"SYNTAX_ERR",9:"INVALID_MODIFICATION_ERR",10:"QUOTA_EXCEEDED_ERR",11:"TYPE_MISMATCH_ERR",12:"PATH_EXISTS_ERR",13:"WRONG_ENTRY_TYPE",14:"DIR_READ_ERR"},e=So([E({pluginName:"File",plugin:"cordova-plugin-file",pluginRef:"cordova.file",repo:"https://github.com/apache/cordova-plugin-file"})],e)}(),Fo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Ro=function(){function e(){}return e.open=function(){},Fo([m()],e,"open",null),e=Fo([E({pluginName:"FileChooser",plugin:"http://github.com/don/cordova-filechooser.git",pluginRef:"fileChooser",repo:"https://github.com/don/cordova-filechooser",platforms:["Android"]})],e)}(),Po=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Bo=function(){function e(){}return e.open=function(e,t){},e.uninstall=function(e){},e.appIsInstalled=function(e){},Po([m({callbackStyle:"object",successName:"success",errorName:"error"})],e,"open",null),Po([m({callbackStyle:"object",successName:"success",errorName:"error"})],e,"uninstall",null),Po([m({callbackStyle:"object",successName:"success",errorName:"error"})],e,"appIsInstalled",null),e=Po([E({pluginName:"FileOpener",plugin:"cordova-plugin-file-opener2",pluginRef:"cordova.plugins.fileOpener2",repo:"https://github.com/pwlin/cordova-plugin-file-opener2"})],e)}(),jo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Io=function(){function e(){}return e.resolveNativePath=function(e){},jo([m()],e,"resolveNativePath",null),e=jo([E({pluginName:"FilePath",plugin:"cordova-plugin-filepath",pluginRef:"window.FilePath",repo:"https://github.com/hiddentao/cordova-plugin-filepath",platforms:["Android"]})],e)}(),xo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},To=function(){function e(){this._objectInstance=new FileTransfer}return e.prototype.upload=function(e,t,n,o){},e.prototype.download=function(e,t,n,o){},e.prototype.onProgress=function(e){this._objectInstance.onprogress=e},e.prototype.abort=function(){},e.FileTransferErrorCode={FILE_NOT_FOUND_ERR:1,INVALID_URL_ERR:2,CONNECTION_ERR:3,ABORT_ERR:4,NOT_MODIFIED_ERR:5},xo([w({successIndex:2,errorIndex:3})],e.prototype,"upload",null),xo([w({successIndex:2,errorIndex:3})],e.prototype,"download",null),xo([w({sync:!0})],e.prototype,"abort",null),e=xo([E({pluginName:"FileTransfer",plugin:"cordova-plugin-file-transfer",pluginRef:"FileTransfer",repo:"https://github.com/apache/cordova-plugin-file-transfer"})],e)}(),ko=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},No=function(){function e(){}return e.available=function(){},e.switchOn=function(){},e.switchOff=function(){},e.toggle=function(){},e.isSwitchedOn=function(){},ko([m()],e,"available",null),ko([m()],e,"switchOn",null),ko([m()],e,"switchOff",null),ko([m()],e,"toggle",null),ko([m({sync:!0})],e,"isSwitchedOn",null),e=ko([E({pluginName:"Flashlight",plugin:"cordova-plugin-flashlight",pluginRef:"window.plugins.flashlight",repo:"https://github.com/EddyVerbruggen/Flashlight-PhoneGap-Plugin.git"})],e)}(),Mo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Lo=function(){function e(){}return e.initialize=function(){},e.addOrUpdate=function(e){},e.remove=function(e){},e.removeAll=function(){},e.getWatched=function(){},e.onTransitionReceived=function(){return new Jt(function(e){return window&&window.geofence&&(window.geofence.onTransitionReceived=e.next.bind(e)),function(){return window.geofence.onTransitionReceived=function(){}}})},e.onNotificationClicked=function(){return new Jt(function(e){return window&&window.geofence&&(window.geofence.onNotificationClicked=e.next.bind(e)),function(){return window.geofence.onNotificationClicked=function(){}}})},e.TransitionType={ENTER:1,EXIT:2,BOTH:3},Mo([m()],e,"initialize",null),Mo([m()],e,"addOrUpdate",null),Mo([m()],e,"remove",null),Mo([m()],e,"removeAll",null),Mo([m()],e,"getWatched",null),e=Mo([E({pluginName:"Geofence",plugin:"cordova-plugin-geofence",pluginRef:"geofence",repo:"https://github.com/cowbell/cordova-plugin-geofence/",platforms:["Android","iOS","Windows Phone 8","Windows Phone"]})],e)}(),Wo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},qo=function(){function e(){}return e.getCurrentPosition=function(e){},e.watchPosition=function(e){return new Jt(function(t){var n=navigator.geolocation.watchPosition(t.next.bind(t),t.next.bind(t),e);return function(){return navigator.geolocation.clearWatch(n)}})},Wo([m({callbackOrder:"reverse"})],e,"getCurrentPosition",null),e=Wo([E({pluginName:"Geolocation",plugin:"cordova-plugin-geolocation",pluginRef:"navigator.geolocation",repo:"https://github.com/apache/cordova-plugin-geolocation"})],e)}(),Uo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Vo=function(){function e(){}return e.getPreferredLanguage=function(){},e.getLocaleName=function(){},e.dateToString=function(e,t){},e.stringToDate=function(e,t){},e.getDatePattern=function(e){},e.getDateNames=function(e){},e.isDayLightSavingsTime=function(e){},e.getFirstDayOfWeek=function(){},e.numberToString=function(e,t){},e.stringToNumber=function(e,t){},e.getNumberPattern=function(e){},e.getCurrencyPattern=function(e){},Uo([m()],e,"getPreferredLanguage",null),Uo([m()],e,"getLocaleName",null),Uo([m({successIndex:1,errorIndex:2})],e,"dateToString",null),Uo([m({successIndex:1,errorIndex:2})],e,"stringToDate",null),Uo([m({callbackOrder:"reverse"})],e,"getDatePattern",null),Uo([m({callbackOrder:"reverse"})],e,"getDateNames",null),Uo([m()],e,"isDayLightSavingsTime",null),Uo([m()],e,"getFirstDayOfWeek",null),Uo([m({successIndex:1,errorIndex:2})],e,"numberToString",null),Uo([m({successIndex:1,errorIndex:2})],e,"stringToNumber",null),Uo([m({callbackOrder:"reverse"})],e,"getNumberPattern",null),Uo([m()],e,"getCurrencyPattern",null),e=Uo([E({pluginName:"Globalization",plugin:"cordova-plugin-globalization",pluginRef:"navigator.globalization",repo:"https://github.com/apache/cordova-plugin-globalization",platforms:["Amazon Fire OS","Android","BlackBerry 10","Firefox OS","iOS","Windows Phone 8","Widnows","Browser"]})],e)}(),zo=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Ho=function(){function e(){}return e.login=function(e){},e.trySilentLogin=function(e){},e.logout=function(){},e.disconnect=function(){},zo([m({successIndex:1,errorIndex:2})],e,"login",null),zo([m()],e,"trySilentLogin",null),zo([m()],e,"logout",null),zo([m()],e,"disconnect",null),e=zo([E({pluginName:"GooglePlus",plugin:"cordova-plugin-googleplus",pluginRef:"window.plugins.googleplus",repo:"https://github.com/EddyVerbruggen/cordova-plugin-googleplus",platforms:["Web","Android","iOS"],install:"ionic plugin add cordova-plugin-googleplus --variable REVERSED_CLIENT_ID=myreversedclientid"})],e)}(),Go=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},$o=function(){function e(e,t){Kt("plugin.google.maps.Map")?("string"==typeof e&&(e=document.getElementById(e)),this._objectInstance=plugin.google.maps.Map.getMap(e,t)):Zt({pluginName:"GoogleMap",plugin:"plugin.google.maps.Map"})}return e.isAvailable=function(){},e.prototype.on=function(e){var t=this;return new Jt(this._objectInstance?function(n){return t._objectInstance.on(e,n.next.bind(n)),function(){return t._objectInstance.off(e)}}:function(e){e.error({error:"plugin_not_installed"})})},e.prototype.one=function(e){var t=this;return this._objectInstance?new Promise(function(n){return t._objectInstance.one(e,n)}):Promise.reject({error:"plugin_not_installed"})},e.prototype.setDebuggable=function(e){},e.prototype.setClickable=function(e){},e.prototype.getCameraPosition=function(){},e.prototype.getMyLocation=function(e){},e.prototype.getVisibleRegion=function(){},e.prototype.showDialog=function(){},e.prototype.closeDialog=function(){},e.prototype.getLicenseInfo=function(){},e.prototype.setCenter=function(e){},e.prototype.setZoom=function(e){},e.prototype.setMapTypeId=function(e){},e.prototype.setTilt=function(e){},e.prototype.animateCamera=function(e){},e.prototype.moveCamera=function(e){},e.prototype.setMyLocationEnabled=function(e){},e.prototype.setIndoorEnabled=function(e){},e.prototype.setTrafficEnabled=function(e){},e.prototype.setCompassEnabled=function(e){},e.prototype.setAllGesturesEnabled=function(e){},e.prototype.addMarker=function(e){var t=this;return this._objectInstance?new Promise(function(n,o){t._objectInstance.addMarker(e,function(e){e?n(new Yo(e)):o()})}):Promise.reject({error:"plugin_not_installed"})},e.prototype.addCircle=function(e){var t=this;return this._objectInstance?new Promise(function(n,o){t._objectInstance.addCircle(e,function(e){e?n(new Xo(e)):o()})}):Promise.reject({error:"plugin_not_installed"})},e.prototype.addPolygon=function(e){var t=this;return this._objectInstance?new Promise(function(n,o){t._objectInstance.addPolygon(e,function(e){e?n(new Ko(e)):o()})}):Promise.reject({error:"plugin_not_installed"})},e.prototype.addPolyline=function(e){var t=this;return this._objectInstance?new Promise(function(n,o){t._objectInstance.addPolyline(e,function(e){e?n(new Jo(e)):o()})}):Promise.reject({error:"plugin_not_installed"})},e.prototype.addTileOverlay=function(e){var t=this;return this._objectInstance?new Promise(function(n,o){t._objectInstance.addTileOverlay(e,function(e){e?n(new Zo(e)):o()})}):Promise.reject({error:"plugin_not_installed"})},e.prototype.addGroundOverlay=function(e){var t=this;return this._objectInstance?new Promise(function(n,o){t._objectInstance.addGroundOverlay(e,function(e){e?n(new Qo(e)):o()})}):Promise.reject({error:"plugin_not_installed"})},e.prototype.addKmlOverlay=function(e){var t=this;return this._objectInstance?new Promise(function(n,o){t._objectInstance.addKmlOverlay(e,function(e){e?n(new er(e)):o()})}):Promise.reject({error:"plugin_not_installed"})},e.prototype.setDiv=function(e){},e.prototype.setVisible=function(e){},e.prototype.setOptions=function(e){},e.prototype.setBackgroundColor=function(e){},e.prototype.setPadding=function(e,t,n,o){},e.prototype.clear=function(){},e.prototype.refreshLayout=function(){},e.prototype.fromLatLngToPoint=function(e,t){},e.prototype.fromPointToLatLng=function(e,t){},e.prototype.toDataURL=function(){},e.prototype.remove=function(){},e.prototype.panBy=function(){},Go([w({sync:!0})],e.prototype,"setDebuggable",null),Go([w({sync:!0})],e.prototype,"setClickable",null),Go([w()],e.prototype,"getCameraPosition",null),Go([w()],e.prototype,"getMyLocation",null),Go([w()],e.prototype,"getVisibleRegion",null),Go([w({sync:!0})],e.prototype,"showDialog",null),Go([w({sync:!0})],e.prototype,"closeDialog",null),Go([w()],e.prototype,"getLicenseInfo",null),Go([w({sync:!0})],e.prototype,"setCenter",null),Go([w({sync:!0})],e.prototype,"setZoom",null),Go([w({sync:!0})],e.prototype,"setMapTypeId",null),
-Go([w({sync:!0})],e.prototype,"setTilt",null),Go([w()],e.prototype,"animateCamera",null),Go([w()],e.prototype,"moveCamera",null),Go([w({sync:!0})],e.prototype,"setMyLocationEnabled",null),Go([w({sync:!0})],e.prototype,"setIndoorEnabled",null),Go([w({sync:!0})],e.prototype,"setTrafficEnabled",null),Go([w({sync:!0})],e.prototype,"setCompassEnabled",null),Go([w({sync:!0})],e.prototype,"setAllGesturesEnabled",null),Go([w({sync:!0})],e.prototype,"setDiv",null),Go([w({sync:!0})],e.prototype,"setVisible",null),Go([w({sync:!0})],e.prototype,"setOptions",null),Go([w({sync:!0})],e.prototype,"setBackgroundColor",null),Go([w({sync:!0})],e.prototype,"setPadding",null),Go([w({sync:!0})],e.prototype,"clear",null),Go([w({sync:!0})],e.prototype,"refreshLayout",null),Go([w()],e.prototype,"fromLatLngToPoint",null),Go([w()],e.prototype,"fromPointToLatLng",null),Go([w()],e.prototype,"toDataURL",null),Go([w({sync:!0})],e.prototype,"remove",null),Go([w({sync:!0})],e.prototype,"panBy",null),Go([m()],e,"isAvailable",null),e=Go([E({pluginName:"GoogleMap",pluginRef:"plugin.google.maps.Map",plugin:"cordova-plugin-googlemaps",repo:"https://github.com/mapsplugin/cordova-plugin-googlemaps",install:'ionic plugin add cordova-plugin-googlemaps --variable API_KEY_FOR_ANDROID="YOUR_ANDROID_API_KEY_IS_HERE" --variable API_KEY_FOR_IOS="YOUR_IOS_API_KEY_IS_HERE"'})],e)}(),Yo=function(){function e(e){this._objectInstance=e}return e.prototype.addEventListener=function(e){var t=this;return new Jt(function(n){return t._objectInstance.addEventListener(e,n.next.bind(n)),function(){return t._objectInstance.removeEventListener(e,n.next.bind(n))}})},e.prototype.get=function(e){},e.prototype.set=function(e,t){},e.prototype.isVisible=function(){},e.prototype.setVisible=function(e){},e.prototype.getHashCode=function(){},e.prototype.remove=function(){},e.prototype.setOpacity=function(e){},e.prototype.getOpacity=function(){},e.prototype.setZIndex=function(){},e.prototype.setIconAnchor=function(e,t){},e.prototype.setInfoWindowAnchor=function(e,t){},e.prototype.setDraggable=function(e){},e.prototype.isDraggable=function(){},e.prototype.setFlat=function(e){},e.prototype.setIcon=function(e){},e.prototype.setTitle=function(e){},e.prototype.getTitle=function(){},e.prototype.setSnippet=function(e){},e.prototype.getSnippet=function(){},e.prototype.setRotation=function(e){},e.prototype.getRotation=function(){},e.prototype.showInfoWindow=function(){},e.prototype.hideInfoWindow=function(){},e.prototype.setPosition=function(e){},e.prototype.getPosition=function(){},e.prototype.getMap=function(){},e.prototype.setAnimation=function(e){},Go([w({sync:!0})],e.prototype,"get",null),Go([w({sync:!0})],e.prototype,"set",null),Go([w({sync:!0})],e.prototype,"isVisible",null),Go([w()],e.prototype,"setVisible",null),Go([w({sync:!0})],e.prototype,"getHashCode",null),Go([w({sync:!0})],e.prototype,"remove",null),Go([w({sync:!0})],e.prototype,"setOpacity",null),Go([w({sync:!0})],e.prototype,"getOpacity",null),Go([w({sync:!0})],e.prototype,"setZIndex",null),Go([w({sync:!0})],e.prototype,"setIconAnchor",null),Go([w({sync:!0})],e.prototype,"setInfoWindowAnchor",null),Go([w({sync:!0})],e.prototype,"setDraggable",null),Go([w({sync:!0})],e.prototype,"isDraggable",null),Go([w({sync:!0})],e.prototype,"setFlat",null),Go([w({sync:!0})],e.prototype,"setIcon",null),Go([w({sync:!0})],e.prototype,"setTitle",null),Go([w({sync:!0})],e.prototype,"getTitle",null),Go([w({sync:!0})],e.prototype,"setSnippet",null),Go([w({sync:!0})],e.prototype,"getSnippet",null),Go([w({sync:!0})],e.prototype,"setRotation",null),Go([w({sync:!0})],e.prototype,"getRotation",null),Go([w({sync:!0})],e.prototype,"showInfoWindow",null),Go([w({sync:!0})],e.prototype,"hideInfoWindow",null),Go([w({sync:!0})],e.prototype,"setPosition",null),Go([w()],e.prototype,"getPosition",null),Go([w({sync:!0})],e.prototype,"getMap",null),Go([w({sync:!0})],e.prototype,"setAnimation",null),e}(),Xo=function(){function e(e){this._objectInstance=e}return e.prototype.addEventListener=function(e){var t=this;return new Jt(function(n){return t._objectInstance.addEventListener(e,n.next.bind(n)),function(){return t._objectInstance.removeEventListener(e,n.next.bind(n))}})},e.prototype.getCenter=function(){},e.prototype.getRadius=function(){},e.prototype.getStrokeColor=function(){},e.prototype.getVisible=function(){},e.prototype.getZIndex=function(){},e.prototype.remove=function(){},e.prototype.setCenter=function(e){},e.prototype.setFillColor=function(e){},e.prototype.setStrokeColor=function(e){},e.prototype.setStrokeWidth=function(e){},e.prototype.setVisible=function(e){},e.prototype.setZIndex=function(e){},e.prototype.setRadius=function(e){},e.prototype.getMap=function(){},Go([w({sync:!0})],e.prototype,"getCenter",null),Go([w({sync:!0})],e.prototype,"getRadius",null),Go([w({sync:!0})],e.prototype,"getStrokeColor",null),Go([w({sync:!0})],e.prototype,"getVisible",null),Go([w({sync:!0})],e.prototype,"getZIndex",null),Go([w({sync:!0})],e.prototype,"remove",null),Go([w({sync:!0})],e.prototype,"setCenter",null),Go([w({sync:!0})],e.prototype,"setFillColor",null),Go([w({sync:!0})],e.prototype,"setStrokeColor",null),Go([w({sync:!0})],e.prototype,"setStrokeWidth",null),Go([w({sync:!0})],e.prototype,"setVisible",null),Go([w({sync:!0})],e.prototype,"setZIndex",null),Go([w({sync:!0})],e.prototype,"setRadius",null),Go([w({sync:!0})],e.prototype,"getMap",null),e}(),Jo=function(){function e(e){this._objectInstance=e}return e.prototype.addEventListener=function(e){var t=this;return new Jt(function(n){return t._objectInstance.addEventListener(e,n.next.bind(n)),function(){return t._objectInstance.removeEventListener(e,n.next.bind(n))}})},e.prototype.getPoints=function(){},e.prototype.getCOlor=function(){},e.prototype.getWidth=function(){},e.prototype.getGeodesic=function(){},e.prototype.getZIndex=function(){},e.prototype.remove=function(){},e.prototype.setPoints=function(e){},e.prototype.setColor=function(e){},e.prototype.setWidth=function(e){},e.prototype.setVisible=function(e){},e.prototype.setZIndex=function(e){},e.prototype.setGeoDesic=function(e){},e.prototype.getMap=function(){},Go([w({sync:!0})],e.prototype,"getPoints",null),Go([w({sync:!0})],e.prototype,"getCOlor",null),Go([w({sync:!0})],e.prototype,"getWidth",null),Go([w({sync:!0})],e.prototype,"getGeodesic",null),Go([w({sync:!0})],e.prototype,"getZIndex",null),Go([w({sync:!0})],e.prototype,"remove",null),Go([w({sync:!0})],e.prototype,"setPoints",null),Go([w({sync:!0})],e.prototype,"setColor",null),Go([w({sync:!0})],e.prototype,"setWidth",null),Go([w({sync:!0})],e.prototype,"setVisible",null),Go([w({sync:!0})],e.prototype,"setZIndex",null),Go([w({sync:!0})],e.prototype,"setGeoDesic",null),Go([w({sync:!0})],e.prototype,"getMap",null),e}(),Ko=function(){function e(e){this._objectInstance=e}return e.prototype.addEventListener=function(e){var t=this;return new Jt(function(n){return t._objectInstance.addEventListener(e,n.next.bind(n)),function(){return t._objectInstance.removeEventListener(e,n.next.bind(n))}})},e.prototype.getPoints=function(){},e.prototype.getStrokeColor=function(){},e.prototype.getFillColor=function(){},e.prototype.getStrokeWidth=function(){},e.prototype.getGeodesic=function(){},e.prototype.getVisible=function(){},e.prototype.getZIndex=function(){},e.prototype.remove=function(){},e.prototype.setPoints=function(e){},e.prototype.setStrokeColor=function(e){},e.prototype.setFillColor=function(e){},e.prototype.setStrokeWidth=function(e){},e.prototype.setVisible=function(e){},e.prototype.setZIndex=function(e){},e.prototype.setGeodesic=function(e){},Go([w({sync:!0})],e.prototype,"getPoints",null),Go([w({sync:!0})],e.prototype,"getStrokeColor",null),Go([w({sync:!0})],e.prototype,"getFillColor",null),Go([w({sync:!0})],e.prototype,"getStrokeWidth",null),Go([w({sync:!0})],e.prototype,"getGeodesic",null),Go([w({sync:!0})],e.prototype,"getVisible",null),Go([w({sync:!0})],e.prototype,"getZIndex",null),Go([w({sync:!0})],e.prototype,"remove",null),Go([w({sync:!0})],e.prototype,"setPoints",null),Go([w({sync:!0})],e.prototype,"setStrokeColor",null),Go([w({sync:!0})],e.prototype,"setFillColor",null),Go([w({sync:!0})],e.prototype,"setStrokeWidth",null),Go([w({sync:!0})],e.prototype,"setVisible",null),Go([w({sync:!0})],e.prototype,"setZIndex",null),Go([w({sync:!0})],e.prototype,"setGeodesic",null),e}(),Zo=function(){function e(e){this._objectInstance=e}return e.prototype.getVisible=function(){},e.prototype.setVisible=function(e){},e.prototype.getFadeIn=function(){},e.prototype.setFadeIn=function(e){},e.prototype.getZIndex=function(){},e.prototype.setZIndex=function(e){},e.prototype.getOpacity=function(){},e.prototype.setOpacity=function(e){},e.prototype.clearTileCache=function(){},e.prototype.remove=function(){},Go([w({sync:!0})],e.prototype,"getVisible",null),Go([w({sync:!0})],e.prototype,"setVisible",null),Go([w({sync:!0})],e.prototype,"getFadeIn",null),Go([w({sync:!0})],e.prototype,"setFadeIn",null),Go([w({sync:!0})],e.prototype,"getZIndex",null),Go([w({sync:!0})],e.prototype,"setZIndex",null),Go([w({sync:!0})],e.prototype,"getOpacity",null),Go([w({sync:!0})],e.prototype,"setOpacity",null),Go([w({sync:!0})],e.prototype,"clearTileCache",null),Go([w({sync:!0})],e.prototype,"remove",null),e}(),Qo=function(){function e(e){this._objectInstance=e}return e.prototype.setBearing=function(e){},e.prototype.getBearing=function(){},e.prototype.setOpacity=function(e){},e.prototype.getOpacity=function(){},e.prototype.setVisible=function(e){},e.prototype.getVisible=function(){},e.prototype.setImage=function(e){},e.prototype.remove=function(){},Go([w({sync:!0})],e.prototype,"setBearing",null),Go([w({sync:!0})],e.prototype,"getBearing",null),Go([w({sync:!0})],e.prototype,"setOpacity",null),Go([w({sync:!0})],e.prototype,"getOpacity",null),Go([w({sync:!0})],e.prototype,"setVisible",null),Go([w({sync:!0})],e.prototype,"getVisible",null),Go([w({sync:!0})],e.prototype,"setImage",null),Go([w({sync:!0})],e.prototype,"remove",null),e}(),er=function(){function e(e){this._objectInstance=e}return e.prototype.remove=function(){},e.prototype.getOverlays=function(){},Go([w({sync:!0})],e.prototype,"remove",null),Go([w({sync:!0})],e.prototype,"getOverlays",null),e}(),tr=(function(){function e(e,t){var n=t?[e,t]:e;this._objectInstance=new plugin.google.maps.LatLngBounds(n)}return Object.defineProperty(e.prototype,"northeast",{get:function(){},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"southwest",{get:function(){},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"type",{get:function(){},enumerable:!0,configurable:!0}),e.prototype.toString=function(){},e.prototype.toUrlValue=function(e){},e.prototype.extend=function(e){},e.prototype.contains=function(e){},e.prototype.getCenter=function(){},Go([O],e.prototype,"northeast",null),Go([O],e.prototype,"southwest",null),Go([O],e.prototype,"type",null),Go([w({sync:!0})],e.prototype,"toString",null),Go([w({sync:!0})],e.prototype,"toUrlValue",null),Go([w({sync:!0})],e.prototype,"extend",null),Go([w({sync:!0})],e.prototype,"contains",null),Go([w({sync:!0})],e.prototype,"getCenter",null),e}(),function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i}),nr=function(){function e(){}return e.startTrackerWithId=function(e,t){},e.setAllowIDFACollection=function(e){},e.setUserId=function(e){},e.setAnonymizeIp=function(e){},e.setAppVersion=function(e){},e.setOptOut=function(e){},e.debugMode=function(){},e.trackMetric=function(e,t){},e.trackView=function(e,t,n){},e.addCustomDimension=function(e,t){},e.trackEvent=function(e,t,n,o,r){},e.trackException=function(e,t){},e.trackTiming=function(e,t,n,o){},e.addTransaction=function(e,t,n,o,r,u){},e.addTransactionItem=function(e,t,n,o,r,u,i){},e.enableUncaughtExceptionReporting=function(e){},tr([m({successIndex:2,errorIndex:3})],e,"startTrackerWithId",null),tr([m()],e,"setAllowIDFACollection",null),tr([m()],e,"setUserId",null),tr([m()],e,"setAnonymizeIp",null),tr([m()],e,"setAppVersion",null),tr([m()],e,"setOptOut",null),tr([m()],e,"debugMode",null),tr([m({successIndex:2,errorIndex:3})],e,"trackMetric",null),tr([m({successIndex:3,errorIndex:4})],e,"trackView",null),tr([m()],e,"addCustomDimension",null),tr([m({successIndex:5,errorIndex:6})],e,"trackEvent",null),tr([m()],e,"trackException",null),tr([m()],e,"trackTiming",null),tr([m()],e,"addTransaction",null),tr([m()],e,"addTransactionItem",null),tr([m()],e,"enableUncaughtExceptionReporting",null),e=tr([E({pluginName:"GoogleAnalytics",plugin:"cordova-plugin-google-analytics",pluginRef:"ga",repo:"https://github.com/danwilson/google-analytics-plugin",platforms:["Android","iOS","Browser"]})],e)}(),or=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},rr=function(){function e(){}return e.isAvailable=function(){},e.toggleWifi=function(){},e.createHotspot=function(e,t,n){},e.startHotspot=function(){},e.configureHotspot=function(e,t,n){},e.stopHotspot=function(){},e.isHotspotEnabled=function(){},e.getAllHotspotDevices=function(){},e.connectToWifi=function(e,t){},e.connectToWifiAuthEncrypt=function(e,t,n,o){},e.addWifiNetwork=function(e,t,n){},e.removeWifiNetwork=function(e){},e.isConnectedToInternet=function(){},e.isConnectedToInternetViaWifi=function(){},e.isWifiOn=function(){},e.isWifiSupported=function(){},e.isWifiDirectSupported=function(){},e.scanWifi=function(){},e.scanWifiByLevel=function(){},e.startWifiPeriodicallyScan=function(e,t){},e.stopWifiPeriodicallyScan=function(){},e.getNetConfig=function(){},e.getConnectionInfo=function(){},e.pingHost=function(e){},e.getMacAddressOfHost=function(e){},e.isDnsLive=function(e){},e.isPortLive=function(e){},e.isRooted=function(){},or([m()],e,"isAvailable",null),or([m()],e,"toggleWifi",null),or([m()],e,"createHotspot",null),or([m()],e,"startHotspot",null),or([m()],e,"configureHotspot",null),or([m()],e,"stopHotspot",null),or([m()],e,"isHotspotEnabled",null),or([m()],e,"getAllHotspotDevices",null),or([m()],e,"connectToWifi",null),or([m()],e,"connectToWifiAuthEncrypt",null),or([m()],e,"addWifiNetwork",null),or([m()],e,"removeWifiNetwork",null),or([m()],e,"isConnectedToInternet",null),or([m()],e,"isConnectedToInternetViaWifi",null),or([m()],e,"isWifiOn",null),or([m()],e,"isWifiSupported",null),or([m()],e,"isWifiDirectSupported",null),or([m()],e,"scanWifi",null),or([m()],e,"scanWifiByLevel",null),or([m()],e,"startWifiPeriodicallyScan",null),or([m()],e,"stopWifiPeriodicallyScan",null),or([m()],e,"getNetConfig",null),or([m()],e,"getConnectionInfo",null),or([m()],e,"pingHost",null),or([m()],e,"getMacAddressOfHost",null),or([m()],e,"isDnsLive",null),or([m()],e,"isPortLive",null),or([m()],e,"isRooted",null),e=or([E({pluginName:"Hotspot",plugin:"cordova-plugin-hotspot",pluginRef:"cordova.plugins.hotspot",repo:"https://github.com/hypery2k/cordova-hotspot-plugin",platforms:["Android"]})],e)}(),ur=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},ir=function(){function e(){}return e.getBasicAuthHeader=function(e,t){},e.useBasicAuth=function(e,t){},e.setHeader=function(e,t){},e.enableSSLPinning=function(e){},e.acceptAllCerts=function(e){},e.validateDomainName=function(e){},e.post=function(e,t,n){},e.get=function(e,t,n){},e.uploadFile=function(e,t,n,o,r){},e.downloadFile=function(e,t,n,o){},ur([m({sync:!0})],e,"getBasicAuthHeader",null),ur([m({sync:!0})],e,"useBasicAuth",null),ur([m({sync:!0})],e,"setHeader",null),ur([m()],e,"enableSSLPinning",null),ur([m()],e,"acceptAllCerts",null),ur([m()],e,"validateDomainName",null),ur([m()],e,"post",null),ur([m()],e,"get",null),ur([m()],e,"uploadFile",null),ur([m()],e,"downloadFile",null),e=ur([E({pluginName:"HTTP",plugin:"cordova-plugin-http",pluginRef:"cordovaHTTP",repo:"https://github.com/wymsee/cordova-HTTP",platforms:["Android","iOS"]})],e)}(),sr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},cr=function(){function e(){}return e.startServer=function(e){},e.getUrl=function(){},e.getLocalPath=function(){},sr([m({observable:!0,clearFunction:"stopServer"})],e,"startServer",null),sr([m()],e,"getUrl",null),sr([m()],e,"getLocalPath",null),e=sr([E({pluginName:"Httpd",plugin:"https://github.com/floatinghotpot/cordova-httpd.git",pluginRef:"cordova.plugins.CorHttpd",repo:"https://github.com/floatinghotpot/cordova-httpd",platforms:["iOS","Android"]})],e)}(),ar=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},lr=function(){function e(){}return e.Delegate=function(){var e=new cordova.plugins.locationManager.Delegate;return e.didChangeAuthorizationStatus=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.didChangeAuthorizationStatus=n})},e.didDetermineStateForRegion=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.didDetermineStateForRegion=n})},e.didEnterRegion=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.didEnterRegion=n})},e.didExitRegion=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.didExitRegion=n})},e.didRangeBeaconsInRegion=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.didRangeBeaconsInRegion=n})},e.didStartMonitoringForRegion=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.didStartMonitoringForRegion=n})},e.monitoringDidFailForRegionWithError=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.monitoringDidFailForRegionWithError=n})},e.peripheralManagerDidStartAdvertising=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.peripheralManagerDidStartAdvertising=n})},e.peripheralManagerDidUpdateState=function(t){return new Jt(function(t){var n=function(e){return t.next(e)};return e.peripheralManagerDidUpdateState=n})},cordova.plugins.locationManager.setDelegate(e),e},e.BeaconRegion=function(e,t,n,o,r){return new cordova.plugins.locationManager.BeaconRegion(e,t,n,o,r)},e.getDelegate=function(){},e.setDelegate=function(e){},e.onDomDelegateReady=function(){},e.isBluetoothEnabled=function(){},e.enableBluetooth=function(){},e.disableBluetooth=function(){},e.startMonitoringForRegion=function(e){},e.stopMonitoringForRegion=function(e){},e.requestStateForRegion=function(e){},e.startRangingBeaconsInRegion=function(e){},e.stopRangingBeaconsInRegion=function(e){},e.getAuthorizationStatus=function(){},e.requestWhenInUseAuthorization=function(){},e.requestAlwaysAuthorization=function(){},e.getMonitoredRegions=function(){},e.getRangedRegions=function(){},e.isRangingAvailable=function(){},e.isMonitoringAvailableForClass=function(e){},e.startAdvertising=function(e,t){},e.stopAdvertising=function(e){},e.isAdvertisingAvailable=function(){},e.isAdvertising=function(){},e.disableDebugLogs=function(){},e.enableDebugNotifications=function(){},e.disableDebugNotifications=function(){},e.enableDebugLogs=function(){},e.appendToDeviceLog=function(e){},ar([m()],e,"getDelegate",null),ar([m()],e,"setDelegate",null),ar([m({otherPromise:!0})],e,"onDomDelegateReady",null),ar([m({otherPromise:!0})],e,"isBluetoothEnabled",null),ar([m({otherPromise:!0})],e,"enableBluetooth",null),ar([m({otherPromise:!0})],e,"disableBluetooth",null),ar([m({otherPromise:!0})],e,"startMonitoringForRegion",null),ar([m({otherPromise:!0})],e,"stopMonitoringForRegion",null),ar([m({otherPromise:!0})],e,"requestStateForRegion",null),ar([m({otherPromise:!0})],e,"startRangingBeaconsInRegion",null),ar([m({otherPromise:!0})],e,"stopRangingBeaconsInRegion",null),ar([m({otherPromise:!0})],e,"getAuthorizationStatus",null),ar([m({otherPromise:!0})],e,"requestWhenInUseAuthorization",null),ar([m({otherPromise:!0})],e,"requestAlwaysAuthorization",null),ar([m({otherPromise:!0})],e,"getMonitoredRegions",null),ar([m({otherPromise:!0})],e,"getRangedRegions",null),ar([m({otherPromise:!0})],e,"isRangingAvailable",null),ar([m({otherPromise:!0})],e,"isMonitoringAvailableForClass",null),ar([m({otherPromise:!0})],e,"startAdvertising",null),ar([m({otherPromise:!0})],e,"stopAdvertising",null),ar([m({otherPromise:!0})],e,"isAdvertisingAvailable",null),ar([m({otherPromise:!0})],e,"isAdvertising",null),ar([m({otherPromise:!0})],e,"disableDebugLogs",null),ar([m({otherPromise:!0})],e,"enableDebugNotifications",null),ar([m({otherPromise:!0})],e,"disableDebugNotifications",null),ar([m({otherPromise:!0})],e,"enableDebugLogs",null),ar([m({otherPromise:!0})],e,"appendToDeviceLog",null),e=ar([E({pluginName:"IBeacon",plugin:"cordova-plugin-ibeacon",pluginRef:"cordova.plugins.locationManager",repo:"https://github.com/petermetz/cordova-plugin-ibeacon",platforms:["Android","iOS"]})],e)}(),pr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},fr=function(){function e(){}return e.getPictures=function(e){},e.hasReadPermission=function(){},e.requestReadPermission=function(){},pr([m({callbackOrder:"reverse"})],e,"getPictures",null),pr([m({platforms:["Android"]})],e,"hasReadPermission",null),pr([m({platforms:["Android"]})],e,"requestReadPermission",null),e=pr([E({pluginName:"ImagePicker",plugin:"https://github.com/Telerik-Verified-Plugins/ImagePicker",pluginRef:"window.imagePicker",repo:"https://github.com/Telerik-Verified-Plugins/ImagePicker"})],e)}(),dr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},hr=function(){function e(){}return e.resize=function(e){},dr([m()],e,"resize",null),e=dr([E({pluginName:"ImageResizer",plugin:"https://github.com/protonet/cordova-plugin-image-resizer.git",pluginRef:"ImageResizer",repo:"https://github.com/protonet/cordova-plugin-image-resizer"})],e)}(),gr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},yr=function(){function e(e,t,n){try{this._objectInstance=cordova.InAppBrowser.open(e,t,n)}catch(t){window.open(e),console.warn("Native: InAppBrowser is not installed or you are running on a browser. Falling back to window.open, all instance methods will NOT work.")}}return e.open=function(e,t,n){console.warn("Native: Your current usage of the InAppBrowser plugin is deprecated as of ionic-native@1.3.8. Please check the Ionic Native docs for the latest usage details.")},e.prototype.show=function(){},e.prototype.close=function(){},e.prototype.executeScript=function(e){},e.prototype.insertCSS=function(e){},e.prototype.on=function(e){var t=this;return new Jt(function(n){return t._objectInstance.addEventListener(e,n.next.bind(n)),function(){return t._objectInstance.removeEventListener(e,n.next.bind(n))}})},gr([w({sync:!0})],e.prototype,"show",null),gr([w({sync:!0})],e.prototype,"close",null),gr([w()],e.prototype,"executeScript",null),gr([w()],e.prototype,"insertCSS",null),e=gr([E({pluginName:"InAppBrowser",plugin:"cordova-plugin-inappbrowser",pluginRef:"cordova.InAppBrowser",repo:"https://github.com/apache/cordova-plugin-inappbrowser"})],e)}(),br=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},vr=function(){function e(){}return e.getProducts=function(e){},e.buy=function(e){},e.subscribe=function(e){},e.consume=function(e,t,n){},e.restorePurchases=function(){},e.getReceipt=function(){},br([m({otherPromise:!0})],e,"getProducts",null),br([m({otherPromise:!0})],e,"buy",null),br([m({otherPromise:!0})],e,"subscribe",null),br([m({otherPromise:!0})],e,"consume",null),br([m({otherPromise:!0})],e,"restorePurchases",null),br([m({otherPromise:!0,platforms:["iOS"]})],e,"getReceipt",null),e=br([E({pluginName:"InAppPurchase",plugin:"cordova-plugin-inapppurchase",pluginRef:"inAppPurchase",platforms:["Android","iOS"],repo:"https://github.com/AlexDisler/cordova-plugin-inapppurchase"})],e)}(),Ar=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Er=function(){function e(){}return e.keepAwake=function(){},e.allowSleepAgain=function(){},Ar([m()],e,"keepAwake",null),Ar([m()],e,"allowSleepAgain",null),e=Ar([E({pluginName:"Insomnia",plugin:"https://github.com/EddyVerbruggen/Insomnia-PhoneGap-Plugin.git",pluginRef:"plugins.insomnia",repo:"https://github.com/EddyVerbruggen/Insomnia-PhoneGap-Plugin",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),mr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},wr=function(){function e(){}return e.isInstalled=function(){},e.share=function(e,t){},e.shareAsset=function(e){},mr([m({callbackStyle:"node"})],e,"isInstalled",null),mr([m({callbackStyle:"node"})],e,"share",null),mr([m({callbackOrder:"reverse"})],e,"shareAsset",null),e=mr([E({pluginName:"Instagram",plugin:"cordova-instagram-plugin",pluginRef:"Instagram",repo:"https://github.com/vstirbu/InstagramPlugin"})],e)}(),Cr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Or=function(){function e(){}return e.getIsDebug=function(){},Cr([m()],e,"getIsDebug",null),e=Cr([E({pluginName:"IsDebug",plugin:"cordova-plugin-is-debug",pluginRef:"cordova.plugins.IsDebug",repo:"https://github.com/mattlewis92/cordova-plugin-is-debug"})],e)}(),_r=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Sr=function(){function e(){}return e.hideKeyboardAccessoryBar=function(e){},e.show=function(){},e.close=function(){},e.disableScroll=function(e){},e.onKeyboardShow=function(){},e.onKeyboardHide=function(){},_r([m({sync:!0})],e,"hideKeyboardAccessoryBar",null),_r([m({sync:!0,platforms:["Android","BlackBerry 10","Windows"]})],e,"show",null),_r([m({sync:!0,platforms:["iOS","Android","BlackBerry 10","Windows"]})],e,"close",null),_r([m({sync:!0,platforms:["iOS","Windows"]})],e,"disableScroll",null),_r([m({eventObservable:!0,event:"native.keyboardshow",platforms:["iOS","Android","BlackBerry 10","Windows"]})],e,"onKeyboardShow",null),_r([m({eventObservable:!0,event:"native.keyboardhide",platforms:["iOS","Android","BlackBerry 10","Windows"]})],e,"onKeyboardHide",null),e=_r([E({pluginName:"Keyboard",plugin:"ionic-plugin-keyboard",pluginRef:"cordova.plugins.Keyboard",repo:"https://github.com/driftyco/ionic-plugin-keyboard"})],e)}(),Dr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Fr=function(){function e(){}return e.navigate=function(e,t){},e.isAppAvailable=function(e){},e.availableApps=function(){},e.getAppDisplayName=function(e){},e.getAppsForPlatform=function(e){},e.supportsTransportMode=function(e,t){},e.getTransportModes=function(e,t){},e.supportsLaunchMode=function(e,t){},e.supportsStart=function(e,t){},e.supportsStartName=function(e,t){},e.supportsDestName=function(e,t){},e.userSelect=function(e,t){},e.APP={USER_SELECT:"user_select",APPLE_MAPS:"apple_maps",GOOGLE_MAPS:"google_maps",WAZE:"waze",CITYMAPPER:"citymapper",NAVIGON:"navigon",TRANSIT_APP:"transit_app",YANDEX:"yandex",UBER:"uber",TOMTOM:"tomtom",BING_MAPS:"bing_maps",SYGIC:"sygic",HERE_MAPS:"here_maps",MOOVIT:"moovit"},e.TRANSPORT_MODE={DRIVING:"driving",WALKING:"walking",BICYCLING:"bicycling",TRANSIT:"transit"},Dr([m({successIndex:1,errorIndex:2})],e,"navigate",null),Dr([m()],e,"isAppAvailable",null),Dr([m()],e,"availableApps",null),Dr([m({sync:!0})],e,"getAppDisplayName",null),Dr([m({sync:!0})],e,"getAppsForPlatform",null),Dr([m({sync:!0})],e,"supportsTransportMode",null),Dr([m({sync:!0})],e,"getTransportModes",null),Dr([m({sync:!0})],e,"supportsLaunchMode",null),Dr([m({sync:!0})],e,"supportsStart",null),Dr([m({sync:!0})],e,"supportsStartName",null),Dr([m({sync:!0})],e,"supportsDestName",null),Dr([m({sync:!0})],e,"userSelect",null),e=Dr([E({pluginName:"LaunchNavigator",plugin:"uk.co.workingedge.phonegap.plugin.launchnavigator",pluginRef:"launchnavigator",repo:"https://github.com/dpa99c/phonegap-launch-navigator.git"})],e)}(),Rr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Pr=function(){function e(){}return e.schedule=function(e){},e.update=function(e){},e.clear=function(e){},e.clearAll=function(){},e.cancel=function(e){},e.cancelAll=function(){},e.isPresent=function(e){},e.isScheduled=function(e){},e.isTriggered=function(e){},e.getAllIds=function(){},e.getTriggeredIds=function(){},e.getScheduledIds=function(){},e.get=function(e){},e.getScheduled=function(e){},e.getTriggered=function(e){},e.getAll=function(){},e.getAllScheduled=function(){},e.getAllTriggered=function(){},e.registerPermission=function(){},e.hasPermission=function(){},e.on=function(e,t){},Rr([m({sync:!0})],e,"schedule",null),Rr([m({
-sync:!0})],e,"update",null),Rr([m()],e,"clear",null),Rr([m({successIndex:0,errorIndex:2})],e,"clearAll",null),Rr([m()],e,"cancel",null),Rr([m({successIndex:0,errorIndex:2})],e,"cancelAll",null),Rr([m()],e,"isPresent",null),Rr([m()],e,"isScheduled",null),Rr([m()],e,"isTriggered",null),Rr([m()],e,"getAllIds",null),Rr([m()],e,"getTriggeredIds",null),Rr([m()],e,"getScheduledIds",null),Rr([m()],e,"get",null),Rr([m()],e,"getScheduled",null),Rr([m()],e,"getTriggered",null),Rr([m()],e,"getAll",null),Rr([m()],e,"getAllScheduled",null),Rr([m()],e,"getAllTriggered",null),Rr([m()],e,"registerPermission",null),Rr([m()],e,"hasPermission",null),Rr([m({sync:!0})],e,"on",null),e=Rr([E({pluginName:"LocalNotifications",plugin:"de.appplant.cordova.plugin.local-notification",pluginRef:"cordova.plugins.notification.local",repo:"https://github.com/katzer/cordova-plugin-local-notifications"})],e)}(),Br=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},jr=function(){function e(){}return e.canRequest=function(){},e.isRequesting=function(){},e.request=function(e){},e.REQUEST_PRIORITY_NO_POWER=0,e.REQUEST_PRIORITY_LOW_POWER=1,e.REQUEST_PRIORITY_BALANCED_POWER_ACCURACY=2,e.REQUEST_PRIORITY_HIGH_ACCURACY=3,e.SUCCESS_SETTINGS_SATISFIED=0,e.SUCCESS_USER_AGREED=1,e.ERROR_ALREADY_REQUESTING=-1,e.ERROR_INVALID_ACTION=0,e.ERROR_INVALID_ACCURACY=1,e.ERROR_EXCEPTION=1,e.ERROR_CANNOT_CHANGE_ACCURACY=3,e.ERROR_USER_DISAGREED=4,e.ERROR_GOOGLE_API_CONNECTION_FAILED=4,Br([m()],e,"canRequest",null),Br([m()],e,"isRequesting",null),Br([m({callbackOrder:"reverse"})],e,"request",null),e=Br([E({pluginName:"LocationAccuracy",plugin:"cordova-plugin-request-location-accuracy",pluginRef:"cordova.plugins.locationAccuracy",repo:"https://github.com/dpa99c/cordova-plugin-request-location-accuracy"})],e)}(),Ir=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},xr=function(){function e(){}return e.captureAudio=function(e){},e.captureImage=function(e){},e.captureVideo=function(e){},e.onPendingCaptureResult=function(){},e.onPendingCaptureError=function(){},Ir([C],e,"supportedImageModes",void 0),Ir([C],e,"supportedAudioModes",void 0),Ir([C],e,"supportedVideoModes",void 0),Ir([m({callbackOrder:"reverse"})],e,"captureAudio",null),Ir([m({callbackOrder:"reverse"})],e,"captureImage",null),Ir([m({callbackOrder:"reverse"})],e,"captureVideo",null),Ir([m({eventObservable:!0,event:"pendingcaptureresult"})],e,"onPendingCaptureResult",null),Ir([m({eventObservable:!0,event:"pendingcaptureerror"})],e,"onPendingCaptureError",null),e=Ir([E({pluginName:"MediaCapture",plugin:"cordova-plugin-media-capture",pluginRef:"navigator.device.capture",repo:"https://github.com/apache/cordova-plugin-media-capture"})],e)}(),Tr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},kr=function(){function e(){}return e.preloadSimple=function(e,t){},e.preloadComplex=function(e,t,n,o,r){},e.play=function(e,t){},e.stop=function(e){},e.loop=function(e){},e.unload=function(e){},e.setVolumeForComplexAsset=function(e,t){},Tr([m()],e,"preloadSimple",null),Tr([m()],e,"preloadComplex",null),Tr([m({successIndex:1,errorIndex:2})],e,"play",null),Tr([m()],e,"stop",null),Tr([m()],e,"loop",null),Tr([m()],e,"unload",null),Tr([m()],e,"setVolumeForComplexAsset",null),e=Tr([E({pluginName:"NativeAudio",plugin:"cordova-plugin-nativeaudio",pluginRef:"plugins.NativeAudio",repo:"https://github.com/floatinghotpot/cordova-plugin-nativeaudio"})],e)}(),Nr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Mr=function(){function e(){}return e.slide=function(e){},e.flip=function(e){},e.fade=function(e){},e.drawer=function(e){},e.curl=function(e){},Nr([m()],e,"slide",null),Nr([m()],e,"flip",null),Nr([m({platforms:["iOS","Android"]})],e,"fade",null),Nr([m({platforms:["iOS","Android"]})],e,"drawer",null),Nr([m({platforms:["iOS"]})],e,"curl",null),e=Nr([E({pluginName:"NativePageTransitions",plugin:"com.telerik.plugins.nativepagetransitions",pluginRef:"plugins.nativepagetransitions",repo:"https://github.com/Telerik-Verified-Plugins/NativePageTransitions",platforms:["iOS","Android","Windows Phone"]})],e)}(),Lr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Wr=function(){function e(){}return e.setItem=function(e,t){},e.getItem=function(e){},e.remove=function(e){},e.clear=function(){},Lr([m()],e,"setItem",null),Lr([m()],e,"getItem",null),Lr([m()],e,"remove",null),Lr([m()],e,"clear",null),e=Lr([E({pluginName:"NativeStorage",plugin:"cordova-plugin-nativestorage",pluginRef:"NativeStorage",repo:"https://github.com/TheCocoaProject/cordova-plugin-nativestorage"})],e)}(),qr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Ur=function(){function e(){}return e.open=function(e){},e.search=function(e){},qr([m({callbackStyle:"object",successName:"success",errorName:"failure"})],e,"open",null),qr([m({callbackStyle:"object",successName:"success",errorName:"failure",platforms:["Android"]})],e,"search",null),e=qr([E({pluginName:"Market",plugin:"cordova-plugin-market",pluginRef:"cordova.plugins.market",repo:"https://github.com/xmartlabs/cordova-plugin-market"})],e)}(),Vr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},zr=function(){function e(e,t){var n=this;Kt("Media")?this.init=new Promise(function(o,r){n._objectInstance=new Media(e,o,r,t)}):Zt({pluginName:"MediaPlugin",plugin:"cordova-plugin-media"})}return e.prototype.getCurrentAmplitude=function(){},e.prototype.getCurrentPosition=function(){},e.prototype.getDuration=function(){},e.prototype.play=function(e){},e.prototype.pause=function(){},e.prototype.release=function(){},e.prototype.seekTo=function(e){},e.prototype.setVolume=function(e){},e.prototype.startRecord=function(){},e.prototype.stopRecord=function(){},e.prototype.stop=function(){},e.MEDIA_NONE=0,e.MEDIA_STARTING=1,e.MEDIA_RUNNING=2,e.MEDIA_PAUSED=3,e.MEDIA_STOPPED=4,e.MEDIA_ERR_ABORTED=1,e.MEDIA_ERR_NETWORK=2,e.MEDIA_ERR_DECODE=3,e.MEDIA_ERR_NONE_SUPPORTED=4,Vr([w()],e.prototype,"getCurrentAmplitude",null),Vr([w()],e.prototype,"getCurrentPosition",null),Vr([w({sync:!0})],e.prototype,"getDuration",null),Vr([w({sync:!0})],e.prototype,"play",null),Vr([w({sync:!0})],e.prototype,"pause",null),Vr([w({sync:!0})],e.prototype,"release",null),Vr([w({sync:!0})],e.prototype,"seekTo",null),Vr([w({sync:!0})],e.prototype,"setVolume",null),Vr([w({sync:!0})],e.prototype,"startRecord",null),Vr([w({sync:!0})],e.prototype,"stopRecord",null),Vr([w({sync:!0})],e.prototype,"stop",null),e=Vr([E({pluginName:"MediaPlugin",repo:"https://github.com/apache/cordova-plugin-media",plugin:"cordova-plugin-media",pluginRef:"Media"})],e)}(),Hr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Gr=function(){function e(){}return e.alias=function(e,t){},e.distinctId=function(){},e.flush=function(){},e.identify=function(e){},e.init=function(e){},e.registerSuperProperties=function(e){},e.reset=function(){},e.track=function(e,t){},e.showSurvey=function(){},Object.defineProperty(e,"people",{get:function(){return $r},enumerable:!0,configurable:!0}),Hr([m()],e,"alias",null),Hr([m()],e,"distinctId",null),Hr([m()],e,"flush",null),Hr([m()],e,"identify",null),Hr([m()],e,"init",null),Hr([m()],e,"registerSuperProperties",null),Hr([m()],e,"reset",null),Hr([m({successIndex:2,errorIndex:3})],e,"track",null),Hr([m()],e,"showSurvey",null),e=Hr([E({pluginName:"Mixpanel",plugin:"cordova-plugin-mixpanel",pluginRef:"mixpanel",repo:"https://github.com/samzilverberg/cordova-mixpanel-plugin"})],e)}(),$r=function(){function e(){}return e.identify=function(e){},e.increment=function(e){},e.setPushId=function(e){},e.set=function(e){},e.setOnce=function(e){},e.plugin="cordova-plugin-mixpanel",e.pluginRef="mixpanel.people",Hr([m()],e,"identify",null),Hr([m()],e,"increment",null),Hr([m()],e,"setPushId",null),Hr([m()],e,"set",null),Hr([m()],e,"setOnce",null),e}(),Yr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Xr=function(){function e(){}return e.create=function(e){},e.destroy=function(){},e.subscribe=function(){},e.listen=function(){},e.updateIsPlaying=function(e){},Yr([m()],e,"create",null),Yr([m()],e,"destroy",null),Yr([m({observable:!0})],e,"subscribe",null),Yr([m({sync:!0})],e,"listen",null),Yr([m({sync:!0})],e,"updateIsPlaying",null),e=Yr([E({pluginName:"MusicControls",plugin:"cordova-plugin-music-controls",pluginRef:"MusicControls",repo:"https://github.com/homerours/cordova-music-controls-plugin"})],e)}(),Jr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Kr=function(){function e(){}return e.onchange=function(){},e.ontypechange=function(){},e.onDisconnect=function(){},e.onConnect=function(){},Jr([C],e,"type",void 0),Jr([C],e,"downlinkMax",void 0),Jr([_()],e,"onchange",null),Jr([_()],e,"ontypechange",null),Jr([m({eventObservable:!0,event:"offline"})],e,"onDisconnect",null),Jr([m({eventObservable:!0,event:"online"})],e,"onConnect",null),e=Jr([E({pluginName:"Network",plugin:"cordova-plugin-network-information",repo:"https://github.com/apache/cordova-plugin-network-information",platforms:["Amazon Fire OS","iOS","Android","BlackBerry 10","Windows Phone 7","Windows Phone 8","Windows","Firefox OS","Browser"],pluginRef:"navigator.connection"})],e)}(),Zr=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Qr=function(){function e(){}return e.addNdefListener=function(e,t){},e.addTagDiscoveredListener=function(e,t){},e.addMimeTypeListener=function(e,t,n){},e.addNdefFormatableListener=function(e,t){},e.write=function(e){},e.makeReadyOnly=function(){},e.share=function(e){},e.unshare=function(){},e.erase=function(){},e.handover=function(e){},e.stopHandover=function(){},e.showSettings=function(){},e.enabled=function(){},e.bytesToString=function(e){},e.stringToBytes=function(e){},e.bytesToHexString=function(e){},Zr([m({observable:!0,successIndex:0,errorIndex:3,clearFunction:"removeNdefListener",clearWithArgs:!0})],e,"addNdefListener",null),Zr([m({observable:!0,successIndex:0,errorIndex:3,clearFunction:"removeTagDiscoveredListener",clearWithArgs:!0})],e,"addTagDiscoveredListener",null),Zr([m({observable:!0,successIndex:1,errorIndex:4,clearFunction:"removeMimeTypeListener",clearWithArgs:!0})],e,"addMimeTypeListener",null),Zr([m({observable:!0,successIndex:0,errorIndex:3})],e,"addNdefFormatableListener",null),Zr([m()],e,"write",null),Zr([m()],e,"makeReadyOnly",null),Zr([m()],e,"share",null),Zr([m()],e,"unshare",null),Zr([m()],e,"erase",null),Zr([m()],e,"handover",null),Zr([m()],e,"stopHandover",null),Zr([m()],e,"showSettings",null),Zr([m()],e,"enabled",null),Zr([m({sync:!0})],e,"bytesToString",null),Zr([m({sync:!0})],e,"stringToBytes",null),Zr([m({sync:!0})],e,"bytesToHexString",null),e=Zr([E({pluginName:"NFC",plugin:"phonegap-nfc",pluginRef:"nfc",repo:"https://github.com/chariotsolutions/phonegap-nfc"})],e)}(),eu=(function(){function e(){}return e.uriRecord=function(e){},e.textRecord=function(e){},e.mimeMediaRecord=function(e,t){},e.androidApplicationRecord=function(e){},e.pluginName="NFC",e.plugin="phonegap-nfc",e.pluginRef="ndef",Zr([m({sync:!0})],e,"uriRecord",null),Zr([m({sync:!0})],e,"textRecord",null),Zr([m({sync:!0})],e,"mimeMediaRecord",null),Zr([m({sync:!0})],e,"androidApplicationRecord",null),e}(),function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i});!function(e){e[e.Public=1]="Public",e[e.Private=0]="Private",e[e.Secret=-1]="Secret"}(Gn||(Gn={}));var tu;!function(e){e[e.None=0]="None",e[e.InAppAlert=1]="InAppAlert",e[e.Notification=2]="Notification"}(tu||(tu={}));var nu;!function(e){e[e.Opened=0]="Opened",e[e.ActionTake=1]="ActionTake"}(nu||(nu={}));var ou=function(){function e(){}return e.startInit=function(e,t){},e.handleNotificationReceived=function(){},e.handleNotificationOpened=function(){},e.iOSSettings=function(e){},e.endInit=function(){},e.getTags=function(){},e.getIds=function(){},e.sendTag=function(e,t){},e.sendTags=function(e){},e.deleteTag=function(e){},e.deleteTags=function(e){},e.registerForPushNotifications=function(){},e.enableVibrate=function(e){},e.enableSound=function(e){},e.inFocusDisplaying=function(e){},e.setSubscription=function(e){},e.postNotification=function(e){},e.promptLocation=function(){},e.syncHashedEmail=function(e){},e.setLogLevel=function(e){},e.OSInFocusDisplayOption={None:0,InAppAlert:1,Notification:2},eu([m({sync:!0})],e,"startInit",null),eu([m({observable:!0})],e,"handleNotificationReceived",null),eu([m({observable:!0})],e,"handleNotificationOpened",null),eu([m({sync:!0})],e,"iOSSettings",null),eu([m({sync:!0})],e,"endInit",null),eu([m()],e,"getTags",null),eu([m()],e,"getIds",null),eu([m({sync:!0})],e,"sendTag",null),eu([m({sync:!0})],e,"sendTags",null),eu([m({sync:!0})],e,"deleteTag",null),eu([m({sync:!0})],e,"deleteTags",null),eu([m({sync:!0})],e,"registerForPushNotifications",null),eu([m({sync:!0})],e,"enableVibrate",null),eu([m({sync:!0})],e,"enableSound",null),eu([m({sync:!0})],e,"inFocusDisplaying",null),eu([m({sync:!0})],e,"setSubscription",null),eu([m()],e,"postNotification",null),eu([m({sync:!0})],e,"promptLocation",null),eu([m({sync:!0})],e,"syncHashedEmail",null),eu([m({sync:!0})],e,"setLogLevel",null),e=eu([E({pluginName:"OneSignal",plugin:"onesignal-cordova-plugin",pluginRef:"plugins.OneSignal",repo:"https://github.com/OneSignal/OneSignal-Cordova-SDK",platforms:["Android","iOS","Windows","FireOS"]})],e)}(),ru=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},uu=function(){function e(){}return e.show=function(e,t,n){},ru([m({sync:!0})],e,"show",null),e=ru([E({pluginName:"PhotoViewer",plugin:"com-sarriaroman-photoviewer",pluginRef:"PhotoViewer",repo:"https://github.com/sarriaroman/photoviewer"})],e)}(),iu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},su=function(){function e(){}return e.lockOrientation=function(e){},e.unlockOrientation=function(){},iu([m({sync:!0})],e,"lockOrientation",null),iu([m({sync:!0})],e,"unlockOrientation",null),iu([C],e,"orientation",void 0),e=iu([E({pluginName:"ScreenOrientation",plugin:"cordova-plugin-screen-orientation",pluginRef:"window.screen",repo:"https://github.com/apache/cordova-plugin-screen-orientation",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),cu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},au=function(){function e(){}return e.version=function(){},e.init=function(e){},e.prepareToRender=function(e,t){},e.renderSinglePaymentUI=function(e){},e.clientMetadataID=function(){},e.renderFuturePaymentUI=function(){},e.renderProfileSharingUI=function(e){},cu([m()],e,"version",null),cu([m()],e,"init",null),cu([m()],e,"prepareToRender",null),cu([m()],e,"renderSinglePaymentUI",null),cu([m()],e,"clientMetadataID",null),cu([m()],e,"renderFuturePaymentUI",null),cu([m()],e,"renderProfileSharingUI",null),e=cu([E({pluginName:"PayPal",plugin:"com.paypal.cordova.mobilesdk",pluginRef:"PayPalMobile",repo:"https://github.com/paypal/PayPal-Cordova-Plugin"})],e)}(),lu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},pu=function(){function e(){}return e.prompt=function(e,t,n){},lu([m({successIndex:1})],e,"prompt",null),e=lu([E({pluginName:"PinDialog",plugin:"cordova-plugin-pin-dialog",pluginRef:"plugins.pinDialog",repo:"https://github.com/Paldom/PinDialog"})],e)}(),fu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},du=function(){function e(){}return e.acquire=function(){},e.dim=function(){},e.release=function(){},e.setReleaseOnPause=function(e){},fu([m()],e,"acquire",null),fu([m()],e,"dim",null),fu([m()],e,"release",null),fu([m()],e,"setReleaseOnPause",null),e=fu([E({pluginName:"PowerManagement",plugin:"cordova-plugin-powermanagement-orig",pluginRef:"powerManagement",repo:"https://github.com/Viras-/cordova-plugin-powermanagement"})],e)}(),hu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},gu=function(){function e(){}return e.isAvailable=function(){},e.print=function(e,t){},hu([m()],e,"isAvailable",null),hu([m()],e,"print",null),e=hu([E({pluginName:"Printer",plugin:"de.appplant.cordova.plugin.printer",pluginRef:"cordova.plugins.printer",repo:"https://github.com/katzer/cordova-plugin-printer.git",platforms:["Android","iOS"]})],e)}(),yu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},bu=function(){function e(){}return e.init=function(e){},e.hasPermission=function(){},yu([m({sync:!0})],e,"init",null),yu([m()],e,"hasPermission",null),e=yu([E({pluginName:"Push",plugin:"phonegap-plugin-push",pluginRef:"PushNotification",repo:"https://github.com/phonegap/phonegap-plugin-push",install:"ionic plugin add phonegap-plugin-push --variable SENDER_ID=XXXXXXXXX"})],e)}(),vu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Au=function(){function e(){}return e.isAvailable=function(){},e.show=function(e){},e.hide=function(){},e.connectToService=function(){},e.warmUp=function(){},e.mayLaunchUrl=function(e){},vu([m()],e,"isAvailable",null),vu([m()],e,"show",null),vu([m()],e,"hide",null),vu([m()],e,"connectToService",null),vu([m()],e,"warmUp",null),vu([m()],e,"mayLaunchUrl",null),e=vu([E({pluginName:"SafariViewController",plugin:"cordova-plugin-safariviewcontroller",pluginRef:"SafariViewController",platforms:["iOS","Android"],repo:"https://github.com/EddyVerbruggen/cordova-plugin-safariviewcontroller"})],e)}(),Eu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},mu=function(){function e(){}return e.save=function(e,t,n){return new Promise(function(o,r){navigator.screenshot.save(function(e,t){e?r(e):o(t)},e,t,n)})},e.URI=function(e){return new Promise(function(t,n){navigator.screenshot.URI(function(e,o){e?n(e):t(o)},e)})},e=Eu([E({pluginName:"Screenshot",plugin:"https://github.com/gitawego/cordova-screenshot.git",pluginRef:"navigator.screenshot",repo:"https://github.com/gitawego/cordova-screenshot.git"})],e)}(),wu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Cu=function(){function e(){}return e.prototype.create=function(e){var t=this;return new Promise(function(n,o){t._objectInstance=new cordova.plugins.SecureStorage(n,o,e)})},e.prototype.get=function(e){},e.prototype.set=function(e,t){},e.prototype.remove=function(e){},wu([w({callbackOrder:"reverse"})],e.prototype,"get",null),wu([w({callbackOrder:"reverse"})],e.prototype,"set",null),wu([w({callbackOrder:"reverse"})],e.prototype,"remove",null),e=wu([E({pluginName:"SecureStorage",plugin:"cordova-plugin-secure-storage",pluginRef:"plugins.securestorage",repo:"https://github.com/Crypho/cordova-plugin-secure-storage",platforms:["Android","iOS","Windows Phone","Browser"]})],e)}(),Ou=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},_u=function(){function e(){}return e.startWatch=function(e){},Ou([m({observable:!0,clearFunction:"stopWatch",successIndex:0,errorIndex:2})],e,"startWatch",null),e=Ou([E({pluginName:"Shake",plugin:"cordova-plugin-shake",pluginRef:"shake",repo:"https://github.com/leecrossley/cordova-plugin-shake"})],e)}(),Su=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Du=function(){function e(){}return e.getSimInfo=function(){},e.hasReadPermission=function(){},e.requestReadPermission=function(){},Su([m()],e,"getSimInfo",null),Su([m({platforms:["Android"]})],e,"hasReadPermission",null),Su([m({platforms:["Android"]})],e,"requestReadPermission",null),e=Su([E({pluginName:"Sim",plugin:"cordova-plugin-sim",pluginRef:"plugins.sim",repo:"https://github.com/pbakondy/cordova-plugin-sim",platforms:["Android","iOS","Windows Phone"]})],e)}(),Fu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Ru=function(){function e(){}return e.send=function(e,t,n){},e.hasPermission=function(){},Fu([m({successIndex:3,errorIndex:4})],e,"send",null),Fu([m({platforms:["Android"]})],e,"hasPermission",null),e=Fu([E({pluginName:"SMS",plugin:"cordova-sms-plugin",pluginRef:"sms",repo:"https://github.com/cordova-sms/cordova-sms-plugin",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),Pu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Bu=function(){function e(){}return e.share=function(e,t,n,o){},e.shareWithOptions=function(e){},e.canShareVia=function(e,t,n,o,r){},e.shareViaTwitter=function(e,t,n){},e.shareViaFacebook=function(e,t,n){},e.shareViaFacebookWithPasteMessageHint=function(e,t,n,o){},e.shareViaInstagram=function(e,t){},e.shareViaWhatsApp=function(e,t,n){},e.shareViaWhatsAppToReceiver=function(e,t,n,o){},e.shareViaSMS=function(e,t){},e.canShareViaEmail=function(){},e.shareViaEmail=function(e,t,n,o,r,u){},e.shareVia=function(e,t,n,o,r){},Pu([m()],e,"share",null),Pu([m({platforms:["iOS","Android"]})],e,"shareWithOptions",null),Pu([m({successIndex:5,errorIndex:6,platforms:["iOS","Android"]})],e,"canShareVia",null),Pu([m({successIndex:3,errorIndex:4,platforms:["iOS","Android"]})],e,"shareViaTwitter",null),Pu([m({successIndex:3,errorIndex:4,platforms:["iOS","Android"]})],e,"shareViaFacebook",null),Pu([m({successIndex:4,errorIndex:5,platforms:["iOS","Android"]})],e,"shareViaFacebookWithPasteMessageHint",null),Pu([m({platforms:["iOS","Android"]})],e,"shareViaInstagram",null),Pu([m({successIndex:3,errorIndex:4,platforms:["iOS","Android"]})],e,"shareViaWhatsApp",null),Pu([m({successIndex:4,errorIndex:5,platforms:["iOS","Android"]})],e,"shareViaWhatsAppToReceiver",null),Pu([m({platforms:["iOS","Android"]})],e,"shareViaSMS",null),Pu([m({platforms:["iOS","Android"]})],e,"canShareViaEmail",null),Pu([m({platforms:["iOS","Android"],successIndex:6,errorIndex:7})],e,"shareViaEmail",null),Pu([m({successIndex:5,errorIndex:6,platforms:["iOS","Android"]})],e,"shareVia",null),e=Pu([E({pluginName:"SocialSharing",plugin:"cordova-plugin-x-socialsharing",pluginRef:"plugins.socialsharing",repo:"https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin",platforms:["iOS","Android","Windows Phone"]})],e)}(),ju=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Iu=function(){function e(){}return e.show=function(e,t,n,o){},e.hide=function(){},ju([m({sync:!0})],e,"show",null),ju([m({sync:!0})],e,"hide",null),e=ju([E({pluginName:"SpinnerDialog",plugin:"cordova-plugin-spinner-dialog",pluginRef:"window.plugins.spinnerDialog",repo:"https://github.com/Paldom/SpinnerDialog",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),xu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Tu=function(){function e(){}return e.show=function(){},e.hide=function(){},xu([m({sync:!0})],e,"show",null),xu([m({sync:!0})],e,"hide",null),e=xu([E({pluginName:"Splashscreen",plugin:"cordova-plugin-splashscreen",pluginRef:"navigator.splashscreen",repo:"https://github.com/apache/cordova-plugin-splashscreen"})],e)}(),ku=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Nu=function(){function e(){}return e.openDatabase=function(t){return(new e).openDatabase(t)},e.prototype.openDatabase=function(e){var t=this;return new Promise(function(n,o){"undefined"!=typeof sqlitePlugin?sqlitePlugin.openDatabase(e,function(e){t._objectInstance=e,n(e)},function(e){console.warn(e),o(e)}):Zt({pluginName:"SQLite",plugin:"cordova-sqlite-storage"})})},e.prototype.addTransaction=function(e){},e.prototype.transaction=function(e){},e.prototype.readTransaction=function(e){},e.prototype.startNextTransaction=function(){},e.prototype.close=function(){},e.prototype.start=function(){},e.prototype.executeSql=function(e,t){},e.prototype.addStatement=function(e,t){},e.prototype.sqlBatch=function(e){},e.prototype.abortallPendingTransactions=function(){},e.prototype.handleStatementSuccess=function(e,t){},e.prototype.handleStatementFailure=function(e,t){},e.prototype.run=function(){},e.prototype.abort=function(e){},e.prototype.finish=function(){},e.prototype.abortFromQ=function(e){},e.echoTest=function(){},e.deleteDatabase=function(e){},ku([O],e.prototype,"databaseFeatures",void 0),ku([w({sync:!0})],e.prototype,"addTransaction",null),ku([w({successIndex:2,errorIndex:1})],e.prototype,"transaction",null),ku([w()],e.prototype,"readTransaction",null),ku([w({sync:!0})],e.prototype,"startNextTransaction",null),ku([w()],e.prototype,"close",null),ku([w({sync:!0})],e.prototype,"start",null),ku([w()],e.prototype,"executeSql",null),ku([w()],e.prototype,"addStatement",null),ku([w()],e.prototype,"sqlBatch",null),ku([w({sync:!0})],e.prototype,"abortallPendingTransactions",null),ku([w({sync:!0})],e.prototype,"handleStatementSuccess",null),ku([w({sync:!0})],e.prototype,"handleStatementFailure",null),ku([w({sync:!0})],e.prototype,"run",null),ku([w({sync:!0})],e.prototype,"abort",null),ku([w({sync:!0})],e.prototype,"finish",null),ku([w({sync:!0})],e.prototype,"abortFromQ",null),ku([m()],e,"echoTest",null),
-ku([m()],e,"deleteDatabase",null),e=ku([E({pluginName:"SQLite",pluginRef:"sqlitePlugin",plugin:"cordova-sqlite-storage",repo:"https://github.com/litehelpers/Cordova-sqlite-storage"})],e)}(),Mu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Lu=function(){function e(){}return e.overlaysWebView=function(e){},e.styleDefault=function(){},e.styleLightContent=function(){},e.styleBlackTranslucent=function(){},e.styleBlackOpaque=function(){},e.backgroundColorByName=function(e){},e.backgroundColorByHexString=function(e){},e.hide=function(){},e.show=function(){},Mu([m({sync:!0})],e,"overlaysWebView",null),Mu([m({sync:!0})],e,"styleDefault",null),Mu([m({sync:!0})],e,"styleLightContent",null),Mu([m({sync:!0})],e,"styleBlackTranslucent",null),Mu([m({sync:!0})],e,"styleBlackOpaque",null),Mu([m({sync:!0})],e,"backgroundColorByName",null),Mu([m({sync:!0})],e,"backgroundColorByHexString",null),Mu([m({sync:!0})],e,"hide",null),Mu([m({sync:!0})],e,"show",null),Mu([C],e,"isVisible",void 0),e=Mu([E({pluginName:"StatusBar",plugin:"cordova-plugin-statusbar",pluginRef:"StatusBar",repo:"https://github.com/apache/cordova-plugin-statusbar",platforms:["iOS","Android","Windows Phone 8","Windows 8","Windows 10"]})],e)}(),Wu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},qu=function(){function e(){}return e.start=function(e){},e.stop=function(){},e.getTodayStepCount=function(){},e.getStepCount=function(){},e.deviceCanCountSteps=function(){},e.getHistory=function(){},Wu([m()],e,"start",null),Wu([m()],e,"stop",null),Wu([m()],e,"getTodayStepCount",null),Wu([m()],e,"getStepCount",null),Wu([m()],e,"deviceCanCountSteps",null),Wu([m()],e,"getHistory",null),e=Wu([E({pluginName:"Stepcounter",plugin:"https://github.com/texh/cordova-plugin-stepcounter",pluginRef:"stepcounter",repo:"https://github.com/texh/cordova-plugin-stepcounter",platforms:["Android"]})],e)}(),Uu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Vu=function(){function e(){}return e.playVideo=function(e,t){},e.playAudio=function(e,t){},e.stopAudio=function(){},e.pauseAudio=function(){},e.resumeAudio=function(){},Uu([m({sync:!0})],e,"playVideo",null),Uu([m({sync:!0})],e,"playAudio",null),Uu([m({sync:!0})],e,"stopAudio",null),Uu([m({sync:!0,platforms:["iOS"]})],e,"pauseAudio",null),Uu([m({sync:!0,platforms:["iOS"]})],e,"resumeAudio",null),e=Uu([E({pluginName:"StreamingMedia",plugin:"cordova-plugin-streaming-media",pluginRef:"plugins.streamingMedia",repo:"https://github.com/nchutchind/cordova-plugin-streaming-media",platforms:["Android","iOS"]})],e)}(),zu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Hu=function(){function e(){}return e.isAvailable=function(){},e.watchForceTouches=function(){},e.configureQuickActions=function(e){},e.onHomeIconPressed=function(){return new Jt(function(e){window.ThreeDeeTouch?window.ThreeDeeTouch.onHomeIconPressed=e.next.bind(e):(e.error("3dTouch plugin is not available."),e.complete())})},e.enableLinkPreview=function(){},e.disableLinkPreview=function(){},zu([m()],e,"isAvailable",null),zu([m({observable:!0})],e,"watchForceTouches",null),zu([m({sync:!0})],e,"configureQuickActions",null),zu([m({sync:!0})],e,"enableLinkPreview",null),zu([m({sync:!0})],e,"disableLinkPreview",null),e=zu([E({pluginName:"ThreeDeeTouch",plugin:"cordova-plugin-3dtouch",pluginRef:"ThreeDeeTouch",repo:"https://github.com/EddyVerbruggen/cordova-plugin-3dtouch",platforms:["iOS"]})],e)}(),Gu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},$u=function(){function e(){}return e.show=function(e,t,n){},e.hide=function(){},e.showWithOptions=function(e){},e.showShortTop=function(e){},e.showShortCenter=function(e){},e.showShortBottom=function(e){},e.showLongTop=function(e){},e.showLongCenter=function(e){},e.showLongBottom=function(e){},Gu([m({observable:!0,clearFunction:"hide"})],e,"show",null),Gu([m()],e,"hide",null),Gu([m({observable:!0,clearFunction:"hide"})],e,"showWithOptions",null),Gu([m({observable:!0,clearFunction:"hide"})],e,"showShortTop",null),Gu([m({observable:!0,clearFunction:"hide"})],e,"showShortCenter",null),Gu([m({observable:!0,clearFunction:"hide"})],e,"showShortBottom",null),Gu([m({observable:!0,clearFunction:"hide"})],e,"showLongTop",null),Gu([m({observable:!0,clearFunction:"hide"})],e,"showLongCenter",null),Gu([m({observable:!0,clearFunction:"hide"})],e,"showLongBottom",null),e=Gu([E({pluginName:"Toast",plugin:"cordova-plugin-x-toast",pluginRef:"plugins.toast",repo:"https://github.com/EddyVerbruggen/Toast-PhoneGap-Plugin",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),Yu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Xu=function(){function e(){}return e.isAvailable=function(){},e.verifyFingerprint=function(e){},e.verifyFingerprintWithCustomPasswordFallback=function(e){},e.verifyFingerprintWithCustomPasswordFallbackAndEnterPasswordLabel=function(e,t){},Yu([m()],e,"isAvailable",null),Yu([m()],e,"verifyFingerprint",null),Yu([m()],e,"verifyFingerprintWithCustomPasswordFallback",null),Yu([m()],e,"verifyFingerprintWithCustomPasswordFallbackAndEnterPasswordLabel",null),e=Yu([E({pluginName:"TouchID",plugin:"cordova-plugin-touch-id",pluginRef:"plugins.touchid",repo:"https://github.com/EddyVerbruggen/cordova-plugin-touch-id",platforms:["iOS"]})],e)}(),Ju=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Ku=function(){function e(){}return e.speak=function(e){},Ju([m({successIndex:1,errorIndex:2})],e,"speak",null),e=Ju([E({pluginName:"TextToSpeech",plugin:"cordova-plugin-tts",pluginRef:"TTS",repo:"https://github.com/vilic/cordova-plugin-tts"})],e)}(),Zu=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},Qu=function(){function e(e,t,n){try{this._objectInstance=cordova.ThemeableBrowser.open(e,t,n)}catch(t){window.open(e),console.warn("Native: ThemeableBrowser is not installed or you are running on a browser. Falling back to window.open, all instance methods will NOT work.")}}return e.prototype.show=function(){},e.prototype.close=function(){},e.prototype.reload=function(){},e.prototype.executeScript=function(e){},e.prototype.insertCss=function(e){},e.prototype.on=function(e){var t=this;return new Jt(function(n){return t._objectInstance.addEventListener(e,n.next.bind(n)),function(){return t._objectInstance.removeEventListener(e,n.next.bind(n))}})},Zu([w({sync:!0})],e.prototype,"show",null),Zu([w({sync:!0})],e.prototype,"close",null),Zu([w({sync:!0})],e.prototype,"reload",null),Zu([w()],e.prototype,"executeScript",null),Zu([w()],e.prototype,"insertCss",null),e=Zu([E({pluginName:"ThemeableBrowser",plugin:"cordova-plugin-themeablebrowser",pluginRef:"cordova.ThemeableBrowser",repo:"https://github.com/initialxy/cordova-plugin-themeablebrowser"})],e)}(),ei=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},ti=function(){function e(){}return e.login=function(){},e.logout=function(){},e.showUser=function(){},ei([m()],e,"login",null),ei([m()],e,"logout",null),ei([m()],e,"showUser",null),e=ei([E({pluginName:"TwitterConnect",plugin:"twitter-connect-plugin",pluginRef:"TwitterConnect",repo:"https://github.com/ManifestWebDesign/twitter-connect-plugin",install:"ionic plugin add twitter-connect-plugin --variable FABRIC_KEY=fabric_API_key"})],e)}(),ni=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},oi=function(){function e(){}return e.vibrate=function(e){},ni([m({sync:!0})],e,"vibrate",null),e=ni([E({pluginName:"Vibration",plugin:"cordova-plugin-vibration",pluginRef:"navigator",repo:"https://github.com/apache/cordova-plugin-vibration",platforms:["Android","iOS","Windows 8.1 Phone","Windows 8.1","Windows 10"]})],e)}(),ri=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},ui=function(){function e(){}return e.transcodeVideo=function(e){},e.trim=function(e){},e.createThumbnail=function(e){},e.getVideoInfo=function(e){},e.OptimizeForNetworkUse={NO:0,YES:1},e.OutputFileType={M4V:0,MPEG4:1,M4A:2,QUICK_TIME:3},ri([m({callbackOrder:"reverse"})],e,"transcodeVideo",null),ri([m({callbackOrder:"reverse",platforms:["iOS"]})],e,"trim",null),ri([m({callbackOrder:"reverse"})],e,"createThumbnail",null),ri([m({callbackOrder:"reverse"})],e,"getVideoInfo",null),e=ri([E({pluginName:"VideoEditor",plugin:"cordova-plugin-video-editor",pluginRef:"VideoEditor",repo:"https://github.com/jbavari/cordova-plugin-video-editor",platforms:["Android","iOS","Windows Phone 8"]})],e)}(),ii=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},si=function(){function e(){}return e.play=function(e,t){},e.close=function(){},ii([m()],e,"play",null),ii([m({sync:!0})],e,"close",null),e=ii([E({pluginName:"VideoPlayer",plugin:"https://github.com/moust/cordova-plugin-videoplayer",pluginRef:"VideoPlayer",repo:"https://github.com/moust/cordova-plugin-videoplayer",platforms:["Android"]})],e)}(),ci=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},ai=function(){function e(){}return e.startActivity=function(e){},e.hasExtra=function(e){},e.getExtra=function(e){},e.getUri=function(){},e.onNewIntent=function(){},e.sendBroadcast=function(e){},ci([C],e,"ACTION_VIEW",void 0),ci([C],e,"EXTRA_TEXT",void 0),ci([m()],e,"startActivity",null),ci([m()],e,"hasExtra",null),ci([m()],e,"getExtra",null),ci([m()],e,"getUri",null),ci([m()],e,"onNewIntent",null),ci([m()],e,"sendBroadcast",null),e=ci([E({pluginName:"WebIntent",plugin:"https://github.com/Initsogar/cordova-webintent.git",pluginRef:"window.plugins.webintent",repo:"https://github.com/Initsogar/cordova-webintent.git",platforms:["Android"]})],e)}(),li=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},pi=function(){function e(){}return e.openVideo=function(e){},li([m({sync:!0})],e,"openVideo",null),e=li([E({pluginName:"YoutubeVideoPlayer",plugin:"https://github.com/Glitchbone/CordovaYoutubeVideoPlayer.git",pluginRef:"YoutubeVideoPlayer",repo:"https://github.com/Glitchbone/CordovaYoutubeVideoPlayer",platforms:["Android","iOS"]})],e)}(),fi=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},di=function(){function e(){}return e.scan=function(e){},fi([m()],e,"scan",null),e=fi([E({pluginName:"ZBar",plugin:"cordova-plugin-cszbar",pluginRef:"cloudSky.zBar",repo:"https://github.com/tjwoon/csZBar",platforms:["Android","iOS"]})],e)}(),hi=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},gi=function(){function e(){}return e.unzip=function(e,t,n){},hi([m({successIndex:2,errorIndex:4})],e,"unzip",null),e=hi([E({pluginName:"Zip",plugin:"cordova-plugin-zip",pluginRef:"zip",repo:"https://github.com/MobileChromeApps/cordova-plugin-zip"})],e)}(),yi=2e3;window.IonicNative={ActionSheet:nn,AdMob:rn,AndroidFingerprintAuth:sn,AppAvailability:an,AppRate:pn,AppVersion:dn,Badge:gn,BackgroundGeolocation:bn,BackgroundMode:An,BarcodeScanner:mn,Base64ToGallery:Cn,BatteryStatus:_n,Brightness:Dn,BLE:Rn,BluetoothSerial:Bn,Calendar:In,CallNumber:Tn,Camera:Nn,CameraPreview:Ln,CardIO:qn,Clipboard:Vn,CodePush:$n,Contacts:Jn,Crop:Zn,DatePicker:eo,DBMeter:no,Deeplinks:ro,Device:io,DeviceFeedback:co,DeviceAccounts:lo,DeviceMotion:fo,DeviceOrientation:go,Dialogs:Ao,Diagnostic:bo,EmailComposer:mo,EstimoteBeacons:Co,Facebook:_o,File:Do,FileChooser:Ro,FileOpener:Bo,FilePath:Io,Flashlight:No,Geofence:Lo,Geolocation:qo,Globalization:Vo,GooglePlus:Ho,GoogleMap:$o,GoogleAnalytics:nr,Hotspot:rr,HTTP:ir,Httpd:cr,IBeacon:lr,ImagePicker:fr,ImageResizer:hr,InAppBrowser:yr,InAppPurchase:vr,Insomnia:Er,Instagram:wr,IsDebug:Or,Keyboard:Sr,LaunchNavigator:Fr,LocalNotifications:Pr,LocationAccuracy:jr,Market:Ur,MediaCapture:xr,MediaPlugin:zr,Mixpanel:Gr,MusicControls:Xr,NativeAudio:kr,NativePageTransitions:Mr,NativeStorage:Wr,Network:Kr,PayPal:au,NFC:Qr,Printer:gu,Push:bu,OneSignal:ou,PhotoViewer:uu,ScreenOrientation:su,PinDialog:pu,PowerManagement:du,SafariViewController:Au,Screenshot:mu,SecureStorage:Cu,Shake:_u,Sim:Du,SMS:Ru,SocialSharing:Bu,SpinnerDialog:Iu,Splashscreen:Tu,SQLite:Nu,StatusBar:Lu,Stepcounter:qu,StreamingMedia:Vu,ThreeDeeTouch:Hu,Toast:$u,TouchID:Xu,Transfer:To,TextToSpeech:Ku,ThemeableBrowser:Qu,TwitterConnect:ti,VideoEditor:ui,VideoPlayer:si,Vibration:oi,WebIntent:ai,YoutubeVideoPlayer:pi,ZBar:di,Zip:gi},t(window.IonicNative);var bi=Date.now(),vi=!1;document.addEventListener("deviceready",function(){console.log("DEVICE READY FIRED AFTER",Date.now()-bi,"ms"),vi=!0}),setTimeout(function(){!vi&&window.cordova&&console.warn("Native: deviceready did not fire within "+yi+"ms. This can happen when plugins are in an inconsistent state. Try removing plugins from plugins/ and reinstalling them.")},yi);var Ai,Ei=function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},mi=function(e){function t(t){var n=e.call(this,t)||this;return n.message=t,n.name="Exception",n.stack=(new Error).stack,n}return Ei(t,e),t.prototype.toString=function(){return this.name+": "+this.message},t}(Error),wi=function(e){function t(t,n){var o=e.call(this,t)||this;return o.message=t,o.details=n,o.name="DetailedError",o}return Ei(t,e),t}(mi),Ci=function(){function e(){this.init()}return e.prototype.init=function(){var e=this;this.promise=new Promise(function(t,n){e.resolve=function(n){return t(n),e.promise},e.reject=function(t){return n(t),e.promise}})},e.rejectImmediately=function(e){return new Promise(function(t,n){n(e)})},e}(),Oi=/^[^\s@]+@[^\s@]+\.[^\s@]+$/,_i=/^v?([0-9]+)\.?([0-9]+)?\.?([0-9]+)?\.?.*$/,Si=function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Di=function(){function e(e,t){this.label=t,this.storage=e.storage,this.tempStorage=e.tempStorage}return e.prototype.get=function(){var e=this.storage.get(this.label),t=this.tempStorage.get(this.label),n=t||e;return n},e.prototype.store=function(e,t){void 0===t&&(t={permanent:!0}),t.permanent?this.storage.set(this.label,e):this.tempStorage.set(this.label,e)},e.prototype.delete=function(){this.storage.delete(this.label),this.tempStorage.delete(this.label)},e}(),Fi=function(){function e(e){this.config=e.config,this.emitter=e.emitter,this.authModules=e.authModules,this.tokenContext=e.tokenContext,this.userService=e.userService,this.storage=e.storage}return Object.defineProperty(e.prototype,"passwordResetUrl",{get:function(){return this.config.getURL("web")+"/password/reset/"+this.config.get("app_id")},enumerable:!0,configurable:!0}),e.prototype.isAuthenticated=function(){var e=this.tokenContext.get();return!!e&&(this.emitter.emit("auth:login",{token:e}),!0)},e.prototype.signup=function(e){return this.authModules.basic.signup(e)},e.prototype.login=function(e,t,n){var o=this;void 0===n&&(n={}),"undefined"==typeof n.remember&&(n.remember=!0),"undefined"==typeof n.inAppBrowserOptions&&(n.inAppBrowserOptions={}),"undefined"==typeof n.inAppBrowserOptions.location&&(n.inAppBrowserOptions.location=!1),"undefined"==typeof n.inAppBrowserOptions.clearcache&&(n.inAppBrowserOptions.clearcache=!0),"undefined"==typeof n.inAppBrowserOptions.clearsessioncache&&(n.inAppBrowserOptions.clearsessioncache=!0);var r=this.authModules[e];if(!r)throw new Error("Authentication class is invalid or missing:"+r);return r.authenticate(t,n).then(function(e){return o.storeToken(n,e.token),o.userService.load().then(function(){var t=o.userService.current();return t.store(),e})})},e.prototype.logout=function(){this.emitter.emit("auth:token-changed",{old:this.tokenContext.get(),new:void 0}),this.emitter.emit("auth:logout",{}),this.tokenContext.delete();var e=this.userService.current();e.unstore(),e.clear()},e.prototype.requestPasswordReset=function(e){return this.storage.set("auth_password_reset_email",e),this.authModules.basic.requestPasswordReset(e)},e.prototype.confirmPasswordReset=function(e,t){var n=this.storage.get("auth_password_reset_email");return n?this.authModules.basic.confirmPasswordReset(n,e,t):Ci.rejectImmediately(new Error("email address not found in local storage"))},e.prototype.getToken=function(){return this.tokenContext.get()},e.prototype.storeToken=function(e,t){void 0===e&&(e={remember:!0});var n=this.authToken;this.authToken=t,this.tokenContext.store(this.authToken,{permanent:e.remember}),this.emitter.emit("auth:token-changed",{old:n,new:this.authToken}),this.emitter.emit("auth:login",{token:this.authToken})},e.getDetailedErrorFromResponse=function(e){var t=[],n=[];D(e.body)&&"undefined"!=typeof e.body.error.details&&(n=e.body.error.details);for(var o=0;o<n.length;o++){var r=n[o];r.error_type&&t.push(r.error_type+"_"+r.parameter)}return new wi("Error creating user",t)},e}(),Ri=function(){function e(e){this.config=e.config,this.client=e.client,this.emitter=e.emitter}return e.prototype.parseInAppBrowserOptions=function(e){if(!e)return"";var t=[];for(var n in e){var o=void 0;o="boolean"==typeof e[n]?e[n]?"yes":"no":e[n],t.push(n+"="+o)}return t.join(",")},e.prototype.inAppBrowserFlow=function(e,t,n){var o=this;void 0===t&&(t={}),void 0===n&&(n={});var r=new Ci;return window&&window.cordova?(this.emitter.once("cordova:deviceready",function(){return window.cordova.InAppBrowser?void o.client.post("/auth/login/"+e).send({app_id:o.config.get("app_id"),callback:window.location.href,data:t}).end(function(e,t){if(e)r.reject(e);else{var u=window.cordova.InAppBrowser.open(t.body.data.url,"_blank",o.parseInAppBrowserOptions(n.inAppBrowserOptions)),i=function(){r.reject(new Error("InAppBrowser exit"))},s=function(){r.reject(new Error("InAppBrowser loaderror"))},c=function(e){if("http://auth.ionic.io"===e.url.slice(0,20)){for(var t=e.url.split("#")[0].split("?")[1],n=t.split("&"),o={},c=0;c<n.length;c++){var a=n[c].split("=");o[a[0]]=a[1]}u.removeEventListener("exit",i),u.removeEventListener("loaderror",s),u.close(),o.error?r.reject(new Error(decodeURIComponent(o.error))):r.resolve({token:o.token,signup:Boolean(parseInt(o.signup,10))})}};u.addEventListener("exit",i),u.addEventListener("loaderror",s),u.addEventListener("loadstart",c)}}):void r.reject(new Error("InAppBrowser plugin missing"))}),r.promise):r.reject(new Error("Cordova is missing--can't login with InAppBrowser flow."))},e}(),Pi=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){var n=new Ci;return e.email&&e.password?(this.client.post("/auth/login").send({app_id:this.config.get("app_id"),email:e.email,password:e.password}).end(function(e,t){e?n.reject(e):n.resolve({token:t.body.data.token})}),n.promise):n.reject(new Error("email and password are required for basic authentication"))},t.prototype.requestPasswordReset=function(e){var t=new Ci;return e?(this.client.post("/auth/users/password/reset").send({app_id:this.config.get("app_id"),email:e,flow:"app"}).end(function(e,n){e?t.reject(e):t.resolve()}),t.promise):t.reject(new Error("Email is required for password reset request."))},t.prototype.confirmPasswordReset=function(e,t,n){var o=new Ci;return t&&e&&n?(this.client.post("/auth/users/password").send({reset_token:t,new_password:n,email:e}).end(function(e,t){e?o.reject(e):o.resolve()}),o.promise):o.reject(new Error("Code, new password, and email are required."))},t.prototype.signup=function(e){var t=new Ci;if(!e.email)return t.reject(new wi("Email is required for email/password auth signup.",["required_email"]));if(!F(e.email))return t.reject(new wi("Invalid email supplied.",["invalid_email"]));if(!e.password)return t.reject(new wi("Password is required for email/password auth signup.",["required_password"]));var n={app_id:this.config.get("app_id"),email:e.email,password:e.password};return e.username&&(n.username=e.username),e.image&&(n.image=e.image),e.name&&(n.name=e.name),e.custom&&(n.custom=e.custom),this.client.post("/auth/users").send(n).end(function(e,n){e?t.reject(Fi.getDetailedErrorFromResponse(e.response)):t.resolve()}),t.promise},t}(Ri),Bi=function(){function e(e){this.config=e.config,this.client=e.client,this.userService=e.userService,this.tokenContext=e.tokenContext,this.emitter=e.emitter}return e.prototype.getToken=function(){return this.tokenContext.get()},e.prototype.storeToken=function(e){var t=this.authToken;this.authToken=e,this.tokenContext.store(this.authToken,{permanent:!0}),this.emitter.emit("auth:token-changed",{old:t,new:this.authToken}),this.emitter.emit("auth:login",{token:this.authToken})},e}(),ji=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.logout=function(){var e=new Ci;this.emitter.emit("auth:token-changed",{old:this.tokenContext.get(),new:void 0}),this.emitter.emit("auth:logout",{}),this.tokenContext.delete();var t=this.userService.current();return t.unstore(),t.clear(),Ho.logout().then(function(){e.resolve()},function(t){e.reject(t)}),e.promise},t.prototype.login=function(){var e=this,t=new Ci,n=this.config.settings.auth;return this.emitter.once("cordova:deviceready",function(){var o=["profile","email"];return Ho?window&&window.cordova?window.plugins&&window.plugins.googleplus?n&&n.google&&n.google.webClientId?(n.google.scope&&n.google.scope.forEach(function(e){o.indexOf(e)===-1&&o.push(e)}),void Ho.login({webClientId:n.google.webClientId,offline:!0,scopes:o.join(" ")}).then(function(n){if(!n.serverAuthCode)return void t.reject(new Error("Failed to retrieve offline access token."));var r={app_id:e.config.get("app_id"),serverAuthCode:n.serverAuthCode,additional_fields:o,flow:"native-mobile"};e.client.post("/auth/login/google").send(r).end(function(n,o){n?t.reject(n):(e.storeToken(o.body.data.token),e.userService.load().then(function(){var n=e.userService.current();n.store(),t.resolve({token:o.body.data.token,signup:Boolean(parseInt(o.body.data.signup,10))})}))})},function(e){t.reject(e)})):void t.reject(new Error("Missing google web client id. Please visit http://docs.ionic.io/services/users/google-auth.html#native")):void t.reject(new Error("GooglePlus cordova plugin is missing.")):void t.reject(new Error("Cordova is missing")):void t.reject(new Error("Ionic native is not installed"))}),t.promise},t}(Bi),Ii=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.logout=function(){var e=new Ci;this.emitter.emit("auth:token-changed",{old:this.tokenContext.get(),new:void 0}),this.emitter.emit("auth:logout",{}),this.tokenContext.delete();var t=this.userService.current();return t.unstore(),t.clear(),_o.logout().then(function(){e.resolve()},function(t){e.reject(t)}),e.promise},t.prototype.login=function(){var e=this,t=new Ci,n=this.config.settings.auth,o=["public_profile","email"];return n&&n.facebook&&n.facebook.scope&&n.facebook.scope.forEach(function(e){o.indexOf(e)===-1&&o.push(e)}),this.emitter.once("cordova:deviceready",function(){return _o?window&&window.cordova?window.facebookConnectPlugin?void _o.login(o).then(function(n){o.splice(o.indexOf("public_profile"),1);var r={app_id:e.config.get("app_id"),access_token:n.authResponse.accessToken,additional_fields:o,flow:"native-mobile"};e.client.post("/auth/login/facebook").send(r).end(function(n,o){n?t.reject(n):(e.storeToken(o.body.data.token),e.userService.load().then(function(){var n=e.userService.current();n.store(),t.resolve({token:o.body.data.token,signup:Boolean(parseInt(o.body.data.signup,10))})}))})},function(e){t.reject(e)}):void t.reject(new Error("Please install the cordova-plugin-facebook4 plugin")):void t.reject(new Error("Cordova is missing.")):void t.reject(new Error("Ionic native is not installed"))}),t.promise},t}(Bi),xi=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){return void 0===e&&(e={}),this.inAppBrowserFlow("custom",e,t)},t}(Ri),Ti=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){return void 0===e&&(e={}),this.inAppBrowserFlow("twitter",e,t)},t}(Ri),ki=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){return void 0===e&&(e={}),this.inAppBrowserFlow("facebook",e,t)},t}(Ri),Ni=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){return void 0===e&&(e={}),this.inAppBrowserFlow("github",e,t)},t}(Ri),Mi=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){return void 0===e&&(e={}),this.inAppBrowserFlow("google",e,t)},t}(Ri),Li=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){return void 0===e&&(e={}),this.inAppBrowserFlow("instagram",e,t)},t}(Ri),Wi=function(e){function t(){return null!==e&&e.apply(this,arguments)||this}return Si(t,e),t.prototype.authenticate=function(e,t){return void 0===e&&(e={}),this.inAppBrowserFlow("linkedin",e,t)},t}(Ri),qi=o(function(e){function t(e){if(e)return n(e)}function n(e){for(var n in t.prototype)e[n]=t.prototype[n];return e}"undefined"!=typeof e&&(e.exports=t),t.prototype.on=t.prototype.addEventListener=function(e,t){return this._callbacks=this._callbacks||{},(this._callbacks["$"+e]=this._callbacks["$"+e]||[]).push(t),this},t.prototype.once=function(e,t){function n(){this.off(e,n),t.apply(this,arguments)}return n.fn=t,this.on(e,n),this},t.prototype.off=t.prototype.removeListener=t.prototype.removeAllListeners=t.prototype.removeEventListener=function(e,t){if(this._callbacks=this._callbacks||{},0==arguments.length)return this._callbacks={},this;var n=this._callbacks["$"+e];if(!n)return this;if(1==arguments.length)return delete this._callbacks["$"+e],this;for(var o,r=0;r<n.length;r++)if(o=n[r],o===t||o.fn===t){n.splice(r,1);break}return this},t.prototype.emit=function(e){this._callbacks=this._callbacks||{};var t=[].slice.call(arguments,1),n=this._callbacks["$"+e];if(n){n=n.slice(0);for(var o=0,r=n.length;o<r;++o)n[o].apply(this,t)}return this},t.prototype.listeners=function(e){return this._callbacks=this._callbacks||{},this._callbacks["$"+e]||[]},t.prototype.hasListeners=function(e){return!!this.listeners(e).length}}),Ui=function(e,t,n){for(var o=0,r=e.length,u=3==arguments.length?n:e[o++];o<r;)u=t.call(null,u,e[o],++o,e);return u},Vi=qi,zi=Ui;Ai="undefined"!=typeof window?window:"undefined"!=typeof self?self:Ke,U.getXHR=function(){if(!(!Ai.XMLHttpRequest||Ai.location&&"file:"==Ai.location.protocol&&Ai.ActiveXObject))return new XMLHttpRequest;try{return new ActiveXObject("Microsoft.XMLHTTP")}catch(e){}try{return new ActiveXObject("Msxml2.XMLHTTP.6.0")}catch(e){}try{return new ActiveXObject("Msxml2.XMLHTTP.3.0")}catch(e){}try{return new ActiveXObject("Msxml2.XMLHTTP")}catch(e){}return!1};var Hi="".trim?function(e){return e.trim()}:function(e){return e.replace(/(^\s*|\s*$)/g,"")};U.serializeObject=I,U.parseString=T,U.types={html:"text/html",json:"application/json",xml:"application/xml",urlencoded:"application/x-www-form-urlencoded",form:"application/x-www-form-urlencoded","form-data":"application/x-www-form-urlencoded"},U.serialize={"application/x-www-form-urlencoded":I,"application/json":JSON.stringify},U.parse={"application/x-www-form-urlencoded":T,"application/json":JSON.parse},W.prototype.get=function(e){return this.header[e.toLowerCase()]},W.prototype.setHeaderProperties=function(e){var t=this.header["content-type"]||"";this.type=M(t);var n=L(t);for(var o in n)this[o]=n[o]},W.prototype.parseBody=function(e){var t=U.parse[this.type];return t&&e&&(e.length||e instanceof Object)?t(e):null},W.prototype.setStatusProperties=function(e){1223===e&&(e=204);var t=e/100|0;this.status=this.statusCode=e,this.statusType=t,this.info=1==t,this.ok=2==t,this.clientError=4==t,this.serverError=5==t,this.error=(4==t||5==t)&&this.toError(),this.accepted=202==e,this.noContent=204==e,this.badRequest=400==e,this.unauthorized=401==e,
-this.notAcceptable=406==e,this.notFound=404==e,this.forbidden=403==e},W.prototype.toError=function(){var e=this.req,t=e.method,n=e.url,o="cannot "+t+" "+n+" ("+this.status+")",r=new Error(o);return r.status=this.status,r.method=t,r.url=n,r},U.Response=W,Vi(q.prototype),q.prototype.use=function(e){return e(this),this},q.prototype.timeout=function(e){return this._timeout=e,this},q.prototype.clearTimeout=function(){return this._timeout=0,clearTimeout(this._timer),this},q.prototype.abort=function(){if(!this.aborted)return this.aborted=!0,this.xhr.abort(),this.clearTimeout(),this.emit("abort"),this},q.prototype.set=function(e,t){if(j(e)){for(var n in e)this.set(n,e[n]);return this}return this._header[e.toLowerCase()]=t,this.header[e]=t,this},q.prototype.unset=function(e){return delete this._header[e.toLowerCase()],delete this.header[e],this},q.prototype.getHeader=function(e){return this._header[e.toLowerCase()]},q.prototype.type=function(e){return this.set("Content-Type",U.types[e]||e),this},q.prototype.parse=function(e){return this._parser=e,this},q.prototype.accept=function(e){return this.set("Accept",U.types[e]||e),this},q.prototype.auth=function(e,t){var n=btoa(e+":"+t);return this.set("Authorization","Basic "+n),this},q.prototype.query=function(e){return"string"!=typeof e&&(e=I(e)),e&&this._query.push(e),this},q.prototype.field=function(e,t){return this._formData||(this._formData=new Ai.FormData),this._formData.append(e,t),this},q.prototype.attach=function(e,t,n){return this._formData||(this._formData=new Ai.FormData),this._formData.append(e,t,n||t.name),this},q.prototype.send=function(e){var t=j(e),n=this.getHeader("Content-Type");if(t&&j(this._data))for(var o in e)this._data[o]=e[o];else"string"==typeof e?(n||this.type("form"),n=this.getHeader("Content-Type"),"application/x-www-form-urlencoded"==n?this._data=this._data?this._data+"&"+e:e:this._data=(this._data||"")+e):this._data=e;return!t||B(e)?this:(n||this.type("json"),this)},q.prototype.callback=function(e,t){var n=this._callback;this.clearTimeout(),n(e,t)},q.prototype.crossDomainError=function(){var e=new Error("Request has been terminated\nPossible causes: the network is offline, Origin is not allowed by Access-Control-Allow-Origin, the page is being unloaded, etc.");e.crossDomain=!0,e.status=this.status,e.method=this.method,e.url=this.url,this.callback(e)},q.prototype.timeoutError=function(){var e=this._timeout,t=new Error("timeout of "+e+"ms exceeded");t.timeout=e,this.callback(t)},q.prototype.withCredentials=function(){return this._withCredentials=!0,this},q.prototype.end=function(e){var t=this,n=this.xhr=U.getXHR(),o=this._query.join("&"),r=this._timeout,u=this._formData||this._data;this._callback=e||P,n.onreadystatechange=function(){if(4==n.readyState){var e;try{e=n.status}catch(t){e=0}if(0==e){if(t.timedout)return t.timeoutError();if(t.aborted)return;return t.crossDomainError()}t.emit("end")}};var i=function(e){e.total>0&&(e.percent=e.loaded/e.total*100),e.direction="download",t.emit("progress",e)};this.hasListeners("progress")&&(n.onprogress=i);try{n.upload&&this.hasListeners("progress")&&(n.upload.onprogress=i)}catch(e){}if(r&&!this._timer&&(this._timer=setTimeout(function(){t.timedout=!0,t.abort()},r)),o&&(o=U.serializeObject(o),this.url+=~this.url.indexOf("?")?"&"+o:"?"+o),n.open(this.method,this.url,!0),this._withCredentials&&(n.withCredentials=!0),"GET"!=this.method&&"HEAD"!=this.method&&"string"!=typeof u&&!B(u)){var s=this.getHeader("Content-Type"),c=this._parser||U.serialize[s?s.split(";")[0]:""];!c&&N(s)&&(c=U.serialize["application/json"]),c&&(u=c(u))}for(var a in this.header)null!=this.header[a]&&n.setRequestHeader(a,this.header[a]);return this.emit("request",this),n.send("undefined"!=typeof u?u:null),this},q.prototype.then=function(e,t){return this.end(function(n,o){n?t(n):e(o)})},U.Request=q,U.get=function(e,t,n){var o=U("GET",e);return"function"==typeof t&&(n=t,t=null),t&&o.query(t),n&&o.end(n),o},U.head=function(e,t,n){var o=U("HEAD",e);return"function"==typeof t&&(n=t,t=null),t&&o.send(t),n&&o.end(n),o},U.del=V,U.delete=V,U.patch=function(e,t,n){var o=U("PATCH",e);return"function"==typeof t&&(n=t,t=null),t&&o.send(t),n&&o.end(n),o},U.post=function(e,t,n){var o=U("POST",e);return"function"==typeof t&&(n=t,t=null),t&&o.send(t),n&&o.end(n),o},U.put=function(e,t,n){var o=U("PUT",e);return"function"==typeof t&&(n=t,t=null),t&&o.send(t),n&&o.end(n),o};var Gi,$i=U,Yi=Object.freeze({default:$i,__moduleExports:$i}),Xi=function(){function e(e,t,n){this.tokenContext=e,this.baseUrl=t,"undefined"==typeof n&&(n=Yi.default||Yi),this.req=n}return e.prototype.get=function(e){return this.supplement(this.req.get,e)},e.prototype.post=function(e){return this.supplement(this.req.post,e)},e.prototype.put=function(e){return this.supplement(this.req.put,e)},e.prototype.patch=function(e){return this.supplement(this.req.patch,e)},e.prototype.delete=function(e){return this.supplement(this.req.delete,e)},e.prototype.request=function(e,t){return this.supplement(this.req.bind(this.req,e),t)},e.prototype.supplement=function(e,t){if("/"!==t.substring(0,1))throw Error("endpoint must start with leading slash");var n=e(this.baseUrl+t),o=this.tokenContext.get();return o&&n.set("Authorization","Bearer "+o),n},e}(),Ji=function(){function e(){this.urls={api:"https://api.ionic.io",web:"https://web.ionic.io"}}return e.prototype.register=function(e){this.settings=e},e.prototype.get=function(e){if(this.settings&&this.settings.core)return this.settings.core[e]},e.prototype.getURL=function(e){var t=this.settings&&this.settings.core&&this.settings.core.urls||{};return t[e]?t[e]:this.urls[e]},e}(),Ki=function(){function e(e,t){void 0===t&&(t={}),this.options=t,this.app=e.appStatus,this.device=e.device,this.emitter=e.emitter,this.logger=e.logger,this.registerEventHandlers()}return e.prototype.bootstrap=function(){var e=this,t=["pause","resume"];document.addEventListener("deviceready",function(){for(var n=[],o=0;o<arguments.length;o++)n[o]=arguments[o];e.emitter.emit("cordova:deviceready",{args:n});for(var r=function(t){document.addEventListener(t,function(){for(var n=[],o=0;o<arguments.length;o++)n[o]=arguments[o];e.emitter.emit("cordova:"+t,{args:n})},!1)},u=0,i=t;u<i.length;u++){var s=i[u];r(s)}},!1)},e.prototype.registerEventHandlers=function(){var e=this;this.emitter.on("cordova:pause",function(){e.app.closed=!0}),this.emitter.on("cordova:resume",function(){e.app.closed=!1})},e}(),Zi=function(){function e(e){this._version="0.15.1",this.config=e.config,this.logger=e.logger,this.emitter=e.emitter,this.insights=e.insights}return e.prototype.init=function(){this.registerEventHandlers(),this.onResume()},Object.defineProperty(e.prototype,"version",{get:function(){return this._version},enumerable:!0,configurable:!0}),e.prototype.onResume=function(){this.insights.track("mobileapp.opened")},e.prototype.registerEventHandlers=function(){var e=this;this.emitter.on("cordova:resume",function(){e.onResume()}),this.emitter.on("push:notification",function(t){(t.message.app.asleep||t.message.app.closed)&&e.insights.track("mobileapp.opened.push")})},e}(),Qi=new Error("Missing deploy plugin: `ionic-plugin-deploy`"),es=function(){function e(e,t){void 0===t&&(t={});var n=this;this.options=t,this.channel="production",this.config=e.config,this.emitter=e.emitter,this.logger=e.logger,this.emitter.once("device:ready",function(){n._getPlugin()&&n.plugin.init(n.config.get("app_id"),n.config.getURL("api")),n.emitter.emit("deploy:ready")})}return e.prototype.check=function(){var e=this,t=new Ci;return this.emitter.once("deploy:ready",function(){e._getPlugin()?e.plugin.check(e.config.get("app_id"),e.channel,function(n){n&&"true"===n?(e.logger.info("Ionic Deploy: an update is available"),t.resolve(!0)):(e.logger.info("Ionic Deploy: no updates available"),t.resolve(!1))},function(n){e.logger.error("Ionic Deploy: encountered an error while checking for updates"),t.reject(n)}):t.reject(Qi)}),t.promise},e.prototype.download=function(e){var t=this;void 0===e&&(e={});var n=new Ci;return this.emitter.once("deploy:ready",function(){t._getPlugin()?t.plugin.download(t.config.get("app_id"),function(o){"true"===o?(t.logger.info("Ionic Deploy: download complete"),n.resolve()):"false"===o?n.reject(new Error("Ionic Deploy: Download has failed: see native logs.")):e.onProgress&&e.onProgress(o)},function(e){n.reject(e)}):n.reject(Qi)}),n.promise},e.prototype.extract=function(e){var t=this;void 0===e&&(e={});var n=new Ci;return this.emitter.once("deploy:ready",function(){t._getPlugin()?t.plugin.extract(t.config.get("app_id"),function(o){"done"===o?(t.logger.info("Ionic Deploy: extraction complete"),n.resolve()):e.onProgress&&e.onProgress(o)},function(e){n.reject(e)}):n.reject(Qi)}),n.promise},e.prototype.load=function(){var e=this;this.emitter.once("deploy:ready",function(){e._getPlugin()&&e.plugin.redirect(e.config.get("app_id"))})},e.prototype.info=function(){var e=this,t=new Ci;return this.emitter.once("deploy:ready",function(){e._getPlugin()?e.plugin.info(e.config.get("app_id"),function(e){t.resolve(e)},function(e){t.reject(e)}):t.reject(Qi)}),t.promise},e.prototype.getSnapshots=function(){var e=this,t=new Ci;return this.emitter.once("deploy:ready",function(){e._getPlugin()?e.plugin.getVersions(e.config.get("app_id"),function(e){t.resolve(e)},function(e){t.reject(e)}):t.reject(Qi)}),t.promise},e.prototype.deleteSnapshot=function(e){var t=this,n=new Ci;return this.emitter.once("deploy:ready",function(){t._getPlugin()?t.plugin.deleteVersion(t.config.get("app_id"),e,function(e){n.resolve(e)},function(e){n.reject(e)}):n.reject(Qi)}),n.promise},e.prototype.getMetadata=function(e){var t=this,n=new Ci;return this.emitter.once("deploy:ready",function(){t._getPlugin()?t.plugin.getMetadata(t.config.get("app_id"),e,function(e){n.resolve(e.metadata)},function(e){n.reject(e)}):n.reject(Qi)}),n.promise},e.prototype._getPlugin=function(){return"undefined"==typeof window.IonicDeploy?void this.logger.warn("Ionic Deploy: Disabled! Deploy plugin is not installed or has not loaded. Have you run `ionic plugin add ionic-plugin-deploy` yet?"):(this.plugin||(this.plugin=window.IonicDeploy),this.plugin)},e}(),ts=function(){function e(e){this.deps=e,this.native=this.deps.nativeDevice,this.emitter=this.deps.emitter,this.type=this.determineDeviceType(),this.registerEventHandlers()}return e.prototype.isAndroid=function(){return"android"===this.type},e.prototype.isIOS=function(){return"iphone"===this.type||"ipad"===this.type},e.prototype.isConnectedToNetwork=function(e){if(void 0===e&&(e={}),"undefined"==typeof navigator.connection||"undefined"==typeof navigator.connection.type||"undefined"==typeof Connection)return!e.strictMode;switch(navigator.connection.type){case Connection.ETHERNET:case Connection.WIFI:case Connection.CELL_2G:case Connection.CELL_3G:case Connection.CELL_4G:case Connection.CELL:return!0;default:return!1}},e.prototype.registerEventHandlers=function(){var e=this;"unknown"===this.type?this.emitter.emit("device:ready"):this.emitter.once("cordova:deviceready",function(){e.emitter.emit("device:ready")})},e.prototype.determineDeviceType=function(){var e=navigator.userAgent,t=e.match(/iPad/i);if(t&&"ipad"===t[0].toLowerCase())return"ipad";var n=e.match(/iPhone/i);if(n&&"iphone"===n[0].toLowerCase())return"iphone";var o=e.match(/Android/i);return o&&"android"===o[0].toLowerCase()?"android":"unknown"},e}(),ns=o(function(e,t){t.__esModule=!0,t.default=function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}}),os=o(function(e,t){if(t.root="object"==typeof window&&window.window===window&&window||"object"==typeof self&&self.self===self&&self||"object"==typeof Ke&&Ke.global===Ke&&Ke,!t.root)throw new Error("RxJS could not find any global context (window, self, global)")}),rs=z,us={isFunction:rs},is=Array.isArray||function(e){return e&&"number"==typeof e.length},ss={isArray:is},cs=H,as={isObject:cs},ls={e:{}},ps={errorObject:ls},fs=ps,ds=$,hs={tryCatch:ds},gs=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},ys=function(e){function t(t){e.call(this),this.errors=t;var n=Error.call(this,t?t.length+" errors occurred during unsubscription:\n  "+t.map(function(e,t){return t+1+") "+e.toString()}).join("\n  "):"");this.name=n.name="UnsubscriptionError",this.stack=n.stack,this.message=n.message}return gs(t,e),t}(Error),bs=ys,vs={UnsubscriptionError:bs},As=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Es=ss,ms=as,ws=us,Cs=hs,Os=ps,_s=vs,Ss=function(){function e(e){this.closed=!1,e&&(this._unsubscribe=e)}return e.prototype.unsubscribe=function(){var e,t=!1;if(!this.closed){this.closed=!0;var n=this,o=n._unsubscribe,r=n._subscriptions;if(this._subscriptions=null,ws.isFunction(o)){var u=Cs.tryCatch(o).call(this);u===Os.errorObject&&(t=!0,e=e||(Os.errorObject.e instanceof _s.UnsubscriptionError?Y(Os.errorObject.e.errors):[Os.errorObject.e]))}if(Es.isArray(r))for(var i=-1,s=r.length;++i<s;){var c=r[i];if(ms.isObject(c)){var u=Cs.tryCatch(c.unsubscribe).call(c);if(u===Os.errorObject){t=!0,e=e||[];var a=Os.errorObject.e;a instanceof _s.UnsubscriptionError?e=e.concat(Y(a.errors)):e.push(a)}}}if(t)throw new _s.UnsubscriptionError(e)}},e.prototype.add=function(t){if(!t||t===e.EMPTY)return e.EMPTY;if(t===this)return this;var n=t;switch(typeof t){case"function":n=new e(t);case"object":if(n.closed||"function"!=typeof n.unsubscribe)return n;if(this.closed)return n.unsubscribe(),n;break;default:throw new Error("unrecognized teardown "+t+" added to Subscription.")}var o=new Fs(n,this);return this._subscriptions=this._subscriptions||[],this._subscriptions.push(o),o},e.prototype.remove=function(t){if(null!=t&&t!==this&&t!==e.EMPTY){var n=this._subscriptions;if(n){var o=n.indexOf(t);o!==-1&&n.splice(o,1)}}},e.EMPTY=function(e){return e.closed=!0,e}(new e),e}(),Ds=Ss,Fs=function(e){function t(t,n){e.call(this),this._innerSub=t,this._parent=n}return As(t,e),t.prototype._unsubscribe=function(){var e=this,t=e._innerSub,n=e._parent;n.remove(this),t.unsubscribe()},t}(Ss),Rs=Fs,Ps={Subscription:Ds,ChildSubscription:Rs},Bs={closed:!0,next:function(e){},error:function(e){throw e},complete:function(){}},js={empty:Bs},Is=os,xs=Is.root.Symbol,Ts="function"==typeof xs&&"function"==typeof xs.for?xs.for("rxSubscriber"):"@@rxSubscriber",ks={$$rxSubscriber:Ts},Ns=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Ms=us,Ls=Ps,Ws=js,qs=ks,Us=function(e){function t(n,o,r){switch(e.call(this),this.syncErrorValue=null,this.syncErrorThrown=!1,this.syncErrorThrowable=!1,this.isStopped=!1,arguments.length){case 0:this.destination=Ws.empty;break;case 1:if(!n){this.destination=Ws.empty;break}if("object"==typeof n){n instanceof t?(this.destination=n,this.destination.add(this)):(this.syncErrorThrowable=!0,this.destination=new zs(this,n));break}default:this.syncErrorThrowable=!0,this.destination=new zs(this,n,o,r)}}return Ns(t,e),t.prototype[qs.$$rxSubscriber]=function(){return this},t.create=function(e,n,o){var r=new t(e,n,o);return r.syncErrorThrowable=!1,r},t.prototype.next=function(e){this.isStopped||this._next(e)},t.prototype.error=function(e){this.isStopped||(this.isStopped=!0,this._error(e))},t.prototype.complete=function(){this.isStopped||(this.isStopped=!0,this._complete())},t.prototype.unsubscribe=function(){this.closed||(this.isStopped=!0,e.prototype.unsubscribe.call(this))},t.prototype._next=function(e){this.destination.next(e)},t.prototype._error=function(e){this.destination.error(e),this.unsubscribe()},t.prototype._complete=function(){this.destination.complete(),this.unsubscribe()},t}(Ls.Subscription),Vs=Us,zs=function(e){function t(t,n,o,r){e.call(this),this._parent=t;var u,i=this;Ms.isFunction(n)?u=n:n&&(i=n,u=n.next,o=n.error,r=n.complete,Ms.isFunction(i.unsubscribe)&&this.add(i.unsubscribe.bind(i)),i.unsubscribe=this.unsubscribe.bind(this)),this._context=i,this._next=u,this._error=o,this._complete=r}return Ns(t,e),t.prototype.next=function(e){if(!this.isStopped&&this._next){var t=this._parent;t.syncErrorThrowable?this.__tryOrSetError(t,this._next,e)&&this.unsubscribe():this.__tryOrUnsub(this._next,e)}},t.prototype.error=function(e){if(!this.isStopped){var t=this._parent;if(this._error)t.syncErrorThrowable?(this.__tryOrSetError(t,this._error,e),this.unsubscribe()):(this.__tryOrUnsub(this._error,e),this.unsubscribe());else{if(!t.syncErrorThrowable)throw this.unsubscribe(),e;t.syncErrorValue=e,t.syncErrorThrown=!0,this.unsubscribe()}}},t.prototype.complete=function(){if(!this.isStopped){var e=this._parent;this._complete?e.syncErrorThrowable?(this.__tryOrSetError(e,this._complete),this.unsubscribe()):(this.__tryOrUnsub(this._complete),this.unsubscribe()):this.unsubscribe()}},t.prototype.__tryOrUnsub=function(e,t){try{e.call(this._context,t)}catch(e){throw this.unsubscribe(),e}},t.prototype.__tryOrSetError=function(e,t,n){try{t.call(this._context,n)}catch(t){return e.syncErrorValue=t,e.syncErrorThrown=!0,!0}return!1},t.prototype._unsubscribe=function(){var e=this._parent;this._context=null,this._parent=null,e.unsubscribe()},t}(Us),Hs={Subscriber:Vs},Gs=Hs,$s=ks,Ys=js,Xs=X,Js={toSubscriber:Xs},Ks=os,Zs=J,Qs=J(Ks.root),ec={getSymbolObservable:Zs,$$observable:Qs},tc=os,nc=Js,oc=ec,rc=function(){function e(e){this._isScalar=!1,e&&(this._subscribe=e)}return e.prototype.lift=function(t){var n=new e;return n.source=this,n.operator=t,n},e.prototype.subscribe=function(e,t,n){var o=this.operator,r=nc.toSubscriber(e,t,n);if(o?o.call(r,this.source):r.add(this._subscribe(r)),r.syncErrorThrowable&&(r.syncErrorThrowable=!1,r.syncErrorThrown))throw r.syncErrorValue;return r},e.prototype.forEach=function(e,t){var n=this;if(t||(tc.root.Rx&&tc.root.Rx.config&&tc.root.Rx.config.Promise?t=tc.root.Rx.config.Promise:tc.root.Promise&&(t=tc.root.Promise)),!t)throw new Error("no Promise impl found");return new t(function(t,o){var r=n.subscribe(function(t){if(r)try{e(t)}catch(e){o(e),r.unsubscribe()}else e(t)},o,t)})},e.prototype._subscribe=function(e){return this.source.subscribe(e)},e.prototype[oc.$$observable]=function(){return this},e.create=function(t){return new e(t)},e}(),uc=rc,ic={Observable:uc},sc=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},cc=ic,ac=function(e){function t(t,n){e.call(this),this.value=t,this.scheduler=n,this._isScalar=!0,n&&(this._isScalar=!1)}return sc(t,e),t.create=function(e,n){return new t(e,n)},t.dispatch=function(e){var t=e.done,n=e.value,o=e.subscriber;return t?void o.complete():(o.next(n),void(o.closed||(e.done=!0,this.schedule(e))))},t.prototype._subscribe=function(e){var n=this.value,o=this.scheduler;return o?o.schedule(t.dispatch,0,{done:!1,value:n,subscriber:e}):(e.next(n),void(e.closed||e.complete()))},t}(cc.Observable),lc=ac,pc={ScalarObservable:lc},fc=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},dc=ic,hc=function(e){function t(t){e.call(this),this.scheduler=t}return fc(t,e),t.create=function(e){return new t(e)},t.dispatch=function(e){var t=e.subscriber;t.complete()},t.prototype._subscribe=function(e){var n=this.scheduler;return n?n.schedule(t.dispatch,0,{subscriber:e}):void e.complete()},t}(dc.Observable),gc=hc,yc={EmptyObservable:gc},bc=K,vc={isScheduler:bc},Ac=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Ec=ic,mc=pc,wc=yc,Cc=vc,Oc=function(e){function t(t,n){e.call(this),this.array=t,this.scheduler=n,n||1!==t.length||(this._isScalar=!0,this.value=t[0])}return Ac(t,e),t.create=function(e,n){return new t(e,n)},t.of=function(){for(var e=[],n=0;n<arguments.length;n++)e[n-0]=arguments[n];var o=e[e.length-1];Cc.isScheduler(o)?e.pop():o=null;var r=e.length;return r>1?new t(e,o):1===r?new mc.ScalarObservable(e[0],o):new wc.EmptyObservable(o)},t.dispatch=function(e){var t=e.array,n=e.index,o=e.count,r=e.subscriber;return n>=o?void r.complete():(r.next(t[n]),void(r.closed||(e.index=n+1,this.schedule(e))))},t.prototype._subscribe=function(e){var n=0,o=this.array,r=o.length,u=this.scheduler;if(u)return u.schedule(t.dispatch,0,{array:o,index:n,count:r,subscriber:e});for(var i=0;i<r&&!e.closed;i++)e.next(o[i]);e.complete()},t}(Ec.Observable),_c=Oc,Sc={ArrayObservable:_c},Dc=Sc,Fc=Dc.ArrayObservable.of,Rc={of:Fc},Pc=ic,Bc=Rc;Pc.Observable.of=Bc.of;var jc=Z,Ic={isPromise:jc},xc=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Tc=os,kc=ic,Nc=function(e){function t(t,n){e.call(this),this.promise=t,this.scheduler=n}return xc(t,e),t.create=function(e,n){return new t(e,n)},t.prototype._subscribe=function(e){var t=this,n=this.promise,o=this.scheduler;if(null==o)this._isScalar?e.closed||(e.next(this.value),e.complete()):n.then(function(n){t.value=n,t._isScalar=!0,e.closed||(e.next(n),e.complete())},function(t){e.closed||e.error(t)}).then(null,function(e){Tc.root.setTimeout(function(){throw e})});else if(this._isScalar){if(!e.closed)return o.schedule(Q,0,{value:this.value,subscriber:e})}else n.then(function(n){t.value=n,t._isScalar=!0,e.closed||e.add(o.schedule(Q,0,{value:n,subscriber:e}))},function(t){e.closed||e.add(o.schedule(ee,0,{err:t,subscriber:e}))}).then(null,function(e){Tc.root.setTimeout(function(){throw e})})},t}(kc.Observable),Mc=Nc,Lc={PromiseObservable:Mc},Wc=os,qc=te,Uc=te(Wc.root),Vc={symbolIteratorPonyfill:qc,$$iterator:Uc},zc=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Hc=os,Gc=ic,$c=Vc,Yc=function(e){function t(t,n){if(e.call(this),this.scheduler=n,null==t)throw new Error("iterator cannot be null.");this.iterator=ne(t)}return zc(t,e),t.create=function(e,n){return new t(e,n)},t.dispatch=function(e){var t=e.index,n=e.hasError,o=e.iterator,r=e.subscriber;if(n)return void r.error(e.error);var u=o.next();return u.done?void r.complete():(r.next(u.value),e.index=t+1,r.closed?void("function"==typeof o.return&&o.return()):void this.schedule(e))},t.prototype._subscribe=function(e){var n=0,o=this,r=o.iterator,u=o.scheduler;if(u)return u.schedule(t.dispatch,0,{index:n,iterator:r,subscriber:e});for(;;){var i=r.next();if(i.done){e.complete();break}if(e.next(i.value),e.closed){"function"==typeof r.return&&r.return();break}}},t}(Gc.Observable),Xc=Yc,Jc=function(){function e(e,t,n){void 0===t&&(t=0),void 0===n&&(n=e.length),this.str=e,this.idx=t,this.len=n}return e.prototype[$c.$$iterator]=function(){return this},e.prototype.next=function(){return this.idx<this.len?{done:!1,value:this.str.charAt(this.idx++)}:{done:!0,value:void 0}},e}(),Kc=function(){function e(e,t,n){void 0===t&&(t=0),void 0===n&&(n=oe(e)),this.arr=e,this.idx=t,this.len=n}return e.prototype[$c.$$iterator]=function(){return this},e.prototype.next=function(){return this.idx<this.len?{done:!1,value:this.arr[this.idx++]}:{done:!0,value:void 0}},e}(),Zc=Math.pow(2,53)-1,Qc={IteratorObservable:Xc},ea=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},ta=ic,na=pc,oa=yc,ra=function(e){function t(t,n){e.call(this),this.arrayLike=t,this.scheduler=n,n||1!==t.length||(this._isScalar=!0,this.value=t[0])}return ea(t,e),t.create=function(e,n){var o=e.length;return 0===o?new oa.EmptyObservable:1===o?new na.ScalarObservable(e[0],n):new t(e,n)},t.dispatch=function(e){var t=e.arrayLike,n=e.index,o=e.length,r=e.subscriber;if(!r.closed){if(n>=o)return void r.complete();r.next(t[n]),e.index=n+1,this.schedule(e)}},t.prototype._subscribe=function(e){var n=0,o=this,r=o.arrayLike,u=o.scheduler,i=r.length;if(u)return u.schedule(t.dispatch,0,{arrayLike:r,index:n,length:i,subscriber:e});for(var s=0;s<i&&!e.closed;s++)e.next(r[s]);e.complete()},t}(ta.Observable),ua=ra,ia={ArrayLikeObservable:ua},sa=ic,ca=function(){function e(e,t,n){this.kind=e,this.value=t,this.error=n,this.hasValue="N"===e}return e.prototype.observe=function(e){switch(this.kind){case"N":return e.next&&e.next(this.value);case"E":return e.error&&e.error(this.error);case"C":return e.complete&&e.complete()}},e.prototype.do=function(e,t,n){var o=this.kind;switch(o){case"N":return e&&e(this.value);case"E":return t&&t(this.error);case"C":return n&&n()}},e.prototype.accept=function(e,t,n){return e&&"function"==typeof e.next?this.observe(e):this.do(e,t,n)},e.prototype.toObservable=function(){var e=this.kind;switch(e){case"N":return sa.Observable.of(this.value);case"E":return sa.Observable.throw(this.error);case"C":return sa.Observable.empty()}throw new Error("unexpected notification kind value")},e.createNext=function(t){return"undefined"!=typeof t?new e("N",t):this.undefinedValueNotification},e.createError=function(t){return new e("E",void 0,t)},e.createComplete=function(){return this.completeNotification},e.completeNotification=new e("C"),e.undefinedValueNotification=new e("N",void 0),e}(),aa=ca,la={Notification:aa},pa=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},fa=Hs,da=la,ha=ie,ga=function(){function e(e,t){void 0===t&&(t=0),this.scheduler=e,this.delay=t}return e.prototype.call=function(e,t){return t.subscribe(new ba(e,this.scheduler,this.delay))},e}(),ya=ga,ba=function(e){function t(t,n,o){void 0===o&&(o=0),e.call(this,t),this.scheduler=n,this.delay=o}return pa(t,e),t.dispatch=function(e){var t=e.notification,n=e.destination,o=e.subscription;t.observe(n),o&&o.unsubscribe()},t.prototype.scheduleMessage=function(e){var n=new Aa(e,this.destination);n.subscription=this.add(this.scheduler.schedule(t.dispatch,this.delay,n))},t.prototype._next=function(e){this.scheduleMessage(da.Notification.createNext(e))},t.prototype._error=function(e){this.scheduleMessage(da.Notification.createError(e))},t.prototype._complete=function(){this.scheduleMessage(da.Notification.createComplete())},t}(fa.Subscriber),va=ba,Aa=function(){function e(e,t){this.notification=e,this.destination=t}return e}(),Ea=Aa,ma={observeOn:ha,ObserveOnOperator:ya,ObserveOnSubscriber:va,ObserveOnMessage:Ea},wa=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Ca=ss,Oa=Ic,_a=Lc,Sa=Qc,Da=Sc,Fa=ia,Ra=Vc,Pa=ic,Ba=ma,ja=ec,Ia=function(e){return e&&"number"==typeof e.length},xa=function(e){function t(t,n){e.call(this,null),this.ish=t,this.scheduler=n}return wa(t,e),t.create=function(e,n){if(null!=e){if("function"==typeof e[ja.$$observable])return e instanceof Pa.Observable&&!n?e:new t(e,n);if(Ca.isArray(e))return new Da.ArrayObservable(e,n);if(Oa.isPromise(e))return new _a.PromiseObservable(e,n);if("function"==typeof e[Ra.$$iterator]||"string"==typeof e)return new Sa.IteratorObservable(e,n);if(Ia(e))return new Fa.ArrayLikeObservable(e,n)}throw new TypeError((null!==e&&typeof e||e)+" is not observable")},t.prototype._subscribe=function(e){var t=this.ish,n=this.scheduler;return null==n?t[ja.$$observable]().subscribe(e):t[ja.$$observable]().subscribe(new Ba.ObserveOnSubscriber(e,n,0))},t}(Pa.Observable),Ta=xa,ka={FromObservable:Ta},Na=ka,Ma=Na.FromObservable.create,La={from:Ma},Wa=ic,qa=La;Wa.Observable.from=qa.from;var Ua=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Va=Hs,za=function(e){function t(){e.apply(this,arguments)}return Ua(t,e),t.prototype.notifyNext=function(e,t,n,o,r){this.destination.next(t)},t.prototype.notifyError=function(e,t){this.destination.error(e)},t.prototype.notifyComplete=function(e){this.destination.complete()},t}(Va.Subscriber),Ha=za,Ga={OuterSubscriber:Ha},$a=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Ya=Hs,Xa=function(e){function t(t,n,o){e.call(this),this.parent=t,this.outerValue=n,this.outerIndex=o,this.index=0}return $a(t,e),t.prototype._next=function(e){this.parent.notifyNext(this.outerValue,e,this.outerIndex,this.index++,this)},t.prototype._error=function(e){this.parent.notifyError(e,this),this.unsubscribe()},t.prototype._complete=function(){this.parent.notifyComplete(this),this.unsubscribe()},t}(Ya.Subscriber),Ja=Xa,Ka={InnerSubscriber:Ja},Za=os,Qa=ss,el=Ic,tl=as,nl=ic,ol=Vc,rl=Ka,ul=ec,il=se,sl={subscribeToResult:il},cl=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},al=Ga,ll=sl,pl=ce,fl=function(){function e(e){this.selector=e}return e.prototype.call=function(e,t){return t.subscribe(new dl(e,this.selector,this.caught))},e}(),dl=function(e){function t(t,n,o){e.call(this,t),this.selector=n,this.caught=o}return cl(t,e),t.prototype.error=function(e){if(!this.isStopped){var t=void 0;try{t=this.selector(e,this.caught)}catch(e){return void this.destination.error(e)}this.unsubscribe(),this.destination.remove(this),ll.subscribeToResult(this,t)}},t}(al.OuterSubscriber),hl={_catch:pl},gl=ic,yl=hl;gl.Observable.prototype.catch=yl._catch,gl.Observable.prototype._catch=yl._catch;var bl=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},vl=sl,Al=Ga,El=ae,ml=function(){function e(e,t,n){void 0===n&&(n=Number.POSITIVE_INFINITY),this.project=e,this.resultSelector=t,this.concurrent=n}return e.prototype.call=function(e,t){return t.subscribe(new Cl(e,this.project,this.resultSelector,this.concurrent))},e}(),wl=ml,Cl=function(e){function t(t,n,o,r){void 0===r&&(r=Number.POSITIVE_INFINITY),e.call(this,t),this.project=n,this.resultSelector=o,this.concurrent=r,this.hasCompleted=!1,this.buffer=[],this.active=0,this.index=0}return bl(t,e),t.prototype._next=function(e){this.active<this.concurrent?this._tryNext(e):this.buffer.push(e)},t.prototype._tryNext=function(e){var t,n=this.index++;try{t=this.project(e,n)}catch(e){return void this.destination.error(e)}this.active++,this._innerSub(t,e,n)},t.prototype._innerSub=function(e,t,n){this.add(vl.subscribeToResult(this,e,t,n))},t.prototype._complete=function(){this.hasCompleted=!0,0===this.active&&0===this.buffer.length&&this.destination.complete()},t.prototype.notifyNext=function(e,t,n,o,r){this.resultSelector?this._notifyResultSelector(e,t,n,o):this.destination.next(t)},t.prototype._notifyResultSelector=function(e,t,n,o){var r;try{r=this.resultSelector(e,t,n,o)}catch(e){return void this.destination.error(e)}this.destination.next(r)},t.prototype.notifyComplete=function(e){var t=this.buffer;this.remove(e),this.active--,t.length>0?this._next(t.shift()):0===this.active&&this.hasCompleted&&this.destination.complete()},t}(Al.OuterSubscriber),Ol=Cl,_l={mergeMap:El,MergeMapOperator:wl,MergeMapSubscriber:Ol},Sl=_l,Dl=le,Fl={concatMap:Dl},Rl=ic,Pl=Fl;Rl.Observable.prototype.concatMap=Pl.concatMap;var Bl=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,
-new n)},jl=Hs,Il=pe,xl=function(){function e(e,t){this.project=e,this.thisArg=t}return e.prototype.call=function(e,t){return t.subscribe(new kl(e,this.project,this.thisArg))},e}(),Tl=xl,kl=function(e){function t(t,n,o){e.call(this,t),this.project=n,this.count=0,this.thisArg=o||this}return Bl(t,e),t.prototype._next=function(e){var t;try{t=this.project.call(this.thisArg,e,this.count++)}catch(e){return void this.destination.error(e)}this.destination.next(t)},t}(jl.Subscriber),Nl={map:Il,MapOperator:Tl},Ml=ic,Ll=Nl;Ml.Observable.prototype.map=Ll.map;var Wl=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},ql=Hs,Ul=fe,Vl=function(){function e(e,t){this.predicate=e,this.thisArg=t}return e.prototype.call=function(e,t){return t.subscribe(new zl(e,this.predicate,this.thisArg))},e}(),zl=function(e){function t(t,n,o){e.call(this,t),this.predicate=n,this.thisArg=o,this.count=0,this.predicate=n}return Wl(t,e),t.prototype._next=function(e){var t;try{t=this.predicate.call(this.thisArg,e,this.count++)}catch(e){return void this.destination.error(e)}t&&this.destination.next(e)},t}(ql.Subscriber),Hl={filter:Ul},Gl=ic,$l=Hl;Gl.Observable.prototype.filter=$l.filter;var Yl=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Xl=Hs,Jl=de,Kl=function(){function e(e,t,n){this.nextOrObserver=e,this.error=t,this.complete=n}return e.prototype.call=function(e,t){return t.subscribe(new Zl(e,this.nextOrObserver,this.error,this.complete))},e}(),Zl=function(e){function t(t,n,o,r){e.call(this,t);var u=new Xl.Subscriber(n,o,r);u.syncErrorThrowable=!0,this.add(u),this.safeSubscriber=u}return Yl(t,e),t.prototype._next=function(e){var t=this.safeSubscriber;t.next(e),t.syncErrorThrown?this.destination.error(t.syncErrorValue):this.destination.next(e)},t.prototype._error=function(e){var t=this.safeSubscriber;t.error(e),t.syncErrorThrown?this.destination.error(t.syncErrorValue):this.destination.error(e)},t.prototype._complete=function(){var e=this.safeSubscriber;e.complete(),e.syncErrorThrown?this.destination.error(e.syncErrorValue):this.destination.complete()},t}(Xl.Subscriber),Ql={_do:Jl},ep=ic,tp=Ql;ep.Observable.prototype.do=tp._do,ep.Observable.prototype._do=tp._do;var np=Math.ceil,op=Math.floor,rp=function(e){return isNaN(e=+e)?0:(e>0?op:np)(e)},up=function(e){if(void 0==e)throw TypeError("Can't call method on  "+e);return e},ip=rp,sp=up,cp=function(e){return function(t,n){var o,r,u=String(sp(t)),i=ip(n),s=u.length;return i<0||i>=s?e?"":void 0:(o=u.charCodeAt(i),o<55296||o>56319||i+1===s||(r=u.charCodeAt(i+1))<56320||r>57343?e?u.charAt(i):o:e?u.slice(i,i+2):(o-55296<<10)+(r-56320)+65536)}},ap=!0,lp=o(function(e){var t=e.exports="undefined"!=typeof window&&window.Math==Math?window:"undefined"!=typeof self&&self.Math==Math?self:Function("return this")();"number"==typeof __g&&(__g=t)}),pp=o(function(e){var t=e.exports={version:"2.4.0"};"number"==typeof __e&&(__e=t)}),fp=function(e){if("function"!=typeof e)throw TypeError(e+" is not a function!");return e},dp=fp,hp=function(e,t,n){if(dp(e),void 0===t)return e;switch(n){case 1:return function(n){return e.call(t,n)};case 2:return function(n,o){return e.call(t,n,o)};case 3:return function(n,o,r){return e.call(t,n,o,r)}}return function(){return e.apply(t,arguments)}},gp=function(e){return"object"==typeof e?null!==e:"function"==typeof e},yp=gp,bp=function(e){if(!yp(e))throw TypeError(e+" is not an object!");return e},vp=function(e){try{return!!e()}catch(e){return!0}},Ap=!vp(function(){return 7!=Object.defineProperty({},"a",{get:function(){return 7}}).a}),Ep=gp,mp=lp.document,wp=Ep(mp)&&Ep(mp.createElement),Cp=function(e){return wp?mp.createElement(e):{}},Op=!Ap&&!vp(function(){return 7!=Object.defineProperty(Cp("div"),"a",{get:function(){return 7}}).a}),_p=gp,Sp=function(e,t){if(!_p(e))return e;var n,o;if(t&&"function"==typeof(n=e.toString)&&!_p(o=n.call(e)))return o;if("function"==typeof(n=e.valueOf)&&!_p(o=n.call(e)))return o;if(!t&&"function"==typeof(n=e.toString)&&!_p(o=n.call(e)))return o;throw TypeError("Can't convert object to primitive value")},Dp=bp,Fp=Op,Rp=Sp,Pp=Object.defineProperty,Bp=Ap?Object.defineProperty:function(e,t,n){if(Dp(e),t=Rp(t,!0),Dp(n),Fp)try{return Pp(e,t,n)}catch(e){}if("get"in n||"set"in n)throw TypeError("Accessors not supported!");return"value"in n&&(e[t]=n.value),e},jp={f:Bp},Ip=function(e,t){return{enumerable:!(1&e),configurable:!(2&e),writable:!(4&e),value:t}},xp=jp,Tp=Ip,kp=Ap?function(e,t,n){return xp.f(e,t,Tp(1,n))}:function(e,t,n){return e[t]=n,e},Np=lp,Mp=pp,Lp=hp,Wp=kp,qp="prototype",Up=function(e,t,n){var o,r,u,i=e&Up.F,s=e&Up.G,c=e&Up.S,a=e&Up.P,l=e&Up.B,p=e&Up.W,f=s?Mp:Mp[t]||(Mp[t]={}),d=f[qp],h=s?Np:c?Np[t]:(Np[t]||{})[qp];s&&(n=t);for(o in n)r=!i&&h&&void 0!==h[o],r&&o in f||(u=r?h[o]:n[o],f[o]=s&&"function"!=typeof h[o]?n[o]:l&&r?Lp(u,Np):p&&h[o]==u?function(e){var t=function(t,n,o){if(this instanceof e){switch(arguments.length){case 0:return new e;case 1:return new e(t);case 2:return new e(t,n)}return new e(t,n,o)}return e.apply(this,arguments)};return t[qp]=e[qp],t}(u):a&&"function"==typeof u?Lp(Function.call,u):u,a&&((f.virtual||(f.virtual={}))[o]=u,e&Up.R&&d&&!d[o]&&Wp(d,o,u)))};Up.F=1,Up.G=2,Up.S=4,Up.P=8,Up.B=16,Up.W=32,Up.U=64,Up.R=128;var Vp=Up,zp=kp,Hp={}.hasOwnProperty,Gp=function(e,t){return Hp.call(e,t)},$p={},Yp={}.toString,Xp=function(e){return Yp.call(e).slice(8,-1)},Jp=Xp,Kp=Object("z").propertyIsEnumerable(0)?Object:function(e){return"String"==Jp(e)?e.split(""):Object(e)},Zp=Kp,Qp=up,ef=function(e){return Zp(Qp(e))},tf=rp,nf=Math.min,of=function(e){return e>0?nf(tf(e),9007199254740991):0},rf=rp,uf=Math.max,sf=Math.min,cf=function(e,t){return e=rf(e),e<0?uf(e+t,0):sf(e,t)},af=ef,lf=of,pf=cf,ff=function(e){return function(t,n,o){var r,u=af(t),i=lf(u.length),s=pf(o,i);if(e&&n!=n){for(;i>s;)if(r=u[s++],r!=r)return!0}else for(;i>s;s++)if((e||s in u)&&u[s]===n)return e||s||0;return!e&&-1}},df=lp,hf="__core-js_shared__",gf=df[hf]||(df[hf]={}),yf=function(e){return gf[e]||(gf[e]={})},bf=0,vf=Math.random(),Af=function(e){return"Symbol(".concat(void 0===e?"":e,")_",(++bf+vf).toString(36))},Ef=yf("keys"),mf=Af,wf=function(e){return Ef[e]||(Ef[e]=mf(e))},Cf=Gp,Of=ef,_f=ff(!1),Sf=wf("IE_PROTO"),Df=function(e,t){var n,o=Of(e),r=0,u=[];for(n in o)n!=Sf&&Cf(o,n)&&u.push(n);for(;t.length>r;)Cf(o,n=t[r++])&&(~_f(u,n)||u.push(n));return u},Ff="constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf".split(","),Rf=Df,Pf=Ff,Bf=Object.keys||function(e){return Rf(e,Pf)},jf=jp,If=bp,xf=Bf,Tf=Ap?Object.defineProperties:function(e,t){If(e);for(var n,o=xf(t),r=o.length,u=0;r>u;)jf.f(e,n=o[u++],t[n]);return e},kf=lp.document&&document.documentElement,Nf=bp,Mf=Tf,Lf=Ff,Wf=wf("IE_PROTO"),qf=function(){},Uf="prototype",Vf=function(){var e,t=Cp("iframe"),n=Lf.length,o="<",r=">";for(t.style.display="none",kf.appendChild(t),t.src="javascript:",e=t.contentWindow.document,e.open(),e.write(o+"script"+r+"document.F=Object"+o+"/script"+r),e.close(),Vf=e.F;n--;)delete Vf[Uf][Lf[n]];return Vf()},zf=Object.create||function(e,t){var n;return null!==e?(qf[Uf]=Nf(e),n=new qf,qf[Uf]=null,n[Wf]=e):n=Vf(),void 0===t?n:Mf(n,t)},Hf=o(function(e){var t=yf("wks"),n=Af,o=lp.Symbol,r="function"==typeof o,u=e.exports=function(e){return t[e]||(t[e]=r&&o[e]||(r?o:n)("Symbol."+e))};u.store=t}),Gf=jp.f,$f=Gp,Yf=Hf("toStringTag"),Xf=function(e,t,n){e&&!$f(e=n?e:e.prototype,Yf)&&Gf(e,Yf,{configurable:!0,value:t})},Jf=zf,Kf=Ip,Zf=Xf,Qf={};kp(Qf,Hf("iterator"),function(){return this});var ed=function(e,t,n){e.prototype=Jf(Qf,{next:Kf(1,n)}),Zf(e,t+" Iterator")},td=up,nd=function(e){return Object(td(e))},od=Gp,rd=nd,ud=wf("IE_PROTO"),id=Object.prototype,sd=Object.getPrototypeOf||function(e){return e=rd(e),od(e,ud)?e[ud]:"function"==typeof e.constructor&&e instanceof e.constructor?e.constructor.prototype:e instanceof Object?id:null},cd=ap,ad=Vp,ld=zp,pd=kp,fd=Gp,dd=$p,hd=ed,gd=Xf,yd=sd,bd=Hf("iterator"),vd=!([].keys&&"next"in[].keys()),Ad="@@iterator",Ed="keys",md="values",wd=function(){return this},Cd=function(e,t,n,o,r,u,i){hd(n,t,o);var s,c,a,l=function(e){if(!vd&&e in h)return h[e];switch(e){case Ed:return function(){return new n(this,e)};case md:return function(){return new n(this,e)}}return function(){return new n(this,e)}},p=t+" Iterator",f=r==md,d=!1,h=e.prototype,g=h[bd]||h[Ad]||r&&h[r],y=g||l(r),b=r?f?l("entries"):y:void 0,v="Array"==t?h.entries||g:g;if(v&&(a=yd(v.call(new e)),a!==Object.prototype&&(gd(a,p,!0),cd||fd(a,bd)||pd(a,bd,wd))),f&&g&&g.name!==md&&(d=!0,y=function(){return g.call(this)}),cd&&!i||!vd&&!d&&h[bd]||pd(h,bd,y),dd[t]=y,dd[p]=wd,r)if(s={values:f?y:l(md),keys:u?y:l(Ed),entries:b},i)for(c in s)c in h||ld(h,c,s[c]);else ad(ad.P+ad.F*(vd||d),t,s);return s},Od=cp(!0);Cd(String,"String",function(e){this._t=String(e),this._i=0},function(){var e,t=this._t,n=this._i;return n>=t.length?{value:void 0,done:!0}:(e=Od(t,n),this._i+=e.length,{value:e,done:!1})});var _d=function(){},Sd=function(e,t){return{value:t,done:!!e}},Dd=_d,Fd=Sd,Rd=$p,Pd=ef;Cd(Array,"Array",function(e,t){this._t=Pd(e),this._i=0,this._k=t},function(){var e=this._t,t=this._k,n=this._i++;return!e||n>=e.length?(this._t=void 0,Fd(1)):"keys"==t?Fd(0,n):"values"==t?Fd(0,e[n]):Fd(0,[n,e[n]])},"values");Rd.Arguments=Rd.Array,Dd("keys"),Dd("values"),Dd("entries");for(var Bd=lp,jd=kp,Id=$p,xd=Hf("toStringTag"),Td=["NodeList","DOMTokenList","MediaList","StyleSheetList","CSSRuleList"],kd=0;kd<5;kd++){var Nd=Td[kd],Md=Bd[Nd],Ld=Md&&Md.prototype;Ld&&!Ld[xd]&&jd(Ld,xd,Nd),Id[Nd]=Id.Array}var Wd=Hf,qd={f:Wd},Ud=qd.f("iterator"),Vd=o(function(e){e.exports={default:Ud,__esModule:!0}}),zd=o(function(e){var t=Af("meta"),n=gp,o=Gp,r=jp.f,u=0,i=Object.isExtensible||function(){return!0},s=!vp(function(){return i(Object.preventExtensions({}))}),c=function(e){r(e,t,{value:{i:"O"+ ++u,w:{}}})},a=function(e,r){if(!n(e))return"symbol"==typeof e?e:("string"==typeof e?"S":"P")+e;if(!o(e,t)){if(!i(e))return"F";if(!r)return"E";c(e)}return e[t].i},l=function(e,n){if(!o(e,t)){if(!i(e))return!0;if(!n)return!1;c(e)}return e[t].w},p=function(e){return s&&f.NEED&&i(e)&&!o(e,t)&&c(e),e},f=e.exports={KEY:t,NEED:!1,fastKey:a,getWeak:l,onFreeze:p}}),Hd=lp,Gd=pp,$d=ap,Yd=qd,Xd=jp.f,Jd=function(e){var t=Gd.Symbol||(Gd.Symbol=$d?{}:Hd.Symbol||{});"_"==e.charAt(0)||e in t||Xd(t,e,{value:Yd.f(e)})},Kd=Bf,Zd=ef,Qd=function(e,t){for(var n,o=Zd(e),r=Kd(o),u=r.length,i=0;u>i;)if(o[n=r[i++]]===t)return n},eh=Object.getOwnPropertySymbols,th={f:eh},nh={}.propertyIsEnumerable,oh={f:nh},rh=Bf,uh=th,ih=oh,sh=function(e){var t=rh(e),n=uh.f;if(n)for(var o,r=n(e),u=ih.f,i=0;r.length>i;)u.call(e,o=r[i++])&&t.push(o);return t},ch=Xp,ah=Array.isArray||function(e){return"Array"==ch(e)},lh=Df,ph=Ff.concat("length","prototype"),fh=Object.getOwnPropertyNames||function(e){return lh(e,ph)},dh={f:fh},hh=ef,gh=dh.f,yh={}.toString,bh="object"==typeof window&&window&&Object.getOwnPropertyNames?Object.getOwnPropertyNames(window):[],vh=function(e){try{return gh(e)}catch(e){return bh.slice()}},Ah=function(e){return bh&&"[object Window]"==yh.call(e)?vh(e):gh(hh(e))},Eh={f:Ah},mh=oh,wh=Ip,Ch=ef,Oh=Sp,_h=Gp,Sh=Op,Dh=Object.getOwnPropertyDescriptor,Fh=Ap?Dh:function(e,t){if(e=Ch(e),t=Oh(t,!0),Sh)try{return Dh(e,t)}catch(e){}if(_h(e,t))return wh(!mh.f.call(e,t),e[t])},Rh={f:Fh},Ph=lp,Bh=Gp,jh=Ap,Ih=Vp,xh=zp,Th=zd.KEY,kh=vp,Nh=yf,Mh=Xf,Lh=Af,Wh=Hf,qh=qd,Uh=Jd,Vh=Qd,zh=sh,Hh=ah,Gh=bp,$h=ef,Yh=Sp,Xh=Ip,Jh=zf,Kh=Eh,Zh=Rh,Qh=jp,eg=Bf,tg=Zh.f,ng=Qh.f,og=Kh.f,rg=Ph.Symbol,ug=Ph.JSON,ig=ug&&ug.stringify,sg="prototype",cg=Wh("_hidden"),ag=Wh("toPrimitive"),lg={}.propertyIsEnumerable,pg=Nh("symbol-registry"),fg=Nh("symbols"),dg=Nh("op-symbols"),hg=Object[sg],gg="function"==typeof rg,yg=Ph.QObject,bg=!yg||!yg[sg]||!yg[sg].findChild,vg=jh&&kh(function(){return 7!=Jh(ng({},"a",{get:function(){return ng(this,"a",{value:7}).a}})).a})?function(e,t,n){var o=tg(hg,t);o&&delete hg[t],ng(e,t,n),o&&e!==hg&&ng(hg,t,o)}:ng,Ag=function(e){var t=fg[e]=Jh(rg[sg]);return t._k=e,t},Eg=gg&&"symbol"==typeof rg.iterator?function(e){return"symbol"==typeof e}:function(e){return e instanceof rg},mg=function(e,t,n){return e===hg&&mg(dg,t,n),Gh(e),t=Yh(t,!0),Gh(n),Bh(fg,t)?(n.enumerable?(Bh(e,cg)&&e[cg][t]&&(e[cg][t]=!1),n=Jh(n,{enumerable:Xh(0,!1)})):(Bh(e,cg)||ng(e,cg,Xh(1,{})),e[cg][t]=!0),vg(e,t,n)):ng(e,t,n)},wg=function(e,t){Gh(e);for(var n,o=zh(t=$h(t)),r=0,u=o.length;u>r;)mg(e,n=o[r++],t[n]);return e},Cg=function(e,t){return void 0===t?Jh(e):wg(Jh(e),t)},Og=function(e){var t=lg.call(this,e=Yh(e,!0));return!(this===hg&&Bh(fg,e)&&!Bh(dg,e))&&(!(t||!Bh(this,e)||!Bh(fg,e)||Bh(this,cg)&&this[cg][e])||t)},_g=function(e,t){if(e=$h(e),t=Yh(t,!0),e!==hg||!Bh(fg,t)||Bh(dg,t)){var n=tg(e,t);return!n||!Bh(fg,t)||Bh(e,cg)&&e[cg][t]||(n.enumerable=!0),n}},Sg=function(e){for(var t,n=og($h(e)),o=[],r=0;n.length>r;)Bh(fg,t=n[r++])||t==cg||t==Th||o.push(t);return o},Dg=function(e){for(var t,n=e===hg,o=og(n?dg:$h(e)),r=[],u=0;o.length>u;)!Bh(fg,t=o[u++])||n&&!Bh(hg,t)||r.push(fg[t]);return r};gg||(rg=function(){if(this instanceof rg)throw TypeError("Symbol is not a constructor!");var e=Lh(arguments.length>0?arguments[0]:void 0),t=function(n){this===hg&&t.call(dg,n),Bh(this,cg)&&Bh(this[cg],e)&&(this[cg][e]=!1),vg(this,e,Xh(1,n))};return jh&&bg&&vg(hg,e,{configurable:!0,set:t}),Ag(e)},xh(rg[sg],"toString",function(){return this._k}),Zh.f=_g,Qh.f=mg,dh.f=Kh.f=Sg,oh.f=Og,th.f=Dg,jh&&!ap&&xh(hg,"propertyIsEnumerable",Og,!0),qh.f=function(e){return Ag(Wh(e))}),Ih(Ih.G+Ih.W+Ih.F*!gg,{Symbol:rg});for(var Fg="hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables".split(","),Rg=0;Fg.length>Rg;)Wh(Fg[Rg++]);for(var Fg=eg(Wh.store),Rg=0;Fg.length>Rg;)Uh(Fg[Rg++]);Ih(Ih.S+Ih.F*!gg,"Symbol",{for:function(e){return Bh(pg,e+="")?pg[e]:pg[e]=rg(e)},keyFor:function(e){if(Eg(e))return Vh(pg,e);throw TypeError(e+" is not a symbol!")},useSetter:function(){bg=!0},useSimple:function(){bg=!1}}),Ih(Ih.S+Ih.F*!gg,"Object",{create:Cg,defineProperty:mg,defineProperties:wg,getOwnPropertyDescriptor:_g,getOwnPropertyNames:Sg,getOwnPropertySymbols:Dg}),ug&&Ih(Ih.S+Ih.F*(!gg||kh(function(){var e=rg();return"[null]"!=ig([e])||"{}"!=ig({a:e})||"{}"!=ig(Object(e))})),"JSON",{stringify:function(e){if(void 0!==e&&!Eg(e)){for(var t,n,o=[e],r=1;arguments.length>r;)o.push(arguments[r++]);return t=o[1],"function"==typeof t&&(n=t),!n&&Hh(t)||(t=function(e,t){if(n&&(t=n.call(this,e,t)),!Eg(t))return t}),o[1]=t,ig.apply(ug,o)}}}),rg[sg][ag]||kp(rg[sg],ag,rg[sg].valueOf),Mh(rg,"Symbol"),Mh(Math,"Math",!0),Mh(Ph.JSON,"JSON",!0),Jd("asyncIterator"),Jd("observable");var Pg=pp.Symbol,Bg=o(function(e){e.exports={default:Pg,__esModule:!0}}),jg=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}t.__esModule=!0;var o=Vd,r=n(o),u=Bg,i=n(u),s="function"==typeof i.default&&"symbol"==typeof r.default?function(e){return typeof e}:function(e){return e&&"function"==typeof i.default&&e.constructor===i.default?"symbol":typeof e};t.default="function"==typeof i.default&&"symbol"===s(r.default)?function(e){return"undefined"==typeof e?"undefined":s(e)}:function(e){return e&&"function"==typeof i.default&&e.constructor===i.default?"symbol":"undefined"==typeof e?"undefined":s(e)}}),Ig=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}t.__esModule=!0;var o=jg,r=n(o);t.default=function(e,t){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!t||"object"!==("undefined"==typeof t?"undefined":(0,r.default)(t))&&"function"!=typeof t?e:t}}),xg=gp,Tg=bp,kg=function(e,t){if(Tg(e),!xg(t)&&null!==t)throw TypeError(t+": can't set as prototype!")},Ng={set:Object.setPrototypeOf||("__proto__"in{}?function(e,t,n){try{n=hp(Function.call,Rh.f(Object.prototype,"__proto__").set,2),n(e,[]),t=!(e instanceof Array)}catch(e){t=!0}return function(e,o){return kg(e,o),t?e.__proto__=o:n(e,o),e}}({},!1):void 0),check:kg},Mg=Vp;Mg(Mg.S,"Object",{setPrototypeOf:Ng.set});var Lg=pp.Object.setPrototypeOf,Wg=o(function(e){e.exports={default:Lg,__esModule:!0}}),qg=Vp;qg(qg.S,"Object",{create:zf});var Ug=pp.Object,Vg=function(e,t){return Ug.create(e,t)},zg=o(function(e){e.exports={default:Vg,__esModule:!0}}),Hg=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}t.__esModule=!0;var o=Wg,r=n(o),u=zg,i=n(u),s=jg,c=n(s);t.default=function(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+("undefined"==typeof t?"undefined":(0,c.default)(t)));e.prototype=(0,i.default)(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(r.default?(0,r.default)(e,t):e.__proto__=t)}}),Gg=yc,$g=Gg.EmptyObservable.create,Yg={empty:$g},Xg=ic,Jg=Yg;Xg.Observable.empty=Jg.empty;var Kg=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Zg=function(e){function t(){var t=e.call(this,"object unsubscribed");this.name=t.name="ObjectUnsubscribedError",this.stack=t.stack,this.message=t.message}return Kg(t,e),t}(Error),Qg=Zg,ey={ObjectUnsubscribedError:Qg},ty=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},ny=Ps,oy=function(e){function t(t,n){e.call(this),this.subject=t,this.subscriber=n,this.closed=!1}return ty(t,e),t.prototype.unsubscribe=function(){if(!this.closed){this.closed=!0;var e=this.subject,t=e.observers;if(this.subject=null,t&&0!==t.length&&!e.isStopped&&!e.closed){var n=t.indexOf(this.subscriber);n!==-1&&t.splice(n,1)}}},t}(ny.Subscription),ry=oy,uy={SubjectSubscription:ry},iy=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},sy=ic,cy=Hs,ay=Ps,ly=ey,py=uy,fy=ks,dy=function(e){function t(t){e.call(this,t),this.destination=t}return iy(t,e),t}(cy.Subscriber),hy=dy,gy=function(e){function t(){e.call(this),this.observers=[],this.closed=!1,this.isStopped=!1,this.hasError=!1,this.thrownError=null}return iy(t,e),t.prototype[fy.$$rxSubscriber]=function(){return new dy(this)},t.prototype.lift=function(e){var t=new by(this,this);return t.operator=e,t},t.prototype.next=function(e){if(this.closed)throw new ly.ObjectUnsubscribedError;if(!this.isStopped)for(var t=this.observers,n=t.length,o=t.slice(),r=0;r<n;r++)o[r].next(e)},t.prototype.error=function(e){if(this.closed)throw new ly.ObjectUnsubscribedError;this.hasError=!0,this.thrownError=e,this.isStopped=!0;for(var t=this.observers,n=t.length,o=t.slice(),r=0;r<n;r++)o[r].error(e);this.observers.length=0},t.prototype.complete=function(){if(this.closed)throw new ly.ObjectUnsubscribedError;this.isStopped=!0;for(var e=this.observers,t=e.length,n=e.slice(),o=0;o<t;o++)n[o].complete();this.observers.length=0},t.prototype.unsubscribe=function(){this.isStopped=!0,this.closed=!0,this.observers=null},t.prototype._subscribe=function(e){if(this.closed)throw new ly.ObjectUnsubscribedError;return this.hasError?(e.error(this.thrownError),ay.Subscription.EMPTY):this.isStopped?(e.complete(),ay.Subscription.EMPTY):(this.observers.push(e),new py.SubjectSubscription(this,e))},t.prototype.asObservable=function(){var e=new sy.Observable;return e.source=this,e},t.create=function(e,t){return new by(e,t)},t}(sy.Observable),yy=gy,by=function(e){function t(t,n){e.call(this),this.destination=t,this.source=n}return iy(t,e),t.prototype.next=function(e){var t=this.destination;t&&t.next&&t.next(e)},t.prototype.error=function(e){var t=this.destination;t&&t.error&&this.destination.error(e)},t.prototype.complete=function(){var e=this.destination;e&&e.complete&&this.destination.complete()},t.prototype._subscribe=function(e){var t=this.source;return t?this.source.subscribe(e):ay.Subscription.EMPTY},t}(gy),vy=by,Ay={SubjectSubscriber:hy,Subject:yy,AnonymousSubject:vy},Ey=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},my=Ps,wy=function(e){function t(t,n){e.call(this)}return Ey(t,e),t.prototype.schedule=function(e,t){return void 0===t&&(t=0),this},t}(my.Subscription),Cy=wy,Oy={Action:Cy},_y=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Sy=os,Dy=Oy,Fy=function(e){function t(t,n){e.call(this,t,n),this.scheduler=t,this.work=n,this.pending=!1}return _y(t,e),t.prototype.schedule=function(e,t){if(void 0===t&&(t=0),this.closed)return this;this.state=e,this.pending=!0;var n=this.id,o=this.scheduler;return null!=n&&(this.id=this.recycleAsyncId(o,n,t)),this.delay=t,this.id=this.id||this.requestAsyncId(o,this.id,t),this},t.prototype.requestAsyncId=function(e,t,n){return void 0===n&&(n=0),Sy.root.setInterval(e.flush.bind(e,this),n)},t.prototype.recycleAsyncId=function(e,t,n){return void 0===n&&(n=0),null!==n&&this.delay===n?t:Sy.root.clearInterval(t)&&void 0||void 0},t.prototype.execute=function(e,t){if(this.closed)return new Error("executing a cancelled action");this.pending=!1;var n=this._execute(e,t);return n?n:void(this.pending===!1&&null!=this.id&&(this.id=this.recycleAsyncId(this.scheduler,this.id,null)))},t.prototype._execute=function(e,t){var n=!1,o=void 0;try{this.work(e)}catch(e){n=!0,o=!!e&&e||new Error(e)}if(n)return this.unsubscribe(),o},t.prototype._unsubscribe=function(){var e=this.id,t=this.scheduler,n=t.actions,o=n.indexOf(this);this.work=null,this.delay=null,this.state=null,this.pending=!1,this.scheduler=null,o!==-1&&n.splice(o,1),null!=e&&(this.id=this.recycleAsyncId(t,e,null))},t}(Dy.Action),Ry=Fy,Py={AsyncAction:Ry},By=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},jy=Py,Iy=function(e){function t(t,n){e.call(this,t,n),this.scheduler=t,this.work=n}return By(t,e),t.prototype.schedule=function(t,n){return void 0===n&&(n=0),n>0?e.prototype.schedule.call(this,t,n):(this.delay=n,this.state=t,this.scheduler.flush(this),this)},t.prototype.execute=function(t,n){return n>0||this.closed?e.prototype.execute.call(this,t,n):this._execute(t,n)},t.prototype.requestAsyncId=function(t,n,o){return void 0===o&&(o=0),null!==o&&o>0||null===o&&this.delay>0?e.prototype.requestAsyncId.call(this,t,n,o):t.flush(this)},t}(jy.AsyncAction),xy=Iy,Ty={QueueAction:xy},ky=function(){function e(t,n){void 0===n&&(n=e.now),this.SchedulerAction=t,this.now=n}return e.prototype.schedule=function(e,t,n){return void 0===t&&(t=0),new this.SchedulerAction(this,e).schedule(n,t)},e.now=Date.now?Date.now:function(){return+new Date},e}(),Ny=ky,My={Scheduler:Ny},Ly=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Wy=My,qy=function(e){function t(){e.apply(this,arguments),this.actions=[],this.active=!1,this.scheduled=void 0}return Ly(t,e),t.prototype.flush=function(e){var t=this.actions;if(this.active)return void t.push(e);var n;this.active=!0;do if(n=e.execute(e.state,e.delay))break;while(e=t.shift());if(this.active=!1,n){for(;e=t.shift();)e.unsubscribe();throw n}},t}(Wy.Scheduler),Uy=qy,Vy={AsyncScheduler:Uy},zy=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Hy=Vy,Gy=function(e){function t(){e.apply(this,arguments)}return zy(t,e),t}(Hy.AsyncScheduler),$y=Gy,Yy={QueueScheduler:$y},Xy=Ty,Jy=Yy,Ky=new Jy.QueueScheduler(Xy.QueueAction),Zy={queue:Ky},Qy=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},eb=Ay,tb=Zy,nb=Ps,ob=ma,rb=ey,ub=uy,ib=function(e){function t(t,n,o){void 0===t&&(t=Number.POSITIVE_INFINITY),void 0===n&&(n=Number.POSITIVE_INFINITY),e.call(this),this.scheduler=o,this._events=[],this._bufferSize=t<1?1:t,this._windowTime=n<1?1:n}return Qy(t,e),t.prototype.next=function(t){var n=this._getNow();this._events.push(new cb(n,t)),this._trimBufferThenGetEvents(),e.prototype.next.call(this,t)},t.prototype._subscribe=function(e){var t,n=this._trimBufferThenGetEvents(),o=this.scheduler;if(this.closed)throw new rb.ObjectUnsubscribedError;this.hasError?t=nb.Subscription.EMPTY:this.isStopped?t=nb.Subscription.EMPTY:(this.observers.push(e),t=new ub.SubjectSubscription(this,e)),o&&e.add(e=new ob.ObserveOnSubscriber(e,o));for(var r=n.length,u=0;u<r&&!e.closed;u++)e.next(n[u].value);return this.hasError?e.error(this.thrownError):this.isStopped&&e.complete(),t},t.prototype._getNow=function(){return(this.scheduler||tb.queue).now()},t.prototype._trimBufferThenGetEvents=function(){for(var e=this._getNow(),t=this._bufferSize,n=this._windowTime,o=this._events,r=o.length,u=0;u<r&&!(e-o[u].time<n);)u++;return r>t&&(u=Math.max(u,r-t)),u>0&&o.splice(0,u),o},t}(eb.Subject),sb=ib,cb=function(){function e(e,t){this.time=e,this.value=t}return e}(),ab={ReplaySubject:sb},lb=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},pb=Ay,fb=ic,db=Hs,hb=Ps,gb=function(e){function t(t,n){e.call(this),this.source=t,this.subjectFactory=n,this._refCount=0}return lb(t,e),t.prototype._subscribe=function(e){return this.getSubject().subscribe(e)},t.prototype.getSubject=function(){var e=this._subject;return e&&!e.isStopped||(this._subject=this.subjectFactory()),this._subject},t.prototype.connect=function(){var e=this._connection;return e||(e=this._connection=new hb.Subscription,e.add(this.source.subscribe(new vb(this.getSubject(),this))),e.closed?(this._connection=null,e=hb.Subscription.EMPTY):this._connection=e),e},t.prototype.refCount=function(){return this.lift(new Ab(this))},t}(fb.Observable),yb=gb,bb={operator:{value:null},_refCount:{value:0,writable:!0},_subscribe:{value:gb.prototype._subscribe},getSubject:{value:gb.prototype.getSubject},connect:{value:gb.prototype.connect},refCount:{value:gb.prototype.refCount}},vb=function(e){function t(t,n){e.call(this,t),this.connectable=n}return lb(t,e),t.prototype._error=function(t){this._unsubscribe(),e.prototype._error.call(this,t)},t.prototype._complete=function(){this._unsubscribe(),e.prototype._complete.call(this)},t.prototype._unsubscribe=function(){var e=this.connectable;if(e){this.connectable=null;var t=e._connection;e._refCount=0,e._subject=null,e._connection=null,t&&t.unsubscribe()}},t}(pb.SubjectSubscriber),Ab=function(){function e(e){this.connectable=e}return e.prototype.call=function(e,t){var n=this.connectable;n._refCount++;var o=new Eb(e,n),r=t.subscribe(o);return o.closed||(o.connection=n.connect()),r},e}(),Eb=function(e){function t(t,n){e.call(this,t),this.connectable=n}return lb(t,e),t.prototype._unsubscribe=function(){var e=this.connectable;if(!e)return void(this.connection=null);this.connectable=null;var t=e._refCount;if(t<=0)return void(this.connection=null);if(e._refCount=t-1,t>1)return void(this.connection=null);var n=this.connection,o=e._connection;this.connection=null,!o||n&&o!==n||o.unsubscribe()},t}(db.Subscriber),mb={ConnectableObservable:yb,connectableObservableDescriptor:bb},wb=mb,Cb=he,Ob=function(){function e(e,t){this.subjectFactory=e,this.selector=t}return e.prototype.call=function(e,t){var n=this.selector,o=this.subjectFactory(),r=n(o).subscribe(e);return r.add(t.subscribe(o)),r},e}(),_b=Ob,Sb={multicast:Cb,MulticastOperator:_b},Db=ab,Fb=Sb,Rb=ge,Pb={publishReplay:Rb},Bb=ic,jb=Pb;Bb.Observable.prototype.publishReplay=jb.publishReplay;var Ib=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},xb=Hs,Tb=ye,kb=function(){function e(e,t,n){void 0===n&&(n=!1),this.accumulator=e,this.seed=t,this.hasSeed=n}return e.prototype.call=function(e,t){return t.subscribe(new Nb(e,this.accumulator,this.seed,this.hasSeed))},e}(),Nb=function(e){function t(t,n,o,r){e.call(this,t),this.accumulator=n,this._seed=o,this.hasSeed=r,this.index=0}return Ib(t,e),Object.defineProperty(t.prototype,"seed",{get:function(){return this._seed},set:function(e){this.hasSeed=!0,this._seed=e},enumerable:!0,configurable:!0}),t.prototype._next=function(e){return this.hasSeed?this._tryNext(e):(this.seed=e,void this.destination.next(e))},t.prototype._tryNext=function(e){var t,n=this.index++;try{t=this.accumulator(this.seed,e,n)}catch(e){this.destination.error(e)}this.seed=t,this.destination.next(t)},t}(xb.Subscriber),Mb={scan:Tb},Lb=ic,Wb=Mb;Lb.Observable.prototype.scan=Wb.scan;var qb=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Ub=Hs,Vb=be,zb=function(){function e(){}return e.prototype.call=function(e,t){return t.subscribe(new Hb(e))},e}(),Hb=function(e){function t(t){e.call(this,t),this.array=[]}return qb(t,e),t.prototype._next=function(e){this.array.push(e)},t.prototype._complete=function(){this.destination.next(this.array),this.destination.complete()},t}(Ub.Subscriber),Gb={toArray:Vb},$b=ic,Yb=Gb;$b.Observable.prototype.toArray=Yb.toArray;var Xb=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Jb=Hs,Kb=ve,Zb=function(){function e(e){this.defaultValue=e}return e.prototype.call=function(e,t){return t.subscribe(new Qb(e,this.defaultValue))},e}(),Qb=function(e){function t(t,n){e.call(this,t),this.defaultValue=n,this.isEmpty=!0}return Xb(t,e),t.prototype._next=function(e){this.isEmpty=!1,this.destination.next(e)},t.prototype._complete=function(){this.isEmpty&&this.destination.next(this.defaultValue),this.destination.complete()},t}(Jb.Subscriber),ev={defaultIfEmpty:Kb},tv=ic,nv=ev;tv.Observable.prototype.defaultIfEmpty=nv.defaultIfEmpty;var ov=Ae,rv={noop:ov},uv=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},iv=Hs,sv=rv,cv=Ee,av=function(){function e(){}return e.prototype.call=function(e,t){return t.subscribe(new lv(e))},e}(),lv=function(e){function t(){e.apply(this,arguments)}return uv(t,e),t.prototype._next=function(e){sv.noop()},t}(iv.Subscriber),pv={ignoreElements:cv},fv=ic,dv=pv;fv.Observable.prototype.ignoreElements=dv.ignoreElements;var hv=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},gv=Ga,yv=sl,bv=me,vv=function(){function e(e){this.concurrent=e}return e.prototype.call=function(e,t){return t.subscribe(new Ev(e,this.concurrent))},e}(),Av=vv,Ev=function(e){function t(t,n){e.call(this,t),this.concurrent=n,this.hasCompleted=!1,this.buffer=[],this.active=0}return hv(t,e),t.prototype._next=function(e){this.active<this.concurrent?(this.active++,this.add(yv.subscribeToResult(this,e))):this.buffer.push(e)},t.prototype._complete=function(){this.hasCompleted=!0,0===this.active&&0===this.buffer.length&&this.destination.complete()},t.prototype.notifyComplete=function(e){var t=this.buffer;this.remove(e),this.active--,t.length>0?this._next(t.shift()):0===this.active&&this.hasCompleted&&this.destination.complete();
-},t}(gv.OuterSubscriber),mv=Ev,wv={mergeAll:bv,MergeAllOperator:Av,MergeAllSubscriber:mv},Cv=Sc,Ov=wv,_v=vc,Sv=we,Dv=Ce,Fv={merge:Sv,mergeStatic:Dv},Rv=ic,Pv=Fv;Rv.Observable.prototype.merge=Pv.merge;var Bv=ic,jv=_l;Bv.Observable.prototype.mergeMap=jv.mergeMap,Bv.Observable.prototype.flatMap=jv.mergeMap;var Iv=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},xv=function(e){function t(){var t=e.call(this,"argument out of range");this.name=t.name="ArgumentOutOfRangeError",this.stack=t.stack,this.message=t.message}return Iv(t,e),t}(Error),Tv=xv,kv={ArgumentOutOfRangeError:Tv},Nv=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Mv=Hs,Lv=kv,Wv=yc,qv=Oe,Uv=function(){function e(e){if(this.total=e,this.total<0)throw new Lv.ArgumentOutOfRangeError}return e.prototype.call=function(e,t){return t.subscribe(new Vv(e,this.total))},e}(),Vv=function(e){function t(t,n){e.call(this,t),this.total=n,this.count=0}return Nv(t,e),t.prototype._next=function(e){var t=this.total,n=++this.count;n<=t&&(this.destination.next(e),n===t&&(this.destination.complete(),this.unsubscribe()))},t}(Mv.Subscriber),zv={take:qv},Hv=ic,Gv=zv;Hv.Observable.prototype.take=Gv.take;var $v={tr:{regexp:/\u0130|\u0049|\u0049\u0307/g,map:{"İ":"i",I:"ı","İ":"i"}},az:{regexp:/[\u0130]/g,map:{"İ":"i",I:"ı","İ":"i"}},lt:{regexp:/[\u0049\u004A\u012E\u00CC\u00CD\u0128]/g,map:{I:"i̇",J:"j̇","Į":"į̇","Ì":"i̇̀","Í":"i̇́","Ĩ":"i̇̃"}}},Yv=function(e,t){var n=$v[t];return e=null==e?"":String(e),n&&(e=e.replace(n.regexp,function(e){return n.map[e]})),e.toLowerCase()},Xv=/[^A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0-\u08B4\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC0-9\xB2\xB3\xB9\xBC-\xBE\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u09F4-\u09F9\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0B72-\u0B77\u0BE6-\u0BF2\u0C66-\u0C6F\u0C78-\u0C7E\u0CE6-\u0CEF\u0D66-\u0D75\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F33\u1040-\u1049\u1090-\u1099\u1369-\u137C\u16EE-\u16F0\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1946-\u194F\u19D0-\u19DA\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\u2070\u2074-\u2079\u2080-\u2089\u2150-\u2182\u2185-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2CFD\u3007\u3021-\u3029\u3038-\u303A\u3192-\u3195\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\uA620-\uA629\uA6E6-\uA6EF\uA830-\uA835\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19]+/g,Jv=/([a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010B\u010D\u010F\u0111\u0113\u0115\u0117\u0119\u011B\u011D\u011F\u0121\u0123\u0125\u0127\u0129\u012B\u012D\u012F\u0131\u0133\u0135\u0137\u0138\u013A\u013C\u013E\u0140\u0142\u0144\u0146\u0148\u0149\u014B\u014D\u014F\u0151\u0153\u0155\u0157\u0159\u015B\u015D\u015F\u0161\u0163\u0165\u0167\u0169\u016B\u016D\u016F\u0171\u0173\u0175\u0177\u017A\u017C\u017E-\u0180\u0183\u0185\u0188\u018C\u018D\u0192\u0195\u0199-\u019B\u019E\u01A1\u01A3\u01A5\u01A8\u01AA\u01AB\u01AD\u01B0\u01B4\u01B6\u01B9\u01BA\u01BD-\u01BF\u01C6\u01C9\u01CC\u01CE\u01D0\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u01DD\u01DF\u01E1\u01E3\u01E5\u01E7\u01E9\u01EB\u01ED\u01EF\u01F0\u01F3\u01F5\u01F9\u01FB\u01FD\u01FF\u0201\u0203\u0205\u0207\u0209\u020B\u020D\u020F\u0211\u0213\u0215\u0217\u0219\u021B\u021D\u021F\u0221\u0223\u0225\u0227\u0229\u022B\u022D\u022F\u0231\u0233-\u0239\u023C\u023F\u0240\u0242\u0247\u0249\u024B\u024D\u024F-\u0293\u0295-\u02AF\u0371\u0373\u0377\u037B-\u037D\u0390\u03AC-\u03CE\u03D0\u03D1\u03D5-\u03D7\u03D9\u03DB\u03DD\u03DF\u03E1\u03E3\u03E5\u03E7\u03E9\u03EB\u03ED\u03EF-\u03F3\u03F5\u03F8\u03FB\u03FC\u0430-\u045F\u0461\u0463\u0465\u0467\u0469\u046B\u046D\u046F\u0471\u0473\u0475\u0477\u0479\u047B\u047D\u047F\u0481\u048B\u048D\u048F\u0491\u0493\u0495\u0497\u0499\u049B\u049D\u049F\u04A1\u04A3\u04A5\u04A7\u04A9\u04AB\u04AD\u04AF\u04B1\u04B3\u04B5\u04B7\u04B9\u04BB\u04BD\u04BF\u04C2\u04C4\u04C6\u04C8\u04CA\u04CC\u04CE\u04CF\u04D1\u04D3\u04D5\u04D7\u04D9\u04DB\u04DD\u04DF\u04E1\u04E3\u04E5\u04E7\u04E9\u04EB\u04ED\u04EF\u04F1\u04F3\u04F5\u04F7\u04F9\u04FB\u04FD\u04FF\u0501\u0503\u0505\u0507\u0509\u050B\u050D\u050F\u0511\u0513\u0515\u0517\u0519\u051B\u051D\u051F\u0521\u0523\u0525\u0527\u0529\u052B\u052D\u052F\u0561-\u0587\u13F8-\u13FD\u1D00-\u1D2B\u1D6B-\u1D77\u1D79-\u1D9A\u1E01\u1E03\u1E05\u1E07\u1E09\u1E0B\u1E0D\u1E0F\u1E11\u1E13\u1E15\u1E17\u1E19\u1E1B\u1E1D\u1E1F\u1E21\u1E23\u1E25\u1E27\u1E29\u1E2B\u1E2D\u1E2F\u1E31\u1E33\u1E35\u1E37\u1E39\u1E3B\u1E3D\u1E3F\u1E41\u1E43\u1E45\u1E47\u1E49\u1E4B\u1E4D\u1E4F\u1E51\u1E53\u1E55\u1E57\u1E59\u1E5B\u1E5D\u1E5F\u1E61\u1E63\u1E65\u1E67\u1E69\u1E6B\u1E6D\u1E6F\u1E71\u1E73\u1E75\u1E77\u1E79\u1E7B\u1E7D\u1E7F\u1E81\u1E83\u1E85\u1E87\u1E89\u1E8B\u1E8D\u1E8F\u1E91\u1E93\u1E95-\u1E9D\u1E9F\u1EA1\u1EA3\u1EA5\u1EA7\u1EA9\u1EAB\u1EAD\u1EAF\u1EB1\u1EB3\u1EB5\u1EB7\u1EB9\u1EBB\u1EBD\u1EBF\u1EC1\u1EC3\u1EC5\u1EC7\u1EC9\u1ECB\u1ECD\u1ECF\u1ED1\u1ED3\u1ED5\u1ED7\u1ED9\u1EDB\u1EDD\u1EDF\u1EE1\u1EE3\u1EE5\u1EE7\u1EE9\u1EEB\u1EED\u1EEF\u1EF1\u1EF3\u1EF5\u1EF7\u1EF9\u1EFB\u1EFD\u1EFF-\u1F07\u1F10-\u1F15\u1F20-\u1F27\u1F30-\u1F37\u1F40-\u1F45\u1F50-\u1F57\u1F60-\u1F67\u1F70-\u1F7D\u1F80-\u1F87\u1F90-\u1F97\u1FA0-\u1FA7\u1FB0-\u1FB4\u1FB6\u1FB7\u1FBE\u1FC2-\u1FC4\u1FC6\u1FC7\u1FD0-\u1FD3\u1FD6\u1FD7\u1FE0-\u1FE7\u1FF2-\u1FF4\u1FF6\u1FF7\u210A\u210E\u210F\u2113\u212F\u2134\u2139\u213C\u213D\u2146-\u2149\u214E\u2184\u2C30-\u2C5E\u2C61\u2C65\u2C66\u2C68\u2C6A\u2C6C\u2C71\u2C73\u2C74\u2C76-\u2C7B\u2C81\u2C83\u2C85\u2C87\u2C89\u2C8B\u2C8D\u2C8F\u2C91\u2C93\u2C95\u2C97\u2C99\u2C9B\u2C9D\u2C9F\u2CA1\u2CA3\u2CA5\u2CA7\u2CA9\u2CAB\u2CAD\u2CAF\u2CB1\u2CB3\u2CB5\u2CB7\u2CB9\u2CBB\u2CBD\u2CBF\u2CC1\u2CC3\u2CC5\u2CC7\u2CC9\u2CCB\u2CCD\u2CCF\u2CD1\u2CD3\u2CD5\u2CD7\u2CD9\u2CDB\u2CDD\u2CDF\u2CE1\u2CE3\u2CE4\u2CEC\u2CEE\u2CF3\u2D00-\u2D25\u2D27\u2D2D\uA641\uA643\uA645\uA647\uA649\uA64B\uA64D\uA64F\uA651\uA653\uA655\uA657\uA659\uA65B\uA65D\uA65F\uA661\uA663\uA665\uA667\uA669\uA66B\uA66D\uA681\uA683\uA685\uA687\uA689\uA68B\uA68D\uA68F\uA691\uA693\uA695\uA697\uA699\uA69B\uA723\uA725\uA727\uA729\uA72B\uA72D\uA72F-\uA731\uA733\uA735\uA737\uA739\uA73B\uA73D\uA73F\uA741\uA743\uA745\uA747\uA749\uA74B\uA74D\uA74F\uA751\uA753\uA755\uA757\uA759\uA75B\uA75D\uA75F\uA761\uA763\uA765\uA767\uA769\uA76B\uA76D\uA76F\uA771-\uA778\uA77A\uA77C\uA77F\uA781\uA783\uA785\uA787\uA78C\uA78E\uA791\uA793-\uA795\uA797\uA799\uA79B\uA79D\uA79F\uA7A1\uA7A3\uA7A5\uA7A7\uA7A9\uA7B5\uA7B7\uA7FA\uAB30-\uAB5A\uAB60-\uAB65\uAB70-\uABBF\uFB00-\uFB06\uFB13-\uFB17\uFF41-\uFF5A0-9\xB2\xB3\xB9\xBC-\xBE\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u09F4-\u09F9\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0B72-\u0B77\u0BE6-\u0BF2\u0C66-\u0C6F\u0C78-\u0C7E\u0CE6-\u0CEF\u0D66-\u0D75\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F33\u1040-\u1049\u1090-\u1099\u1369-\u137C\u16EE-\u16F0\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1946-\u194F\u19D0-\u19DA\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\u2070\u2074-\u2079\u2080-\u2089\u2150-\u2182\u2185-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2CFD\u3007\u3021-\u3029\u3038-\u303A\u3192-\u3195\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\uA620-\uA629\uA6E6-\uA6EF\uA830-\uA835\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19])([A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AD\uA7B0-\uA7B4\uA7B6\uFF21-\uFF3A])/g,Kv=/([A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AD\uA7B0-\uA7B4\uA7B6\uFF21-\uFF3A]+)([A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AD\uA7B0-\uA7B4\uA7B6\uFF21-\uFF3A][a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010B\u010D\u010F\u0111\u0113\u0115\u0117\u0119\u011B\u011D\u011F\u0121\u0123\u0125\u0127\u0129\u012B\u012D\u012F\u0131\u0133\u0135\u0137\u0138\u013A\u013C\u013E\u0140\u0142\u0144\u0146\u0148\u0149\u014B\u014D\u014F\u0151\u0153\u0155\u0157\u0159\u015B\u015D\u015F\u0161\u0163\u0165\u0167\u0169\u016B\u016D\u016F\u0171\u0173\u0175\u0177\u017A\u017C\u017E-\u0180\u0183\u0185\u0188\u018C\u018D\u0192\u0195\u0199-\u019B\u019E\u01A1\u01A3\u01A5\u01A8\u01AA\u01AB\u01AD\u01B0\u01B4\u01B6\u01B9\u01BA\u01BD-\u01BF\u01C6\u01C9\u01CC\u01CE\u01D0\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u01DD\u01DF\u01E1\u01E3\u01E5\u01E7\u01E9\u01EB\u01ED\u01EF\u01F0\u01F3\u01F5\u01F9\u01FB\u01FD\u01FF\u0201\u0203\u0205\u0207\u0209\u020B\u020D\u020F\u0211\u0213\u0215\u0217\u0219\u021B\u021D\u021F\u0221\u0223\u0225\u0227\u0229\u022B\u022D\u022F\u0231\u0233-\u0239\u023C\u023F\u0240\u0242\u0247\u0249\u024B\u024D\u024F-\u0293\u0295-\u02AF\u0371\u0373\u0377\u037B-\u037D\u0390\u03AC-\u03CE\u03D0\u03D1\u03D5-\u03D7\u03D9\u03DB\u03DD\u03DF\u03E1\u03E3\u03E5\u03E7\u03E9\u03EB\u03ED\u03EF-\u03F3\u03F5\u03F8\u03FB\u03FC\u0430-\u045F\u0461\u0463\u0465\u0467\u0469\u046B\u046D\u046F\u0471\u0473\u0475\u0477\u0479\u047B\u047D\u047F\u0481\u048B\u048D\u048F\u0491\u0493\u0495\u0497\u0499\u049B\u049D\u049F\u04A1\u04A3\u04A5\u04A7\u04A9\u04AB\u04AD\u04AF\u04B1\u04B3\u04B5\u04B7\u04B9\u04BB\u04BD\u04BF\u04C2\u04C4\u04C6\u04C8\u04CA\u04CC\u04CE\u04CF\u04D1\u04D3\u04D5\u04D7\u04D9\u04DB\u04DD\u04DF\u04E1\u04E3\u04E5\u04E7\u04E9\u04EB\u04ED\u04EF\u04F1\u04F3\u04F5\u04F7\u04F9\u04FB\u04FD\u04FF\u0501\u0503\u0505\u0507\u0509\u050B\u050D\u050F\u0511\u0513\u0515\u0517\u0519\u051B\u051D\u051F\u0521\u0523\u0525\u0527\u0529\u052B\u052D\u052F\u0561-\u0587\u13F8-\u13FD\u1D00-\u1D2B\u1D6B-\u1D77\u1D79-\u1D9A\u1E01\u1E03\u1E05\u1E07\u1E09\u1E0B\u1E0D\u1E0F\u1E11\u1E13\u1E15\u1E17\u1E19\u1E1B\u1E1D\u1E1F\u1E21\u1E23\u1E25\u1E27\u1E29\u1E2B\u1E2D\u1E2F\u1E31\u1E33\u1E35\u1E37\u1E39\u1E3B\u1E3D\u1E3F\u1E41\u1E43\u1E45\u1E47\u1E49\u1E4B\u1E4D\u1E4F\u1E51\u1E53\u1E55\u1E57\u1E59\u1E5B\u1E5D\u1E5F\u1E61\u1E63\u1E65\u1E67\u1E69\u1E6B\u1E6D\u1E6F\u1E71\u1E73\u1E75\u1E77\u1E79\u1E7B\u1E7D\u1E7F\u1E81\u1E83\u1E85\u1E87\u1E89\u1E8B\u1E8D\u1E8F\u1E91\u1E93\u1E95-\u1E9D\u1E9F\u1EA1\u1EA3\u1EA5\u1EA7\u1EA9\u1EAB\u1EAD\u1EAF\u1EB1\u1EB3\u1EB5\u1EB7\u1EB9\u1EBB\u1EBD\u1EBF\u1EC1\u1EC3\u1EC5\u1EC7\u1EC9\u1ECB\u1ECD\u1ECF\u1ED1\u1ED3\u1ED5\u1ED7\u1ED9\u1EDB\u1EDD\u1EDF\u1EE1\u1EE3\u1EE5\u1EE7\u1EE9\u1EEB\u1EED\u1EEF\u1EF1\u1EF3\u1EF5\u1EF7\u1EF9\u1EFB\u1EFD\u1EFF-\u1F07\u1F10-\u1F15\u1F20-\u1F27\u1F30-\u1F37\u1F40-\u1F45\u1F50-\u1F57\u1F60-\u1F67\u1F70-\u1F7D\u1F80-\u1F87\u1F90-\u1F97\u1FA0-\u1FA7\u1FB0-\u1FB4\u1FB6\u1FB7\u1FBE\u1FC2-\u1FC4\u1FC6\u1FC7\u1FD0-\u1FD3\u1FD6\u1FD7\u1FE0-\u1FE7\u1FF2-\u1FF4\u1FF6\u1FF7\u210A\u210E\u210F\u2113\u212F\u2134\u2139\u213C\u213D\u2146-\u2149\u214E\u2184\u2C30-\u2C5E\u2C61\u2C65\u2C66\u2C68\u2C6A\u2C6C\u2C71\u2C73\u2C74\u2C76-\u2C7B\u2C81\u2C83\u2C85\u2C87\u2C89\u2C8B\u2C8D\u2C8F\u2C91\u2C93\u2C95\u2C97\u2C99\u2C9B\u2C9D\u2C9F\u2CA1\u2CA3\u2CA5\u2CA7\u2CA9\u2CAB\u2CAD\u2CAF\u2CB1\u2CB3\u2CB5\u2CB7\u2CB9\u2CBB\u2CBD\u2CBF\u2CC1\u2CC3\u2CC5\u2CC7\u2CC9\u2CCB\u2CCD\u2CCF\u2CD1\u2CD3\u2CD5\u2CD7\u2CD9\u2CDB\u2CDD\u2CDF\u2CE1\u2CE3\u2CE4\u2CEC\u2CEE\u2CF3\u2D00-\u2D25\u2D27\u2D2D\uA641\uA643\uA645\uA647\uA649\uA64B\uA64D\uA64F\uA651\uA653\uA655\uA657\uA659\uA65B\uA65D\uA65F\uA661\uA663\uA665\uA667\uA669\uA66B\uA66D\uA681\uA683\uA685\uA687\uA689\uA68B\uA68D\uA68F\uA691\uA693\uA695\uA697\uA699\uA69B\uA723\uA725\uA727\uA729\uA72B\uA72D\uA72F-\uA731\uA733\uA735\uA737\uA739\uA73B\uA73D\uA73F\uA741\uA743\uA745\uA747\uA749\uA74B\uA74D\uA74F\uA751\uA753\uA755\uA757\uA759\uA75B\uA75D\uA75F\uA761\uA763\uA765\uA767\uA769\uA76B\uA76D\uA76F\uA771-\uA778\uA77A\uA77C\uA77F\uA781\uA783\uA785\uA787\uA78C\uA78E\uA791\uA793-\uA795\uA797\uA799\uA79B\uA79D\uA79F\uA7A1\uA7A3\uA7A5\uA7A7\uA7A9\uA7B5\uA7B7\uA7FA\uAB30-\uAB5A\uAB60-\uAB65\uAB70-\uABBF\uFB00-\uFB06\uFB13-\uFB17\uFF41-\uFF5A])/g,Zv=Yv,Qv=Xv,eA=Jv,tA=Kv,nA=function(e,t,n){function o(e,t,o){return 0===t||t===o.length-e.length?"":n}return null==e?"":(n=n||" ",e=String(e).replace(eA,"$1 $2").replace(tA,"$1 $2").replace(Qv,o),Zv(e,t))},oA=nA,rA=function(e,t){return oA(e,t,"_")},uA=o(function(e,t){function n(e){var t=[];for(var n in e)t.push(n);return t}t=e.exports="function"==typeof Object.keys?Object.keys:n,t.shim=n}),iA=o(function(e,t){function n(e){return"[object Arguments]"==Object.prototype.toString.call(e)}function o(e){return e&&"object"==typeof e&&"number"==typeof e.length&&Object.prototype.hasOwnProperty.call(e,"callee")&&!Object.prototype.propertyIsEnumerable.call(e,"callee")||!1}var r="[object Arguments]"==function(){return Object.prototype.toString.call(arguments)}();t=e.exports=r?n:o,t.supported=n,t.unsupported=o}),sA=o(function(e){function t(e){return null===e||void 0===e}function n(e){return!(!e||"object"!=typeof e||"number"!=typeof e.length)&&("function"==typeof e.copy&&"function"==typeof e.slice&&!(e.length>0&&"number"!=typeof e[0]))}function o(e,o,c){var a,l;if(t(e)||t(o))return!1;if(e.prototype!==o.prototype)return!1;if(i(e))return!!i(o)&&(e=r.call(e),o=r.call(o),s(e,o,c));if(n(e)){if(!n(o))return!1;if(e.length!==o.length)return!1;for(a=0;a<e.length;a++)if(e[a]!==o[a])return!1;return!0}try{var p=u(e),f=u(o)}catch(e){return!1}if(p.length!=f.length)return!1;for(p.sort(),f.sort(),a=p.length-1;a>=0;a--)if(p[a]!=f[a])return!1;for(a=p.length-1;a>=0;a--)if(l=p[a],!s(e[l],o[l],c))return!1;return typeof e==typeof o}var r=Array.prototype.slice,u=uA,i=iA,s=e.exports=function(e,t,n){return n||(n={}),e===t||(e instanceof Date&&t instanceof Date?e.getTime()===t.getTime():!e||!t||"object"!=typeof e&&"object"!=typeof t?n.strict?e===t:e==t:o(e,t,n))}}),cA=o(function(e,t){function n(e){return[11,12,13].indexOf(e)!==-1?e+"th":e%10===1?e+"st":e%10===2?e+"nd":e%10===3?e+"rd":e+"th"}t.__esModule=!0,t.default=n}),aA=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}function o(e,t){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},o=n.nullable,r=void 0!==o&&o,i=n.minArgs,s=void 0===i?1:i,c=n.maxArgs,a=void 0===c?1:c;if(s===a&&t.length!==s){var l=1===s?"":"s";throw new Error(e+" must receive exactly "+s+" argument"+l)}if(t.length<s){var p=1===s?"":"s";throw new Error(e+" must receive at least "+s+" argument"+p+".")}if(t.length>a){var f=1===a?"":"s";throw new Error(e+" accepts at most "+a+" argument"+f+".")}for(var d=0;d<t.length;d++){if(!r&&null===t[d]){var h=1!==a?" "+(0,u.default)(d+1):"";throw new Error("The"+h+" argument to "+e+" must be non-null")}if(void 0===t[d])throw new Error("The "+(0,u.default)(d+1)+" argument to "+e+" must be defined")}}t.__esModule=!0,t.default=o;var r=cA,u=n(r)}),lA=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}function o(e){if(null===e)return!1;if(["boolean","number","string"].indexOf("undefined"==typeof e?"undefined":(0,u.default)(e))!==-1)return!0;if(e instanceof ArrayBuffer)return!0;if(e instanceof Date)return!0;if(Array.isArray(e)){var t=function(){var t=!0;return e.forEach(function(e){t=t&&o(e)}),{v:t}}();if("object"===("undefined"==typeof t?"undefined":(0,u.default)(t)))return t.v}return!1}t.__esModule=!0;var r=jg,u=n(r);t.default=o}),pA=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}function o(e){return Object.keys(e).forEach(function(t){e[t]=r(e[t])}),e}function r(e){if(null==e)return e;if(a.indexOf("undefined"==typeof e?"undefined":(0,c.default)(e))!==-1)return e;if(Array.isArray(e))return e.map(r);if("TIME"===e.$reql_type$){var t=new Date;return t.setTime(1e3*e.epoch_time),t}return o(e)}function u(e){return Object.keys(e).forEach(function(t){e[t]=i(e[t])}),e}function i(e){return null==e?e:a.indexOf("undefined"==typeof e?"undefined":(0,c.default)(e))!==-1?e:Array.isArray(e)?e.map(i):e instanceof Date?{$reql_type$:"TIME",epoch_time:e.getTime()/1e3,timezone:"Z"}:u(e)}t.__esModule=!0;var s=jg,c=n(s);t.deserialize=r,t.serialize=i;var a=["string","number","boolean","function","symbol"]}),fA=o(function(e,t){function n(e,t){if(void 0===t.find&&void 0!==t.order&&void 0===t.limit){var n=e.constructor.IMPLICIT_LIMIT||1e5;return Object.assign({limit:n},t)}return t}t.__esModule=!0,t.default=n}),dA=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}function o(e,t){return F&&F.angular?(0,E.default)(angular.fromJson(angular.toJson(e)),angular.fromJson(angular.toJson(e))):(0,E.default)(e,t)}function r(e){if(this._legalMethods.indexOf(e)===-1)throw new Error(e+" cannot be called on the current query");
-if((0,v.default)(e)in this._query)throw new Error(e+" has already been called on this query")}function u(e,t){var n=Boolean(t.find);if(!n){var r={emitted:!1,val:[],prev:null};return e.scan(function(e,t){return null!=t.new_val&&delete t.new_val.$hz_v$,null!=t.old_val&&delete t.old_val.$hz_v$,"synced"===t.state&&(e.emitted=!0),"reconnecting"===t.state&&(e.emitted=!1,e.prev=e.val,e.val=[]),e.val=i(e.val.slice(),t),e},r).filter(function(e){return e.emitted&&!o(e.val,e.prev)}).map(function(e){return e.val})}var u=function(){var t=!1,n={val:null,prev:{}};return{v:e.filter(function(e){return!t||"state"!==e.type}).scan(function(e,n){return t=!0,null!=n.new_val&&delete n.new_val.$hz_v$,null!=n.old_val&&delete n.old_val.$hz_v$,"synced"===n.state?e:(e.prev=e.val,e.val=n.new_val,e)},n).filter(function(e){return!o(e.val,e.prev)}).map(function(e){return e.val})}}();if("object"===("undefined"==typeof u?"undefined":(0,d.default)(u)))return u.v}function i(e,t){switch(t.type){case"remove":case"uninitial":if(null!=t.old_offset)e.splice(t.old_offset,1);else{var n=e.findIndex(function(e){return o(e.id,t.old_val.id)});if(n===-1)throw new Error("change couldn't be applied: "+JSON.stringify(t));e.splice(n,1)}break;case"add":case"initial":null!=t.new_offset?e.splice(t.new_offset,0,t.new_val):e.push(t.new_val);break;case"change":if(null!=t.old_offset&&e.splice(t.old_offset,1),null!=t.new_offset)e.splice(t.new_offset,0,t.new_val);else{var r=e.findIndex(function(e){return o(e.id,t.old_val.id)});if(r===-1)throw new Error("change couldn't be applied: "+JSON.stringify(t));e[r]=t.new_val}break;case"state":break;default:throw new Error("unrecognized 'type' field from server "+JSON.stringify(t))}return e}function s(e,t,n,o){(0,w.default)(e,t);var r=!0,u=n;if(Array.isArray(n)){if(0===n.length)return y.Observable.empty()}else u=[n],r=!1;var i=Object.assign({},this._query,{data:(0,_.serialize)(u)}),s=this._sendRequest(e,i);return r?s=s.map(function(e){return e.error?new Error(e.error):e}):!function(){var e=s;s=y.Observable.create(function(t){e.subscribe({next:function(e){e.error?t.error(new Error(e.error)):t.next(e)},error:function(e){t.error(e)},complete:function(){t.complete()}})})}(),this._lazyWrites||(s=s.publishReplay().refCount(),s.subscribe()),s.do(this._digest)}t.__esModule=!0,t.UserDataTerm=t.Limit=t.Order=t.Below=t.Above=t.FindAll=t.Find=t.Collection=t.TermBase=void 0;var c=Ig,a=n(c),l=Hg,p=n(l),f=jg,d=n(f),h=ns,g=n(h);t.applyChange=i;var y=ic,b=rA,v=n(b),A=sA,E=n(A),m=aA,w=n(m),C=lA,O=n(C),_=pA,S=fA,D=n(S),F=void 0,R=t.TermBase=function(){function e(t,n,o,r){(0,g.default)(this,e),this._sendRequest=t,this._query=n,this._legalMethods=o,this._digest=r,this._digest||(this._digest=function(){})}return e.prototype.toString=function(){var e="Collection('"+this._query.collection+"')";return this._query.find&&(e+=".find("+JSON.stringify(this._query.find)+")"),this._query.find_all&&(e+=".findAll("+JSON.stringify(this._query.find_all)+")"),this._query.order&&(e+=".order("+JSON.stringify(this._query.order[0])+", "+(JSON.stringify(this._query.order[1])+")")),this._query.above&&(e+=".above("+JSON.stringify(this.query.above[0])+", "+(JSON.stringify(this.query.above[1])+")")),this._query.below&&(e+=".below("+JSON.stringify(this.query.below[0])+", "+(JSON.stringify(this.query.below[1])+")")),this._query.limit&&(e+=".limit(this._query.limit))"),e},e.prototype.watch=function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},t=e.rawChanges,n=void 0!==t&&t,o=(0,D.default)(this,this._query),r=this._sendRequest("subscribe",o);return n?r.do(this._digest):u(r,this._query).share().do(this._digest)},e.prototype.fetch=function(){var e=this._sendRequest("query",this._query).map(function(e){return delete e.$hz_v$,e});return this._query.find?e.defaultIfEmpty(null).do(this._digest):e.toArray().do(this._digest)},e.prototype.findAll=function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];return r.call(this,"findAll"),(0,w.default)("findAll",arguments,{maxArgs:100}),new B(this._sendRequest,this._query,t,this._digest)},e.prototype.find=function(e){return r.call(this,"find"),(0,w.default)("find",arguments),new P(this._sendRequest,this._query,e,this._digest)},e.prototype.order=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"ascending";return r.call(this,"order"),(0,w.default)("order",arguments,{minArgs:1,maxArgs:2}),new x(this._sendRequest,this._query,e,t,this._digest)},e.prototype.above=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"closed";return r.call(this,"above"),(0,w.default)("above",arguments,{minArgs:1,maxArgs:2}),new j(this._sendRequest,this._query,e,t,this._digest)},e.prototype.below=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"open";return r.call(this,"below"),(0,w.default)("below",arguments,{minArgs:1,maxArgs:2}),new I(this._sendRequest,this._query,e,t,this._digest)},e.prototype.limit=function(e){return r.call(this,"limit"),(0,w.default)("limit",arguments),new T(this._sendRequest,this._query,e,this._digest)},e}(),P=(t.Collection=function(e){function t(n,o,r,u){(0,g.default)(this,t);var i={collection:o},s=["find","findAll","order","above","below","limit"],c=(0,a.default)(this,e.call(this,n,i,s,u));return c._lazyWrites=r,c}return(0,p.default)(t,e),t.prototype.store=function(e){return s.call(this,"store",arguments,e)},t.prototype.upsert=function(e){return s.call(this,"upsert",arguments,e)},t.prototype.insert=function(e){return s.call(this,"insert",arguments,e)},t.prototype.replace=function(e){return s.call(this,"replace",arguments,e)},t.prototype.update=function(e){return s.call(this,"update",arguments,e)},t.prototype.remove=function(e){var t=(0,O.default)(e)?{id:e}:e;return s.call(this,"remove",arguments,t)},t.prototype.removeAll=function(e){if(!Array.isArray(e))throw new Error("removeAll takes an array as an argument");var t=e.map(function(e){return(0,O.default)(e)?{id:e}:e});return s.call(this,"removeAll",arguments,t)},t}(R),t.Find=function(e){function t(n,o,r,u){(0,g.default)(this,t);var i=(0,O.default)(r)?{id:r}:r,s=Object.assign({},o,{find:i});return(0,a.default)(this,e.call(this,n,s,[],u))}return(0,p.default)(t,e),t}(R)),B=t.FindAll=function(e){function t(n,o,r,u){(0,g.default)(this,t);var i=r.map(function(e){return(0,O.default)(e)?{id:e}:e}),s={find_all:i},c=Object.assign({},o,s),l=void 0;return l=1===i.length?["order","above","below","limit"]:[],(0,a.default)(this,e.call(this,n,c,l,u))}return(0,p.default)(t,e),t}(R),j=t.Above=function(e){function t(n,o,r,u,i){(0,g.default)(this,t);var s={above:[r,u]},c=Object.assign({},o,s),l=["findAll","order","below","limit"];return(0,a.default)(this,e.call(this,n,c,l,i))}return(0,p.default)(t,e),t}(R),I=t.Below=function(e){function t(n,o,r,u,i){(0,g.default)(this,t);var s={below:[r,u]},c=Object.assign({},o,s),l=["findAll","order","above","limit"];return(0,a.default)(this,e.call(this,n,c,l,i))}return(0,p.default)(t,e),t}(R),x=t.Order=function(e){function t(n,o,r,u,i){(0,g.default)(this,t);var s=Array.isArray(r)?r:[r],c={order:[s,u]},l=Object.assign({},o,c),p=["findAll","above","below","limit"];return(0,a.default)(this,e.call(this,n,l,p,i))}return(0,p.default)(t,e),t}(R),T=t.Limit=function(e){function t(n,o,r,u){(0,g.default)(this,t);var i=Object.assign({},o,{limit:r});return(0,a.default)(this,e.call(this,n,i,[],u))}return(0,p.default)(t,e),t}(R);t.UserDataTerm=function(){function e(t,n,o){(0,g.default)(this,e),this._hz=t,this._before=o.ignoreElements().merge(n)}return e.prototype._query=function(e){return this._hz.collection("users").find(e)},e.prototype.fetch=function(){var e=this;return this._before.mergeMap(function(t){if(null==t.id)throw new Error("Unauthenticated users have no user document");return e._query(t.id).fetch()}).take(1)},e.prototype.watch=function(){for(var e=this,t=arguments.length,n=Array(t),o=0;o<t;o++)n[o]=arguments[o];return this._before.mergeMap(function(t){if(null===t.id)throw new Error("Unauthenticated users have no user document");var o;return(o=e._query(t.id)).watch.apply(o,n)})},e}()}),hA=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},gA=Ay,yA=Ps,bA=function(e){function t(){e.apply(this,arguments),this.value=null,this.hasNext=!1,this.hasCompleted=!1}return hA(t,e),t.prototype._subscribe=function(t){return this.hasCompleted&&this.hasNext?(t.next(this.value),t.complete(),yA.Subscription.EMPTY):this.hasError?(t.error(this.thrownError),yA.Subscription.EMPTY):e.prototype._subscribe.call(this,t)},t.prototype.next=function(e){this.hasCompleted||(this.value=e,this.hasNext=!0)},t.prototype.complete=function(){this.hasCompleted=!0,this.hasNext&&e.prototype.next.call(this,this.value),e.prototype.complete.call(this)},t}(gA.Subject),vA=bA,AA={AsyncSubject:vA},EA=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},mA=Ay,wA=ey,CA=function(e){function t(t){e.call(this),this._value=t}return EA(t,e),Object.defineProperty(t.prototype,"value",{get:function(){return this.getValue()},enumerable:!0,configurable:!0}),t.prototype._subscribe=function(t){var n=e.prototype._subscribe.call(this,t);return n&&!n.closed&&t.next(this._value),n},t.prototype.getValue=function(){if(this.hasError)throw this.thrownError;if(this.closed)throw new wA.ObjectUnsubscribedError;return this._value},t.prototype.next=function(t){e.prototype.next.call(this,this._value=t)},t}(mA.Subject),OA=CA,_A={BehaviorSubject:OA},SA=os,DA=_e,FA=Se,RA=Se(SA.root),PA={assignImpl:DA,getAssign:FA,assign:RA},BA=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},jA=Ay,IA=Hs,xA=ic,TA=Ps,kA=os,NA=ab,MA=hs,LA=ps,WA=PA,qA=function(e){function t(t,n){if(t instanceof xA.Observable)e.call(this,n,t);else{if(e.call(this),this.WebSocketCtor=kA.root.WebSocket,this._output=new jA.Subject,"string"==typeof t?this.url=t:WA.assign(this,t),!this.WebSocketCtor)throw new Error("no WebSocket constructor can be found");this.destination=new NA.ReplaySubject}}return BA(t,e),t.prototype.resultSelector=function(e){return JSON.parse(e.data)},t.create=function(e){return new t(e)},t.prototype.lift=function(e){var n=new t(this,this.destination);return n.operator=e,n},t.prototype._resetState=function(){this.socket=null,this.source||(this.destination=new NA.ReplaySubject),this._output=new jA.Subject},t.prototype.multiplex=function(e,t,n){var o=this;return new xA.Observable(function(r){var u=MA.tryCatch(e)();u===LA.errorObject?r.error(LA.errorObject.e):o.next(u);var i=o.subscribe(function(e){var t=MA.tryCatch(n)(e);t===LA.errorObject?r.error(LA.errorObject.e):t&&r.next(e)},function(e){return r.error(e)},function(){return r.complete()});return function(){var e=MA.tryCatch(t)();e===LA.errorObject?r.error(LA.errorObject.e):o.next(e),i.unsubscribe()}})},t.prototype._connectSocket=function(){var e=this,t=this.WebSocketCtor,n=this._output,o=null;try{o=this.protocol?new t(this.url,this.protocol):new t(this.url),this.socket=o}catch(e){return void n.error(e)}var r=new TA.Subscription(function(){e.socket=null,o&&1===o.readyState&&o.close()});o.onopen=function(t){var u=e.openObserver;u&&u.next(t);var i=e.destination;e.destination=IA.Subscriber.create(function(e){return 1===o.readyState&&o.send(e)},function(t){var r=e.closingObserver;r&&r.next(void 0),t&&t.code?o.close(t.code,t.reason):n.error(new TypeError("WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }")),e._resetState()},function(){var t=e.closingObserver;t&&t.next(void 0),o.close(),e._resetState()}),i&&i instanceof NA.ReplaySubject&&r.add(i.subscribe(e.destination))},o.onerror=function(t){e._resetState(),n.error(t)},o.onclose=function(t){e._resetState();var o=e.closeObserver;o&&o.next(t),t.wasClean?n.complete():n.error(t)},o.onmessage=function(t){var o=MA.tryCatch(e.resultSelector)(t);o===LA.errorObject?n.error(LA.errorObject.e):n.next(o)}},t.prototype._subscribe=function(e){var t=this,n=this.source;if(n)return n.subscribe(e);this.socket||this._connectSocket();var o=new TA.Subscription;return o.add(this._output.subscribe(e)),o.add(function(){var e=t.socket;0===t._output.observers.length&&(e&&1===e.readyState&&e.close(),t._resetState())}),o},t.prototype.unsubscribe=function(){var t=this,n=t.source,o=t.socket;o&&1===o.readyState&&(o.close(),this._resetState()),e.prototype.unsubscribe.call(this),n||(this.destination=new NA.ReplaySubject)},t}(jA.AnonymousSubject),UA=qA,VA={WebSocketSubject:UA},zA=Fv,HA=zA.mergeStatic,GA={merge:HA},$A=ic,YA=GA;$A.Observable.merge=YA.merge;var XA=ss,JA=De,KA={isNumeric:JA},ZA=Py,QA=Vy,eE=new QA.AsyncScheduler(ZA.AsyncAction),tE={async:eE},nE=Fe,oE={isDate:nE},rE=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},uE=KA,iE=ic,sE=tE,cE=vc,aE=oE,lE=function(e){function t(t,n,o){void 0===t&&(t=0),e.call(this),this.period=-1,this.dueTime=0,uE.isNumeric(n)?this.period=Number(n)<1&&1||Number(n):cE.isScheduler(n)&&(o=n),cE.isScheduler(o)||(o=sE.async),this.scheduler=o,this.dueTime=aE.isDate(t)?+t-this.scheduler.now():t}return rE(t,e),t.create=function(e,n,o){return void 0===e&&(e=0),new t(e,n,o)},t.dispatch=function(e){var t=e.index,n=e.period,o=e.subscriber,r=this;if(o.next(t),!o.closed){if(n===-1)return o.complete();e.index=t+1,r.schedule(e,n)}},t.prototype._subscribe=function(e){var n=0,o=this,r=o.period,u=o.dueTime,i=o.scheduler;return i.schedule(t.dispatch,u,{index:n,period:r,subscriber:e})},t}(iE.Observable),pE=lE,fE={TimerObservable:pE},dE=fE,hE=dE.TimerObservable.create,gE={timer:hE},yE=ic,bE=gE;yE.Observable.timer=bE.timer;var vE=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},AE=function(e){function t(){var t=e.call(this,"no elements in sequence");this.name=t.name="EmptyError",this.stack=t.stack,this.message=t.message}return vE(t,e),t}(Error),EE=AE,mE={EmptyError:EE},wE=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},CE=Hs,OE=mE,_E=Re,SE=function(){function e(e,t,n,o){this.predicate=e,this.resultSelector=t,this.defaultValue=n,this.source=o}return e.prototype.call=function(e,t){return t.subscribe(new DE(e,this.predicate,this.resultSelector,this.defaultValue,this.source))},e}(),DE=function(e){function t(t,n,o,r,u){e.call(this,t),this.predicate=n,this.resultSelector=o,this.defaultValue=r,this.source=u,this.index=0,this.hasCompleted=!1,this._emitted=!1}return wE(t,e),t.prototype._next=function(e){var t=this.index++;this.predicate?this._tryPredicate(e,t):this._emit(e,t)},t.prototype._tryPredicate=function(e,t){var n;try{n=this.predicate(e,t,this.source)}catch(e){return void this.destination.error(e)}n&&this._emit(e,t)},t.prototype._emit=function(e,t){return this.resultSelector?void this._tryResultSelector(e,t):void this._emitFinal(e)},t.prototype._tryResultSelector=function(e,t){var n;try{n=this.resultSelector(e,t)}catch(e){return void this.destination.error(e)}this._emitFinal(n)},t.prototype._emitFinal=function(e){var t=this.destination;this._emitted||(this._emitted=!0,t.next(e),t.complete(),this.hasCompleted=!0)},t.prototype._complete=function(){var e=this.destination;this.hasCompleted||"undefined"==typeof this.defaultValue?this.hasCompleted||e.error(new OE.EmptyError):(e.next(this.defaultValue),e.complete())},t}(CE.Subscriber),FE={first:_E},RE=ic,PE=FE;RE.Observable.prototype.first=PE.first;var BE=Sb,jE=Ay,IE=Be,xE={share:IE},TE=ic,kE=xE;TE.Observable.prototype.share=kE.share;var NE=vc,ME=Sc,LE=wv,WE=je,qE=Ie,UE={concat:WE,concatStatic:qE},VE=ic,zE=UE;VE.Observable.prototype.concat=zE.concat;var HE=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},GE=Hs,$E=xe,YE=function(){function e(e){this.predicate=e}return e.prototype.call=function(e,t){return t.subscribe(new XE(e,this.predicate))},e}(),XE=function(e){function t(t,n){e.call(this,t),this.predicate=n,this.index=0}return HE(t,e),t.prototype._next=function(e){var t,n=this.destination;try{t=this.predicate(e,this.index++)}catch(e){return void n.error(e)}this.nextOrComplete(e,t)},t.prototype.nextOrComplete=function(e,t){var n=this.destination;Boolean(t)?n.next(e):n.complete()},t}(GE.Subscriber),JE={takeWhile:$E},KE=ic,ZE=JE;KE.Observable.prototype.takeWhile=ZE.takeWhile;var QE=Ay,em=Sb,tm=Te,nm={publish:tm},om=ic,rm=nm;om.Observable.prototype.publish=rm.publish;var um=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},im=Ga,sm=sl,cm=ke,am=function(){function e(e,t){this.project=e,this.resultSelector=t}return e.prototype.call=function(e,t){return t.subscribe(new lm(e,this.project,this.resultSelector))},e}(),lm=function(e){function t(t,n,o){e.call(this,t),this.project=n,this.resultSelector=o,this.index=0}return um(t,e),t.prototype._next=function(e){var t,n=this.index++;try{t=this.project(e,n)}catch(e){return void this.destination.error(e)}this._innerSub(t,e,n)},t.prototype._innerSub=function(e,t,n){var o=this.innerSubscription;o&&o.unsubscribe(),this.add(this.innerSubscription=sm.subscribeToResult(this,e,t,n))},t.prototype._complete=function(){var t=this.innerSubscription;t&&!t.closed||e.prototype._complete.call(this)},t.prototype._unsubscribe=function(){this.innerSubscription=null},t.prototype.notifyComplete=function(t){this.remove(t),this.innerSubscription=null,this.isStopped&&e.prototype._complete.call(this)},t.prototype.notifyNext=function(e,t,n,o,r){this.resultSelector?this._tryNotifyNext(e,t,n,o):this.destination.next(t)},t.prototype._tryNotifyNext=function(e,t,n,o){var r;try{r=this.resultSelector(e,t,n,o)}catch(e){return void this.destination.error(e)}this.destination.next(r)},t}(im.OuterSubscriber),pm={switchMap:cm},fm=ic,dm=pm;fm.Observable.prototype.switchMap=dm.switchMap;var hm=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}function o(e){try{return b.apply(e,arguments)}catch(e){return y.e=e,y}}function r(e){return b=e,o}t.__esModule=!0,t.IonicDBSocket=void 0;var u=ns,i=n(u),s=Ig,c=n(s),a=Hg,l=n(a);t.tryCatch=r;var p=AA,f=_A,d=VA,h=ic,g=pA,y={e:void 0},b=void 0,v="ionicdb-v0",A={type:"unconnected"},E={type:"connected"},m={type:"error"},w={type:"disconnected"},C={type:"reconnecting"},O=function(e){function t(n,o){(0,i.default)(this,t);var r=(0,c.default)(this,e.call(this,n));return r.errorCode=o,r}return(0,l.default)(t,e),t.prototype.toString=function(){return this.message+" (Code: "+this.errorCode+")"},t}(Error);t.IonicDBSocket=function(e){function t(){var n=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},o=n.url,r=n.handshakeMaker,u=n.keepalive,s=void 0===u?60:u,a=n.retry,l=void 0===a?5:a,d=n.WebSocketCtor,g=void 0===d?WebSocket:d;(0,i.default)(this,t);var y=(0,c.default)(this,e.call(this,{url:o,protocol:v,WebSocketCtor:g,openObserver:{next:function(){return y.sendHandshake()}},closeObserver:{next:function(e){if(1e3!==e.code){var t=e.reason||"Unexpected disconnect with error code "+e.code+".";console.error("Connection Failed: ",t),y._autoreconnect?(console.error("Retrying in "+l+" seconds."),y.status.next(C),y.handshake=new p.AsyncSubject,y._reconnecting=!0,setTimeout(function(){y._autoreconnect?y.sendHandshake():(y.status.next(w),y._handshakeSub&&(y._handshakeSub.unsubscribe(),y._handshakeSub=null))},1e3*l)):(y.status.next(w),y._handshakeSub&&(y._handshakeSub.unsubscribe(),y._handshakeSub=null))}else y.status.next(w),y._handshakeSub&&(y._handshakeSub.unsubscribe(),y._handshakeSub=null)}}}));return y.handshake=new p.AsyncSubject,y._handshakeMaker=r,y._handshakeSub=null,y._reconnecting=!1,y._autoreconnect=!0,y.keepalive=h.Observable.timer(1e3*s,1e3*s).map(function(e){return y.hzRequest({type:"keepalive"}).subscribe()}).publish(),y.status=new f.BehaviorSubject(A),y.requestCounter=0,y.activeRequests=new Map,y.activeSubscriptions=new Map,y._output.subscribe({error:function(){y.status.next(m)}}),y}return(0,l.default)(t,e),t.prototype.resultSelector=function(e){return(0,g.deserialize)(JSON.parse(e.data))},t.prototype.next=function(t){var n=JSON.stringify((0,g.serialize)(t));e.prototype.next.call(this,n)},t.prototype.disconnect=function(){this._autoreconnect=!1;for(var e=this.activeSubscriptions.values(),t=Array.isArray(e),n=0,e=t?e:e[Symbol.iterator]();;){var o;if(t){if(n>=e.length)break;o=e[n++]}else{if(n=e.next(),n.done)break;o=n.value}var r=o;r.complete()}this.complete(),this._handshakeSub&&(this._handshakeSub.unsubscribe(),this._handshakeSub=null)},t.prototype.multiplex=function(e,t,n,o){var u=this;return new h.Observable(function(i){o===C&&i.next({state:o.type});var s=r(e)();s===y?i.error(y.e):s.method?u.next(s):u.status.first(function(e){return e===E}).subscribe(function(){return u.next(s)});var c=u.subscribe(function(e){var t=r(n)(e);t===y?i.error(y.e):t&&("keepalive"===o.type&&"complete"===e.state?i.complete():i.next(e))},function(e){},function(){return i.complete()});return function(){var e=r(t)();e===y?i.error(y.e):u.next(e),c.unsubscribe()}})},t.prototype.deactivateRequest=function(e){var t=this;return function(){return t.activeRequests.delete(e.request_id),t.activeSubscriptions.delete(e.request_id),{request_id:e.request_id,type:"end_subscription"}}},t.prototype.activateRequest=function(e){var t=this;return function(){return t.activeRequests.set(e.request_id,e),e}},t.prototype.filterRequest=function(e){return function(t){return t.request_id===e.request_id}},t.prototype.getRequest=function(e){return Object.assign({request_id:this.requestCounter++},e)},t.prototype.sendHandshake=function(){var e=this;return this._handshakeSub&&!this._reconnecting||!function(){var t=e._handshakeSub,n=e._reconnecting;e._reconnecting=!1,e._handshakeSub=e.makeRequest(e._handshakeMaker()).subscribe({next:function(t){if(t.error)e.status.next(m),e.handshake.error(new O(t.error,t.error_code));else{if(e.status.next(E),e._autoreconnect=!0,n)for(var o=e.activeSubscriptions.values(),r=Array.isArray(o),u=0,o=r?o:o[Symbol.iterator]();;){var i;if(r){if(u>=o.length)break;i=o[u++]}else{if(u=o.next(),u.done)break;i=u.value}var s=i;s.next(C)}e.handshake.next(t),e.handshake.complete()}},error:function(t){e.status.next(m),e.handshake.error(t)}}),e._handshakeSub.add(e.keepalive.connect()),t&&t.unsubscribe()}(),this.handshake},t.prototype.makeRequest=function(e){var t=this.getRequest(e);return"subscribe"===t.type?this._sub_query(t):this.multiplex(this.activateRequest(t),this.deactivateRequest(t),this.filterRequest(t),t)},t.prototype._sub_query=function(e){var t=this,n=new f.BehaviorSubject(E);return this.activeSubscriptions.set(e.request_id,n),n.switchMap(function(n){return t.multiplex(t.activateRequest(e),t.deactivateRequest(e),t.filterRequest(e),n)})},t.prototype.hzRequest=function(e){return this.sendHandshake().ignoreElements().concat(this.makeRequest(e)).concatMap(function(e){if(void 0!==e.error)throw new O(e.error,e.error_code);var t=e.data||[];return void 0!==e.state&&t.push({type:"state",state:e.state}),t}).share()},t}(d.WebSocketSubject)}),gm=o(function(e,t){t.__esModule=!0,t.default=function(e){if("string"!=typeof e)return{};var t=e.trim().replace(/^(\?|#|&)/,"");return t?t.split("&").reduce(function(e,t){var n=t.replace(/\+/g," ").split("="),o=n.shift(),r=n.length>0?n.join("="):void 0,u=decodeURIComponent(o),i=void 0===r?null:decodeURIComponent(r);return e.hasOwnProperty(u)?Array.isArray(e[u])?e[u].push(i):e[u]=[e[u],i]:e[u]=i,e},{}):{}}}),ym=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},bm=os,vm=hs,Am=ps,Em=ic,mm=Hs,wm=Nl,Cm=Le,Om=We,_m=qe,Sm=Ue,Dm=Ve,Fm=function(e){function t(t){e.call(this);var n={async:!0,createXHR:function(){return this.crossDomain?Ne.call(this):Me()},crossDomain:!1,withCredentials:!1,headers:{},method:"GET",responseType:"json",timeout:0};if("string"==typeof t)n.url=t;else for(var o in t)t.hasOwnProperty(o)&&(n[o]=t[o]);this.request=n}return ym(t,e),t.prototype._subscribe=function(e){return new Pm(e,this.request)},t.create=function(){var e=function(e){return new t(e)};return e.get=Le,e.post=We,e.delete=qe,e.put=Ue,e.getJSON=Ve,e}(),t}(Em.Observable),Rm=Fm,Pm=function(e){function t(t,n){e.call(this,t),this.request=n,this.done=!1;var o=n.headers=n.headers||{};n.crossDomain||o["X-Requested-With"]||(o["X-Requested-With"]="XMLHttpRequest"),"Content-Type"in o||bm.root.FormData&&n.body instanceof bm.root.FormData||"undefined"==typeof n.body||(o["Content-Type"]="application/x-www-form-urlencoded; charset=UTF-8"),n.body=this.serializeBody(n.body,n.headers["Content-Type"]),this.send()}return ym(t,e),t.prototype.next=function(e){this.done=!0;var t=this,n=t.xhr,o=t.request,r=t.destination,u=new jm(e,n,o);r.next(u)},t.prototype.send=function(){var e=this,t=e.request,n=e.request,o=n.user,r=n.method,u=n.url,i=n.async,s=n.password,c=n.headers,a=n.body,l=t.createXHR,p=vm.tryCatch(l).call(t);if(p===Am.errorObject)this.error(Am.errorObject.e);else{this.xhr=p,this.setupEvents(p,t);var f=void 0;if(f=o?vm.tryCatch(p.open).call(p,r,u,i,o,s):vm.tryCatch(p.open).call(p,r,u,i),f===Am.errorObject)return this.error(Am.errorObject.e),null;if(p.timeout=t.timeout,p.responseType=t.responseType,this.setHeaders(p,c),f=a?vm.tryCatch(p.send).call(p,a):vm.tryCatch(p.send).call(p),f===Am.errorObject)return this.error(Am.errorObject.e),null}return p},t.prototype.serializeBody=function(e,t){if(!e||"string"==typeof e)return e;if(bm.root.FormData&&e instanceof bm.root.FormData)return e;if(t){var n=t.indexOf(";");n!==-1&&(t=t.substring(0,n))}switch(t){case"application/x-www-form-urlencoded":return Object.keys(e).map(function(t){return encodeURI(t)+"="+encodeURI(e[t])}).join("&");case"application/json":return JSON.stringify(e);default:return e}},t.prototype.setHeaders=function(e,t){for(var n in t)t.hasOwnProperty(n)&&e.setRequestHeader(n,t[n])},t.prototype.setupEvents=function(e,t){function n(e){var t=n,o=t.subscriber,r=t.progressSubscriber,u=t.request;r&&r.error(e),o.error(new km(this,u))}function o(e){var t=o,n=t.subscriber,r=t.progressSubscriber,u=t.request;if(4===this.readyState){var i=1223===this.status?204:this.status,s="text"===this.responseType?this.response||this.responseText:this.response;0===i&&(i=s?200:0),200<=i&&i<300?(r&&r.complete(),n.next(e),n.complete()):(r&&r.error(e),n.error(new xm("ajax error "+i,this,u)))}}var r=t.progressSubscriber;if(e.ontimeout=n,n.request=t,n.subscriber=this,n.progressSubscriber=r,e.upload&&"withCredentials"in e){if(r){var u;u=function(e){var t=u.progressSubscriber;t.next(e)},bm.root.XDomainRequest?e.onprogress=u:e.upload.onprogress=u,u.progressSubscriber=r}var i;i=function(e){var t=i,n=t.progressSubscriber,o=t.subscriber,r=t.request;n&&n.error(e),o.error(new xm("ajax error",this,r))},e.onerror=i,i.request=t,i.subscriber=this,i.progressSubscriber=r}e.onreadystatechange=o,o.subscriber=this,o.progressSubscriber=r,o.request=t},t.prototype.unsubscribe=function(){var t=this,n=t.done,o=t.xhr;!n&&o&&4!==o.readyState&&"function"==typeof o.abort&&o.abort(),e.prototype.unsubscribe.call(this)},t}(mm.Subscriber),Bm=Pm,jm=function(){function e(e,t,n){switch(this.originalEvent=e,this.xhr=t,this.request=n,this.status=t.status,this.responseType=t.responseType||n.responseType,this.responseType){case"json":"response"in t?this.response=t.responseType?t.response:JSON.parse(t.response||t.responseText||"null"):this.response=JSON.parse(t.responseText||"null");break;case"xml":this.response=t.responseXML;break;case"text":default:this.response="response"in t?t.response:t.responseText}}return e}(),Im=jm,xm=function(e){function t(t,n,o){e.call(this,t),this.message=t,this.xhr=n,this.request=o,this.status=n.status}return ym(t,e),t}(Error),Tm=xm,km=function(e){function t(t,n){e.call(this,"ajax timeout",t,n)}return ym(t,e),t}(xm),Nm=km,Mm={ajaxGet:Cm,ajaxPost:Om,ajaxDelete:_m,ajaxPut:Sm,ajaxGetJSON:Dm,AjaxObservable:Rm,AjaxSubscriber:Bm,AjaxResponse:Im,AjaxError:Tm,AjaxTimeoutError:Nm},Lm=Mm,Wm=Lm.AjaxObservable.create,qm={ajax:Wm},Um=ic,Vm=qm;Um.Observable.ajax=Vm.ajax;var zm=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}function o(e){var t=this,n=function(n){if(n.hasOwnProperty(e))return t._root+n[e];throw new Error("Unconfigured auth type: "+e)};return this._authMethods?f.Observable.of(this._authMethods).map(n):f.Observable.ajax(this._horizonPath+"/auth_methods").map(function(e){return e.response}).do(function(e){t._authMethods=e}).map(n)}function r(){var e=!(arguments.length>0&&void 0!==arguments[0])||arguments[0],t=void 0;try{e&&"object"===("undefined"==typeof window?"undefined":(0,s.default)(window))&&void 0!==window.localStorage?(window.localStorage.setItem("$$fake",1),window.localStorage.removeItem("$$fake"),t=window.localStorage):t=new h}catch(e){t=void 0===window.sessionStorage?new h:window.sessionStorage}return t}function u(){return r().removeItem(d)}t.__esModule=!0,t.TokenStorage=t.FakeStorage=void 0;var i=jg,s=n(i),c=ns,a=n(c);t.authEndpoint=o,t.clearAuthTokens=u;var l=gm,p=n(l),f=ic,d="ionicdb-jwt",h=t.FakeStorage=function(){function e(){(0,a.default)(this,e),this._storage=new Map}return e.prototype.setItem=function(e,t){return this._storage.set(e,t)},e.prototype.getItem=function(e){return this._storage.get(e)},e.prototype.removeItem=function(e){return this._storage.delete(e)},e}();t.TokenStorage=function(){function e(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},n=t.authType,o=void 0===n?"token":n,u=t.storage,i=void 0===u?r(o.storeLocally):u,s=t.path,c=void 0===s?"horizon":s;(0,a.default)(this,e),this._storage=i,this._path=c,"string"==typeof o?this._authType=o:(this._authType="token",this.set(o.token))}return e.prototype._getHash=function(){var e=this._storage.getItem(d);return null==e?{}:JSON.parse(e)},e.prototype._setHash=function(e){this._storage.setItem(d,JSON.stringify(e))},e.prototype.set=function(e){var t=this._getHash();t[this._path]=e,this._setHash(t)},e.prototype.get=function(){return this._getHash()[this._path]},e.prototype.remove=function(){var e=this._getHash();delete e[this._path],this._setHash(e)},e.prototype.setAuthFromQueryParams=function(){var e="undefined"!=typeof window&&"undefined"!=typeof window.location?(0,p.default)(window.location.search):{};null!=e.horizon_token&&this.set(e.horizon_token)},e.prototype.handshake=function(){var e=this.get();if(null!=e&&"token"===this._authType)return{method:"token",token:e};if("token"===this._authType)throw new Error("Attempting authenticated login but no token detected. Make sure you've logged in before attempting to call connect or make a query.");return{method:this._authType}},e.prototype.hasAuthToken=function(){var e=this.get();if(!e)return!1;try{var t=JSON.parse(atob(e.split(".")[1])),n=t.exp,o=(new Date).getTime()/1e3;return o<n}catch(e){return!1}},e}()}),Hm=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Gm=ic,$m=yc,Ym=ss,Xm=sl,Jm=Ga,Km=function(e){function t(t,n){e.call(this),this.sources=t,this.resultSelector=n}return Hm(t,e),t.create=function(){for(var e=[],n=0;n<arguments.length;n++)e[n-0]=arguments[n];if(null===e||0===arguments.length)return new $m.EmptyObservable;var o=null;return"function"==typeof e[e.length-1]&&(o=e.pop()),
-1===e.length&&Ym.isArray(e[0])&&(e=e[0]),0===e.length?new $m.EmptyObservable:new t(e,o)},t.prototype._subscribe=function(e){return new Qm(e,this.sources,this.resultSelector)},t}(Gm.Observable),Zm=Km,Qm=function(e){function t(t,n,o){e.call(this,t),this.sources=n,this.resultSelector=o,this.completed=0,this.haveValues=0;var r=n.length;this.total=r,this.values=new Array(r);for(var u=0;u<r;u++){var i=n[u],s=Xm.subscribeToResult(this,i,null,u);s&&(s.outerIndex=u,this.add(s))}}return Hm(t,e),t.prototype.notifyNext=function(e,t,n,o,r){this.values[n]=t,r._hasValue||(r._hasValue=!0,this.haveValues++)},t.prototype.notifyComplete=function(e){var t=this.destination,n=this,o=n.haveValues,r=n.resultSelector,u=n.values,i=u.length;if(!e._hasValue)return void t.complete();if(this.completed++,this.completed===i){if(o===i){var s=r?r.apply(this,u):u;t.next(s)}t.complete()}},t}(Jm.OuterSubscriber),ew={ForkJoinObservable:Zm},tw=ew,nw=tw.ForkJoinObservable.create,ow={forkJoin:nw},rw=ic,uw=ow;rw.Observable.forkJoin=uw.forkJoin;var iw=Ke&&Ke.__extends||function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},sw=Sc,cw=ss,aw=Ga,lw=sl,pw={},fw=ze,dw=function(){function e(e){this.project=e}return e.prototype.call=function(e,t){return t.subscribe(new gw(e,this.project))},e}(),hw=dw,gw=function(e){function t(t,n){e.call(this,t),this.project=n,this.active=0,this.values=[],this.observables=[]}return iw(t,e),t.prototype._next=function(e){this.values.push(pw),this.observables.push(e)},t.prototype._complete=function(){var e=this.observables,t=e.length;if(0===t)this.destination.complete();else{this.active=t,this.toRespond=t;for(var n=0;n<t;n++){var o=e[n];this.add(lw.subscribeToResult(this,o,o,n))}}},t.prototype.notifyComplete=function(e){0===(this.active-=1)&&this.destination.complete()},t.prototype.notifyNext=function(e,t,n,o,r){var u=this.values,i=u[n],s=this.toRespond?i===pw?--this.toRespond:this.toRespond:0;u[n]=t,0===s&&(this.project?this._tryProject(u):this.destination.next(u.slice()))},t.prototype._tryProject=function(e){var t;try{t=this.project.apply(this,e)}catch(e){return void this.destination.error(e)}this.destination.next(t)},t}(aw.OuterSubscriber),yw=gw,bw={combineLatest:fw,CombineLatestOperator:hw,CombineLatestSubscriber:yw},vw=vc,Aw=ss,Ew=Sc,mw=bw,ww=He,Cw={combineLatest:ww},Ow=ic,_w=Cw;Ow.Observable.combineLatest=_w.combineLatest;var Sw=function(e){return null!=e&&"object"==typeof e&&!Array.isArray(e)},Dw=Sw,Fw=function(e){var t,n;return Ge(e)!==!1&&(t=e.constructor,"function"==typeof t&&(n=t.prototype,Ge(n)!==!1&&n.hasOwnProperty("isPrototypeOf")!==!1))},Rw=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}function o(e){if(e.length>0)throw new Error(".watch() on aggregates doesn't support arguments!")}function r(e){return"function"==typeof e.fetch&&"function"==typeof e.watch}function u(e){return"function"==typeof e.then}function i(e){return"function"==typeof e.subscribe&&"function"==typeof e.lift}function s(e){return null===e||void 0!==e&&("function"!=typeof e&&(["boolean","number","string"].indexOf("undefined"==typeof e?"undefined":(0,d.default)(e))!==-1||(e instanceof Date||e instanceof ArrayBuffer)))}function c(e){if(r(e))return e;if(i(e)||u(e))return new v(e);if(s(e))return new b(e);if(Array.isArray(e))return new A(e);if((0,y.default)(e))return new E(e);throw new Error("Can't make an aggregate with "+e+" in it")}function a(e){return function(){return c(e.apply(void 0,arguments))}}t.__esModule=!0;var l=ns,p=n(l),f=jg,d=n(f);t.aggregate=c,t.model=a;var h=ic,g=Fw,y=n(g),b=function(){function e(t){(0,p.default)(this,e),this._value=t}return e.prototype.toString=function(){return this._value.toString()},e.prototype.fetch=function(){return h.Observable.of(this._value)},e.prototype.watch=function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];return o(t),h.Observable.of(this._value)},e}(),v=function(){function e(t){(0,p.default)(this,e),this._value=t}return e.prototype.toString=function(){return this._value.toString()},e.prototype.fetch=function(){return h.Observable.from(this._value)},e.prototype.watch=function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];return o(t),h.Observable.from(this._value)},e}(),A=function(){function e(t){(0,p.default)(this,e),this._value=t.map(function(e){return c(e)})}return e.prototype._reducer=function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];return t},e.prototype._query=function(e){return this._value.map(function(t){return t[e]()})},e.prototype.toString=function(){return"[ "+this._query("toString").join(", ")+" ]"},e.prototype.fetch=function(){if(0===this._value.length)return h.Observable.empty();var e=this._query("fetch");return h.Observable.forkJoin.apply(h.Observable,e.concat([this._reducer]))},e.prototype.watch=function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];if(o(t),0===this._value.length)return h.Observable.empty();var r=this._query("watch");return h.Observable.combineLatest.apply(h.Observable,r.concat([this._reducer]))},e}(),E=function(){function e(t){(0,p.default)(this,e),this._value=Object.keys(t).map(function(e){return[e,c(t[e])]})}return e.prototype._reducer=function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];return t.reduce(function(e,t){var n=t[0],o=t[1];return e[n]=o,e},{})},e.prototype._query=function(e){return this._value.map(function(t){var n=t[0],o=t[1];return o[e]().map(function(e){return[n,e]})})},e.prototype.toString=function(){var e=this._value.map(function(e){var t=e[0],n=e[1];return"'"+t+"': "+n});return"{ "+e.join(", ")+" }"},e.prototype.fetch=function(){if(0===this._value.length)return h.Observable.of({});var e=this._query("fetch");return h.Observable.forkJoin.apply(h.Observable,e.concat([this._reducer]))},e.prototype.watch=function(){for(var e=arguments.length,t=Array(e),n=0;n<e;n++)t[n]=arguments[n];if(o(t),0===this._value.length)return h.Observable.of({});var r=this._query("watch");return h.Observable.combineLatest.apply(h.Observable,r.concat([this._reducer]))},e}()}),Pw=o(function(e,t){function n(e){return e&&e.__esModule?e:{default:e}}t.__esModule=!0,t.IonicDB=void 0;var o=ns,r=n(o),u=dA,i=hm,s=zm,c=Rw,a=t.IonicDB=function e(){function t(e,t){var n="removeAll"===e?"remove":e;return R.hzRequest({type:n,options:t}).takeWhile(function(e){return"complete"!==e.state})}var n=this,o=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},a=o.host,l=void 0===a?"api.ionic.io":a,p=o.secure,f=void 0===p||p,d=o.path,h=void 0===d?"ionicdb":d,g=o.lazyWrites,y=void 0!==g&&g,b=o.app_id,v=void 0===b?void 0:b,A=o.authType,E=void 0===A?"unauthenticated":A,m=o.keepalive,w=void 0===m?50:m,C=o.retry,O=void 0===C?5:C,_=o.WebSocketCtor,S=void 0===_?WebSocket:_;(0,r.default)(this,e),v&&(h=h+"/"+v),E="authenticated"===E?"token":"unauthenticated";var D=new s.TokenStorage({authType:E,path:h});D.setAuthFromQueryParams();var F="ws"+(f?"s":"")+"://"+l+"/"+h,R=new i.IonicDBSocket({url:F,handshakeMaker:D.handshake.bind(D),keepalive:w,retry:O,WebSocketCtor:S});R.handshake.subscribe({next:function(e){"unauthenticated"!==E&&D.set(e.token)},error:function(e){/JsonWebTokenError|TokenExpiredError/.test(e.message)&&(console.error("IonicDB: clearing token storage since auth failed"),D.remove())}}),this.collection=function(e){return new u.Collection(t,e,y,n._digest)},this.currentUser=function(){return new u.UserDataTerm(n,R.handshake,R)},this.disconnect=function(){R.disconnect()},this.connect=function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:function(e){console.error("Received an error: "+e)};R.subscribe(function(){},e)},this.status=function(){return R.status.do(n._digest)},this.onDisconnected=function(){return n.status().filter(function(e){return"disconnected"===e.type})},this.onConnected=function(){return n.status().filter(function(e){return"connected"===e.type})},this.onSocketError=function(){return n.status().filter(function(e){return"error"===e.type})},this.onReconnecting=function(){return n.status().filter(function(e){return"reconnecting"===e.type})},this.utensils={sendRequest:t,tokenStorage:D,handshake:R.handshake},Object.freeze(this.utensils),this._authMethods=null,this._root="http"+(f?"s":"")+"://"+l,this._thisPath=this._root+"/"+h,this.hasAuthToken=D.hasAuthToken.bind(D),this.setToken=D.set.bind(D),this.removeToken=D.remove.bind(D),this.aggregate=c.aggregate,this.model=c.model};a.Socket=i.IonicDBSocket,a.clearAuthTokens=s.clearAuthTokens}),Bw=Pw.IonicDB,jw=function(e,t){function n(){this.constructor=e}for(var o in t)t.hasOwnProperty(o)&&(e[o]=t[o]);e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)},Iw=function(e){function t(t,n){var o=e.call(this,n)||this;return o.deps=t,o.settings=n,"authenticated"===o.settings.authType&&(o.deps.emitter.on("auth:login",function(e){e&&e.token&&o.setToken(e.token)}),o.deps.emitter.on("auth:logout",function(){o.removeToken(),o.disconnect()})),o}return jw(t,e),t}(Bw),xw=function(){function e(e,t,n){this.key=e,this.event=t,this.handler=n}return e}(),Tw=function(){function e(){this.n=0,this.eventReceivers={},this.eventsEmitted={}}return e.prototype.on=function(e,t){"undefined"==typeof this.eventReceivers[e]&&(this.eventReceivers[e]={});var n=new xw(this.n,e,t);return this.n++,this.eventReceivers[e][n.key]=n,n},e.prototype.off=function(e){if("undefined"==typeof this.eventReceivers[e.event]||"undefined"==typeof this.eventReceivers[e.event][e.key])throw new Error("unknown event receiver");delete this.eventReceivers[e.event][e.key]},e.prototype.once=function(e,t){var n=this;this.emitted(e)?t():this.on(e,function(){n.emitted(e)||t()})},e.prototype.emit=function(e,t){"undefined"==typeof this.eventReceivers[e]&&(this.eventReceivers[e]={}),"undefined"==typeof this.eventsEmitted[e]&&(this.eventsEmitted[e]=0);for(var n in this.eventReceivers[e])this.eventReceivers[e][n].handler(t);this.eventsEmitted[e]+=1},e.prototype.emitted=function(e){return"undefined"==typeof this.eventsEmitted[e]?0:this.eventsEmitted[e]},e}(),kw=function(){function e(e,t,n){void 0===n&&(n=1),this.appId=e,this.stat=t,this.value=n,this.appId=e,this.stat=t,this.value=n,this.created=new Date}return e.prototype.toJSON=function(){return{app_id:this.appId,stat:this.stat,value:this.value,created:this.created.toISOString()}},e}(),Nw=function(){function e(e,t){void 0===t&&(t={});var n=this;this.options=t,this.app=e.appStatus,this.storage=e.storage,this.config=e.config,this.client=e.client,this.device=e.device,this.logger=e.logger,this.batch=[],"undefined"==typeof this.options.intervalSubmit&&(this.options.intervalSubmit=6e4),"undefined"==typeof this.options.intervalActiveCheck&&(this.options.intervalActiveCheck=1e3),"undefined"==typeof this.options.submitCount&&(this.options.submitCount=100),this.options.intervalSubmit&&setInterval(function(){n.submit()},this.options.intervalSubmit),this.options.intervalActiveCheck&&setInterval(function(){n.app.closed||n.checkActivity()},this.options.intervalActiveCheck)}return e.prototype.track=function(e,t){void 0===t&&(t=1),this.trackStat(new kw(this.config.get("app_id"),e,t))},e.prototype.checkActivity=function(){var e=this.storage.get("insights_session");if(e){var t=new Date(e),n=36e5;t.getTime()+n<(new Date).getTime()&&this.markActive()}else this.markActive()},e.prototype.markActive=function(){if(this.track("mobileapp.active"),this.device.native&&"string"==typeof this.device.native.platform){var e=this.device.native,t=this.normalizeDevicePlatform(e.platform),n=this.normalizeVersion(e.version),o=this.normalizeVersion(e.cordova);this.track("mobileapp.active.platform."+t),this.track("mobileapp.active.platform."+t+"."+n),this.track("mobileapp.active.cordova."+o)}else this.logger.warn("Ionic Insights: Device information unavailable.");this.storage.set("insights_session",(new Date).toISOString())},e.prototype.normalizeDevicePlatform=function(e){return e.toLowerCase().replace(/[^a-z0-9_]/g,"_")},e.prototype.normalizeVersion=function(e){var t;try{t=String(R(e).major)}catch(e){t="unknown"}return t},e.prototype.trackStat=function(e){this.batch.push(e),this.shouldSubmit()&&this.submit()},e.prototype.shouldSubmit=function(){return this.batch.length>=this.options.submitCount},e.prototype.submit=function(){var e=this;if(0!==this.batch.length){for(var t=[],n=0,o=this.batch;n<o.length;n++){var r=o[n];t.push(r.toJSON())}this.client.post("/insights").send({insights:t}).end(function(t,n){t&&e.logger.error("Ionic Insights: Could not send insights.",t)}),this.batch=[]}},e}(),Mw=function(){function e(e){void 0===e&&(e={}),this.options=e,this.infofn=console.log.bind(console),this.warnfn=console.warn.bind(console),this.errorfn=console.error.bind(console)}return e.prototype.info=function(e){for(var t=[],n=1;n<arguments.length;n++)t[n-1]=arguments[n];this.options.silent||this.infofn.apply(this,[e].concat(t))},e.prototype.warn=function(e){for(var t=[],n=1;n<arguments.length;n++)t[n-1]=arguments[n];this.options.silent||this.warnfn.apply(this,[e].concat(t))},e.prototype.error=function(e){for(var t=[],n=1;n<arguments.length;n++)t[n-1]=arguments[n];this.errorfn.apply(this,[e].concat(t))},e}(),Lw=function(){function e(){}return e.fromPluginData=function(t){var n=new e;return n.raw=t,n.text=t.message,n.title=t.title,n.count=t.count,n.sound=t.sound,n.image=t.image,n.app={asleep:!t.additionalData.foreground,closed:t.additionalData.coldstart},n.payload=t.additionalData.payload,n},e.prototype.toString=function(){return'<PushMessage ["'+this.title+'"]>'},e}(),Ww=function(){function e(e,t){return void 0===t&&(t={}),this.options=t,this.blockRegistration=!1,this.blockUnregister=!1,this.blockSaveToken=!1,this.registered=!1,this.config=e.config,this.auth=e.auth,this.userService=e.userService,this.device=e.device,this.client=e.client,this.emitter=e.emitter,this.storage=e.storage,this.logger=e.logger,this.device.isAndroid()&&!this.options.sender_id?void this.logger.error("Ionic Push: GCM project number not found (https://docs.ionic.io/services/push/)"):(t.pluginConfig||(t.pluginConfig={}),this.device.isAndroid()&&(t.pluginConfig.android||(t.pluginConfig.android={}),t.pluginConfig.android.senderID||(t.pluginConfig.android.senderID=this.options.sender_id)),void(this.options=t))}return Object.defineProperty(e.prototype,"token",{get:function(){return this._token||(this._token=this.storage.get("push_token")||void 0),this._token},set:function(e){e?this.storage.set("push_token",e):this.storage.delete("push_token"),this._token=e},enumerable:!0,configurable:!0}),e.prototype.saveToken=function(e,t){var n=this;void 0===t&&(t={});var o=new Ci,r={token:e.token,app_id:this.config.get("app_id")};if(!t.ignore_user){var u=this.userService.current();this.auth.isAuthenticated()&&(r.user_id=u.id)}return this.blockSaveToken?o.reject(new Error("A token save operation is already in progress.")):(this.client.post("/push/tokens").send(r).end(function(t,u){t?(n.blockSaveToken=!1,n.logger.error("Ionic Push:",t),o.reject(t)):(n.blockSaveToken=!1,n.logger.info("Ionic Push: saved push token: "+e.token),r.user_id&&n.logger.info("Ionic Push: added push token to user: "+r.user_id),e.id=u.body.data.id,e.type=u.body.data.type,e.saved=!0,o.resolve(e))}),o.promise)},e.prototype.register=function(){var e=this,t=new Ci;return this.blockRegistration?t.reject(new Error("Another registration is already in progress.")):(this.blockRegistration=!0,this.emitter.once("device:ready",function(){var n=e._getPushPlugin();n?(e.plugin=n.init(e.options.pluginConfig),e.plugin.on("registration",function(n){e.blockRegistration=!1,e.token={token:n.registrationId,registered:!1,saved:!1},e.token.registered=!0,t.resolve(e.token)}),e.plugin.on("error",function(n){e.logger.error("Ionic Push:",n),t.reject(n)}),e._callbackRegistration(),e.registered=!0):t.reject(new Error("Push plugin not found! See logs."))}),t.promise)},e.prototype.unregister=function(){var e=this,t=new Ci;if(this.blockUnregister)return t.reject(new Error("An unregister operation is already in progress."));var n=this.token;if(!n)return t.resolve();var o={token:n.token,app_id:this.config.get("app_id")};return this.plugin&&this.plugin.unregister(function(){},function(){}),this.client.post("/push/tokens/invalidate").send(o).end(function(n,o){e.blockUnregister=!1,n?(e.logger.error("Ionic Push:",n),t.reject(n)):(e.logger.info("Ionic Push: unregistered push token"),delete e.token,t.resolve())}),this.blockUnregister=!0,t.promise},e.prototype._callbackRegistration=function(){var e=this;this.plugin.on("registration",function(t){e.options.debug&&e.logger.info("Ionic Push (debug): device token registered: "+e.token),e.emitter.emit("push:register",e.token)}),this.plugin.on("notification",function(t){var n=Lw.fromPluginData(t);e.options.debug&&e.logger.info("Ionic Push (debug): notification received: "+n),e.emitter.emit("push:notification",{message:n,raw:t})}),this.plugin.on("error",function(t){e.options.debug&&(e.logger.error("Ionic Push (debug): unexpected error occured."),e.logger.error("Ionic Push:",t)),e.emitter.emit("push:error",{err:t})})},e.prototype._getPushPlugin=function(){var e=window.PushNotification;return e||(this.device.isIOS()||this.device.isAndroid()?this.logger.error("Ionic Push: PushNotification plugin is required. Have you run `ionic plugin add phonegap-plugin-push` ?"):this.logger.warn("Ionic Push: Disabled! Native push notifications will not work in a browser. Run your app on an actual device to use push.")),e},e}(),qw=function(){function e(){}return e.prototype.get=function(e){return localStorage.getItem(e)},e.prototype.set=function(e,t){return localStorage.setItem(e,t)},e.prototype.delete=function(e){return localStorage.removeItem(e)},e}(),Uw=function(){function e(){}return e.prototype.get=function(e){return sessionStorage.getItem(e)},e.prototype.set=function(e,t){return sessionStorage.setItem(e,t)},e.prototype.delete=function(e){return sessionStorage.removeItem(e)},e}(),Vw=function(){function e(e,t){void 0===t&&(t={prefix:"ionic",cache:!0}),this.options=t,this.strategy=e.strategy,this.storageCache={}}return e.prototype.set=function(e,t){e=this.standardizeKey(e);var n=JSON.stringify(t);this.strategy.set(e,n),this.options.cache&&(this.storageCache[e]=t)},e.prototype.delete=function(e){e=this.standardizeKey(e),this.strategy.delete(e),this.options.cache&&delete this.storageCache[e]},e.prototype.get=function(e){if(e=this.standardizeKey(e),this.options.cache){var t=this.storageCache[e];if(t)return t}var n=this.strategy.get(e);if(!n)return null;try{var o=JSON.parse(n);return this.options.cache&&(this.storageCache[e]=o),o}catch(e){return null}},e.prototype.standardizeKey=function(e){return this.options.prefix+"_"+e},e}(),zw={},Hw=function(){function e(e){this.data={},this.setProperties(e)}return e.prototype.setProperties=function(e){if(e instanceof Object)for(var t in e)this.data[t]=e[t]},e.prototype.toJSON=function(){var e=this.data;return{__Ionic_DataTypeSchema:e.name,value:e.value}},e.prototype.isValid=function(){return!(!this.data.name||!this.data.value)},e}(),Gw=function(){function e(){}return e.get=function(e,t){return!!zw[e]&&new zw[e](t)},e.getMapping=function(){return zw},Object.defineProperty(e,"Schema",{get:function(){return Hw},enumerable:!0,configurable:!0}),e.register=function(e,t){zw[e]=t},e}(),$w=function(){function e(e){if(this.data=[],e instanceof Array)for(var t in e)this.push(e[t])}return e.prototype.toJSON=function(){var e=this.data,t=new Hw({name:"UniqueArray",value:e});return t.toJSON()},e.fromStorage=function(t){return new e(t)},e.prototype.push=function(e){this.data.indexOf(e)===-1&&this.data.push(e)},e.prototype.pull=function(e){var t=this.data.indexOf(e);this.data.splice(t,1)},e}();Gw.register("UniqueArray",$w);var Yw="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol?"symbol":typeof e},Xw=function(){function e(e){this.config=e.config,this.storage=e.storage}return Object.defineProperty(e.prototype,"label",{get:function(){return"user_"+this.config.get("app_id")},enumerable:!0,configurable:!0}),e.prototype.unstore=function(){this.storage.delete(this.label)},e.prototype.store=function(e){this.storage.set(this.label,e.serializeForStorage())},e.prototype.load=function(e){var t=this.storage.get(this.label);return t?(e.id=t.id,e.data=new Jw(t.data),e.details=t.details||{},e.social=t.social||{},e.fresh=t.fresh,e):null},e}(),Jw=function(){function e(e){void 0===e&&(e={}),this.data={},"object"===("undefined"==typeof e?"undefined":Yw(e))&&(this.data=e,this.deserializeDataTypes())}return e.prototype.get=function(e,t){return this.data.hasOwnProperty(e)?this.data[e]:0===t||t===!1?t:t||null},e.prototype.set=function(e,t){this.data[e]=t},e.prototype.unset=function(e){delete this.data[e]},e.prototype.deserializeDataTypes=function(){if(this.data)for(var e in this.data)if(this.data[e]&&"object"===Yw(this.data[e])&&this.data[e].__Ionic_DataTypeSchema){var t=this.data[e].__Ionic_DataTypeSchema,n=Gw.getMapping();n[t]&&(this.data[e]=n[t].fromStorage(this.data[e].value))}},e}(),Kw=function(){function e(e){this.details={},this.social={},this.service=e.service,this.fresh=!0,this._unset={},this.data=new Jw}return e.prototype.isAnonymous=function(){return!this.id},e.prototype.get=function(e,t){return this.data.get(e,t)},e.prototype.set=function(e,t){return delete this._unset[e],this.data.set(e,t)},e.prototype.unset=function(e){return this._unset[e]=!0,this.data.unset(e)},e.prototype.clear=function(){this.id=void 0,this.data=new Jw,this.details={},this.fresh=!0},e.prototype.save=function(){return this._unset={},this.service.save()},e.prototype.delete=function(){return this.service.delete()},e.prototype.load=function(e){return this.service.load(e)},e.prototype.store=function(){this.service.store()},e.prototype.unstore=function(){this.service.unstore()},e.prototype.serializeForAPI=function(){return{email:this.details.email,password:this.details.password,username:this.details.username,image:this.details.image,name:this.details.name,custom:this.data.data}},e.prototype.serializeForStorage=function(){return{id:this.id,data:this.data.data,details:this.details,fresh:this.fresh,social:this.social}},e.prototype.toString=function(){return"<User ["+(this.isAnonymous()?"anonymous":this.id)+"]>"},e}(),Zw=function(){function e(e,t){void 0===t&&(t={}),this.config=t,this.client=e.client,this.context=e.context}return e.prototype.current=function(){return this.user||(this.user=this.context.load(new Kw({service:this}))),this.user||(this.user=new Kw({service:this})),this.user},e.prototype.store=function(){this.context.store(this.current())},e.prototype.unstore=function(){this.context.unstore()},e.prototype.load=function(e){void 0===e&&(e="self");var t=new Ci,n=this.current();return this.client.get("/auth/users/"+e).end(function(e,o){e?t.reject(e):(n.id=o.body.data.uuid,n.data=new Jw(o.body.data.custom),n.details=o.body.data.details,n.fresh=!1,n.social=o.body.data.social,t.resolve())}),t.promise},e.prototype.delete=function(){var e=new Ci;return this.user?this.user.isAnonymous()?e.reject(new Error("User is anonymous and cannot be deleted from the API.")):(this.unstore(),this.client.delete("/auth/users/"+this.user.id).end(function(t,n){t?e.reject(t):e.resolve()}),e.promise):e.reject(new Error("No user loaded to delete."))},e.prototype.save=function(){var e=this,t=new Ci;return this.store(),this.user?this.user.isAnonymous()?t.reject(new Error("User is anonymous and cannot be updated in the API. Use load(<id>) or signup a user using auth.")):(this.client.patch("/auth/users/"+this.user.id).send(this.user.serializeForAPI()).end(function(n,o){n?t.reject(n):(e.user&&(e.user.fresh=!1),t.resolve())}),t.promise):t.reject(new Error("No user loaded to save."))},e}(),Qw=function(e,t,n,o){var r,u=arguments.length,i=u<3?t:null===o?o=Object.getOwnPropertyDescriptor(t,n):o;if("object"===("undefined"==typeof Reflect?"undefined":Yw(Reflect))&&"function"==typeof Reflect.decorate)i=Reflect.decorate(e,t,n,o);else for(var s=e.length-1;s>=0;s--)(r=e[s])&&(i=(u<3?r(i):u>3?r(t,n,i):r(t,n))||i);return u>3&&i&&Object.defineProperty(t,n,i),i},eC=function(e,t){if("object"===("undefined"==typeof Reflect?"undefined":Yw(Reflect))&&"function"==typeof Reflect.metadata)return Reflect.metadata(e,t)},tC={},nC=function(){function e(){}return Object.defineProperty(e.prototype,"appStatus",{get:function(){return{asleep:!1,closed:!1}},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"config",{get:function(){return new Ji},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"eventEmitter",{get:function(){return new Tw},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"logger",{get:function(){var e=this.config,t={};return"undefined"!=typeof e.settings&&"undefined"!=typeof e.settings.logger&&(t=e.settings.logger),new Mw(t)},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"localStorageStrategy",{get:function(){return new qw},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"sessionStorageStrategy",{get:function(){return new Uw},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"authTokenContext",{get:function(){var e="auth_"+this.config.get("app_id");return new Di({storage:new Vw({strategy:this.localStorageStrategy}),tempStorage:new Vw({strategy:this.sessionStorageStrategy})},e)},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"client",{get:function(){return new Xi(this.authTokenContext,this.config.getURL("api"))},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"insights",{get:function(){return new Nw({appStatus:this.appStatus,storage:new Vw({strategy:this.localStorageStrategy}),config:this.config,client:this.client,device:this.device,logger:this.logger})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"core",{get:function(){return new Zi({config:this.config,logger:this.logger,emitter:this.eventEmitter,insights:this.insights})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"device",{get:function(){return new ts({nativeDevice:io,emitter:this.eventEmitter})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"cordova",{get:function(){return new Ki({appStatus:this.appStatus,device:this.device,emitter:this.eventEmitter,logger:this.logger})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"userContext",{get:function(){return new Xw({storage:new Vw({strategy:this.localStorageStrategy}),config:this.config})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"singleUserService",{get:function(){return new Zw({client:this.client,context:this.userContext})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"authModules",{get:function(){var e={config:this.config,client:this.client,emitter:this.eventEmitter};return{basic:new Pi(e),custom:new xi(e),twitter:new Ti(e),facebook:new ki(e),github:new Ni(e),google:new Mi(e),instagram:new Li(e),linkedin:new Wi(e)}},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"auth",{get:function(){return new Fi({config:this.config,emitter:this.eventEmitter,authModules:this.authModules,tokenContext:this.authTokenContext,userService:this.singleUserService,storage:new Vw({strategy:this.localStorageStrategy})})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"facebookAuth",{get:function(){return new Ii({config:this.config,client:this.client,userService:this.singleUserService,storage:new Vw({strategy:this.localStorageStrategy}),tokenContext:this.authTokenContext,emitter:this.eventEmitter})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"googleAuth",{get:function(){return new ji({config:this.config,client:this.client,userService:this.singleUserService,storage:new Vw({strategy:this.localStorageStrategy}),tokenContext:this.authTokenContext,emitter:this.eventEmitter})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"push",{get:function(){var e=this.config,t={};return"undefined"!=typeof e.settings&&"undefined"!=typeof e.settings.push&&(t=e.settings.push),new Ww({config:e,auth:this.auth,userService:this.singleUserService,device:this.device,client:this.client,emitter:this.eventEmitter,storage:new Vw({strategy:this.localStorageStrategy}),logger:this.logger},t)},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"deploy",{get:function(){return new es({config:this.config,emitter:this.eventEmitter,logger:this.logger})},enumerable:!0,configurable:!0}),Object.defineProperty(e.prototype,"database",{get:function(){var e=this.config,t={};return"undefined"!=typeof e.settings&&"undefined"!=typeof e.settings.database?(t=e.settings.database,"none"===t.app_id?delete t.app_id:t.app_id=t.app_id||e.get("app_id")):t.app_id=e.get("app_id"),new Iw({emitter:this.eventEmitter},t)},enumerable:!0,configurable:!0}),e}();Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"appStatus",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"config",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"eventEmitter",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"logger",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"localStorageStrategy",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"sessionStorageStrategy",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"authTokenContext",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"client",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"insights",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"core",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"device",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"cordova",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"userContext",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"singleUserService",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"authModules",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"auth",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"facebookAuth",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"googleAuth",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"push",null),Qw([$e,eC("design:type",Object),eC("design:paramtypes",[])],nC.prototype,"deploy",null),Qw([$e,eC("design:type",Iw),eC("design:paramtypes",[])],nC.prototype,"database",null),Ye(),e.Auth=Fi,e.AuthType=Ri,e.BasicAuthType=Pi,e.CustomAuthType=xi,e.FacebookAuth=Ii,e.FacebookAuthType=ki,e.GithubAuthType=Ni,e.GoogleAuth=ji,e.GoogleAuthType=Mi,e.InstagramAuthType=Li,e.LinkedInAuthType=Wi,e.TwitterAuthType=Ti,e.Client=Xi,e.Config=Ji,e.Cordova=Ki,e.Core=Zi,e.Deploy=es,e.Device=ts,e.Database=Iw,e.Exception=mi,e.DetailedError=wi,e.DIContainer=nC,e.EventEmitter=Tw,e.Insights=Nw,e.Logger=Mw,e.Push=Ww,e.PushMessage=Lw,e.Storage=Vw,e.LocalStorageStrategy=qw,e.SessionStorageStrategy=Uw,e.UserContext=Xw,e.User=Kw,e.SingleUserService=Zw}(this.Ionic=this.Ionic||{});
-//# sourceMappingURL=ionic.cloud.min.js.map
+(function(root, factory) {
+if (typeof exports === "object") {
+module.exports = factory(require('angular'));
+} else if (typeof define === "function" && define.amd) {
+define(['angular'], factory);
+} else{
+factory(root.angular);
+}
+}(this, function(angular) {
+/**
+ * AngularJS Google Maps Ver. 1.17.7
+ *
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2014, 2015, 1016 Allen Kim
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+angular.module('ngMap', []);
+
+/**
+ * @ngdoc controller
+ * @name MapController
+ */
+(function() {
+  'use strict';
+  var Attr2MapOptions;
+
+  var __MapController = function(
+      $scope, $element, $attrs, $parse, _Attr2MapOptions_, NgMap, NgMapPool
+    ) {
+    Attr2MapOptions = _Attr2MapOptions_;
+    var vm = this;
+
+    vm.mapOptions; /** @memberof __MapController */
+    vm.mapEvents;  /** @memberof __MapController */
+    vm.eventListeners;  /** @memberof __MapController */
+
+    /**
+     * Add an object to the collection of group
+     * @memberof __MapController
+     * @function addObject
+     * @param groupName the name of collection that object belongs to
+     * @param obj  an object to add into a collection, i.e. marker, shape
+     */
+    vm.addObject = function(groupName, obj) {
+      if (vm.map) {
+        vm.map[groupName] = vm.map[groupName] || {};
+        var len = Object.keys(vm.map[groupName]).length;
+        vm.map[groupName][obj.id || len] = obj;
+
+        if (vm.map instanceof google.maps.Map) {
+          //infoWindow.setMap works like infoWindow.open
+          if (groupName != "infoWindows" && obj.setMap) {
+            obj.setMap && obj.setMap(vm.map);
+          }
+          if (obj.centered && obj.position) {
+            vm.map.setCenter(obj.position);
+          }
+          (groupName == 'markers') && vm.objectChanged('markers');
+          (groupName == 'customMarkers') && vm.objectChanged('customMarkers');
+        }
+      }
+    };
+
+    /**
+     * Delete an object from the collection and remove from map
+     * @memberof __MapController
+     * @function deleteObject
+     * @param {Array} objs the collection of objects. i.e., map.markers
+     * @param {Object} obj the object to be removed. i.e., marker
+     */
+    vm.deleteObject = function(groupName, obj) {
+      /* delete from group */
+      if (obj.map) {
+        var objs = obj.map[groupName];
+        for (var name in objs) {
+          if (objs[name] === obj) {
+            void 0;
+            google.maps.event.clearInstanceListeners(obj);
+            delete objs[name];
+          }
+        }
+
+        /* delete from map */
+        obj.map && obj.setMap && obj.setMap(null);
+
+        (groupName == 'markers') && vm.objectChanged('markers');
+        (groupName == 'customMarkers') && vm.objectChanged('customMarkers');
+      }
+    };
+
+    /**
+     * @memberof __MapController
+     * @function observeAttrSetObj
+     * @param {Hash} orgAttrs attributes before its initialization
+     * @param {Hash} attrs    attributes after its initialization
+     * @param {Object} obj    map object that an action is to be done
+     * @description watch changes of attribute values and
+     * do appropriate action based on attribute name
+     */
+    vm.observeAttrSetObj = function(orgAttrs, attrs, obj) {
+      if (attrs.noWatcher) {
+        return false;
+      }
+      var attrsToObserve = Attr2MapOptions.getAttrsToObserve(orgAttrs);
+      for (var i=0; i<attrsToObserve.length; i++) {
+        var attrName = attrsToObserve[i];
+        attrs.$observe(attrName, NgMap.observeAndSet(attrName, obj));
+      }
+    };
+
+    /**
+     * @memberof __MapController
+     * @function zoomToIncludeMarkers
+     */
+    vm.zoomToIncludeMarkers = function() {
+      // Only fit to bounds if we have any markers
+      // object.keys is supported in all major browsers (IE9+)
+      if ((vm.map.markers != null && Object.keys(vm.map.markers).length > 0) || (vm.map.customMarkers != null && Object.keys(vm.map.customMarkers).length > 0)) {
+        var bounds = new google.maps.LatLngBounds();
+        for (var k1 in vm.map.markers) {
+          bounds.extend(vm.map.markers[k1].getPosition());
+        }
+        for (var k2 in vm.map.customMarkers) {
+          bounds.extend(vm.map.customMarkers[k2].getPosition());
+        }
+    	  if (vm.mapOptions.maximumZoom) {
+    		  vm.enableMaximumZoomCheck = true; //enable zoom check after resizing for markers
+    	  }
+        vm.map.fitBounds(bounds);
+      }
+    };
+
+    /**
+     * @memberof __MapController
+     * @function objectChanged
+     * @param {String} group name of group e.g., markers
+     */
+    vm.objectChanged = function(group) {
+      if ( vm.map &&
+        (group == 'markers' || group == 'customMarkers') &&
+        vm.map.zoomToIncludeMarkers == 'auto'
+      ) {
+        vm.zoomToIncludeMarkers();
+      }
+    };
+
+    /**
+     * @memberof __MapController
+     * @function initializeMap
+     * @description
+     *  . initialize Google map on <div> tag
+     *  . set map options, events, and observers
+     *  . reset zoom to include all (custom)markers
+     */
+    vm.initializeMap = function() {
+      var mapOptions = vm.mapOptions,
+          mapEvents = vm.mapEvents;
+
+      var lazyInitMap = vm.map; //prepared for lazy init
+      vm.map = NgMapPool.getMapInstance($element[0]);
+      NgMap.setStyle($element[0]);
+
+      // set objects for lazyInit
+      if (lazyInitMap) {
+
+        /**
+         * rebuild mapOptions for lazyInit
+         * because attributes values might have been changed
+         */
+        var filtered = Attr2MapOptions.filter($attrs);
+        var options = Attr2MapOptions.getOptions(filtered);
+        var controlOptions = Attr2MapOptions.getControlOptions(filtered);
+        mapOptions = angular.extend(options, controlOptions);
+        void 0;
+
+        for (var group in lazyInitMap) {
+          var groupMembers = lazyInitMap[group]; //e.g. markers
+          if (typeof groupMembers == 'object') {
+            for (var id in groupMembers) {
+              vm.addObject(group, groupMembers[id]);
+            }
+          }
+        }
+        vm.map.showInfoWindow = vm.showInfoWindow;
+        vm.map.hideInfoWindow = vm.hideInfoWindow;
+      }
+
+      // set options
+      mapOptions.zoom = mapOptions.zoom || 15;
+      var center = mapOptions.center;
+      if (!mapOptions.center ||
+        ((typeof center === 'string') && center.match(/\{\{.*\}\}/))
+      ) {
+        mapOptions.center = new google.maps.LatLng(0, 0);
+      } else if( (typeof center === 'string') && center.match(/[0-9.-]*,[0-9.-]*/) ){
+           mapOptions.center = new google.maps.LatLng(center);
+      } else if (!(center instanceof google.maps.LatLng)) {
+        var geoCenter = mapOptions.center;
+        delete mapOptions.center;
+        NgMap.getGeoLocation(geoCenter, mapOptions.geoLocationOptions).
+          then(function (latlng) {
+            vm.map.setCenter(latlng);
+            var geoCallback = mapOptions.geoCallback;
+            geoCallback && $parse(geoCallback)($scope);
+          }, function () {
+            if (mapOptions.geoFallbackCenter) {
+              vm.map.setCenter(mapOptions.geoFallbackCenter);
+            }
+          });
+      }
+      vm.map.setOptions(mapOptions);
+
+      // set events
+      for (var eventName in mapEvents) {
+        var event = mapEvents[eventName];
+        var listener = google.maps.event.addListener(vm.map, eventName, event);
+        vm.eventListeners[eventName] = listener;
+      }
+
+      // set observers
+      vm.observeAttrSetObj(orgAttrs, $attrs, vm.map);
+      vm.singleInfoWindow = mapOptions.singleInfoWindow;
+
+      google.maps.event.trigger(vm.map, 'resize');
+
+      google.maps.event.addListenerOnce(vm.map, "idle", function () {
+        NgMap.addMap(vm);
+        if (mapOptions.zoomToIncludeMarkers) {
+          vm.zoomToIncludeMarkers();
+        }
+        //TODO: it's for backward compatibiliy. will be removed
+        $scope.map = vm.map;
+        $scope.$emit('mapInitialized', vm.map);
+
+        //callback
+        if ($attrs.mapInitialized) {
+          $parse($attrs.mapInitialized)($scope, {map: vm.map});
+        }
+      });
+	  
+	  //add maximum zoom listeners if zoom-to-include-markers and and maximum-zoom are valid attributes
+	  if (mapOptions.zoomToIncludeMarkers && mapOptions.maximumZoom) {
+	    google.maps.event.addListener(vm.map, 'zoom_changed', function() {
+          if (vm.enableMaximumZoomCheck == true) {
+			vm.enableMaximumZoomCheck = false;
+	        google.maps.event.addListenerOnce(vm.map, 'bounds_changed', function() { 
+		      vm.map.setZoom(Math.min(mapOptions.maximumZoom, vm.map.getZoom())); 
+		    });
+	  	  }
+	    });
+	  }
+    };
+
+    $scope.google = google; //used by $scope.eval to avoid eval()
+
+    /**
+     * get map options and events
+     */
+    var orgAttrs = Attr2MapOptions.orgAttributes($element);
+    var filtered = Attr2MapOptions.filter($attrs);
+    var options = Attr2MapOptions.getOptions(filtered, {scope: $scope});
+    var controlOptions = Attr2MapOptions.getControlOptions(filtered);
+    var mapOptions = angular.extend(options, controlOptions);
+    var mapEvents = Attr2MapOptions.getEvents($scope, filtered);
+    void 0;
+    Object.keys(mapEvents).length && void 0;
+
+    vm.mapOptions = mapOptions;
+    vm.mapEvents = mapEvents;
+    vm.eventListeners = {};
+
+    if (options.lazyInit) { // allows controlled initialization
+      // parse angular expression for dynamic ids
+      if (!!$attrs.id && 
+      	  // starts with, at position 0
+	  $attrs.id.indexOf("{{", 0) === 0 &&
+	  // ends with
+	  $attrs.id.indexOf("}}", $attrs.id.length - "}}".length) !== -1) {
+        var idExpression = $attrs.id.slice(2,-2);
+        var mapId = $parse(idExpression)($scope);
+      } else {
+        var mapId = $attrs.id;
+      }
+      vm.map = {id: mapId}; //set empty, not real, map
+      NgMap.addMap(vm);
+    } else {
+      vm.initializeMap();
+    }
+
+    //Trigger Resize
+    if(options.triggerResize) {
+      google.maps.event.trigger(vm.map, 'resize');
+    }
+
+    $element.bind('$destroy', function() {
+      NgMapPool.returnMapInstance(vm.map);
+      NgMap.deleteMap(vm);
+    });
+  }; // __MapController
+
+  __MapController.$inject = [
+    '$scope', '$element', '$attrs', '$parse', 'Attr2MapOptions', 'NgMap', 'NgMapPool'
+  ];
+  angular.module('ngMap').controller('__MapController', __MapController);
+})();
+
+/**
+ * @ngdoc directive
+ * @name bicycling-layer
+ * @param Attr2Options {service}
+ *   convert html attribute to Gogole map api options
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ *
+ *   <map zoom="13" center="34.04924594193164, -118.24104309082031">
+ *     <bicycling-layer></bicycling-layer>
+ *    </map>
+ */
+(function() {
+  'use strict';
+  var parser;
+
+  var linkFunc = function(scope, element, attrs, mapController) {
+    mapController = mapController[0]||mapController[1];
+    var orgAttrs = parser.orgAttributes(element);
+    var filtered = parser.filter(attrs);
+    var options = parser.getOptions(filtered, {scope: scope});
+    var events = parser.getEvents(scope, filtered);
+
+    void 0;
+
+    var layer = getLayer(options, events);
+    mapController.addObject('bicyclingLayers', layer);
+    mapController.observeAttrSetObj(orgAttrs, attrs, layer);  //observers
+    element.bind('$destroy', function() {
+      mapController.deleteObject('bicyclingLayers', layer);
+    });
+  };
+
+  var getLayer = function(options, events) {
+    var layer = new google.maps.BicyclingLayer(options);
+    for (var eventName in events) {
+      google.maps.event.addListener(layer, eventName, events[eventName]);
+    }
+    return layer;
+  };
+
+  var bicyclingLayer= function(Attr2MapOptions) {
+    parser = Attr2MapOptions;
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+      link: linkFunc
+     };
+  };
+  bicyclingLayer.$inject = ['Attr2MapOptions'];
+
+  angular.module('ngMap').directive('bicyclingLayer', bicyclingLayer);
+})();
+
+/**
+ * @ngdoc directive
+ * @name custom-control
+ * @param Attr2Options {service} convert html attribute to Gogole map api options
+ * @param $compile {service} AngularJS $compile service
+ * @description
+ *   Build custom control and set to the map with position
+ *
+ *   Requires:  map directive
+ *
+ *   Restrict To:  Element
+ *
+ * @attr {String} position position of this control
+ *        i.e. TOP_RIGHT
+ * @attr {Number} index index of the control
+ * @example
+ *
+ * Example:
+ *  <map center="41.850033,-87.6500523" zoom="3">
+ *    <custom-control id="home" position="TOP_LEFT" index="1">
+ *      <div style="background-color: white;">
+ *        <b>Home</b>
+ *      </div>
+ *    </custom-control>
+ *  </map>
+ *
+ */
+(function() {
+  'use strict';
+  var parser, $compile, NgMap;
+
+  var linkFunc = function(scope, element, attrs, mapController) {
+    mapController = mapController[0]||mapController[1];
+    var filtered = parser.filter(attrs);
+    var options = parser.getOptions(filtered, {scope: scope});
+    var events = parser.getEvents(scope, filtered);
+
+    /**
+     * build a custom control element
+     */
+    var customControlEl = element[0].parentElement.removeChild(element[0]);
+    $compile(customControlEl.innerHTML.trim())(scope);
+
+    /**
+     * set events
+     */
+    for (var eventName in events) {
+      google.maps.event.addDomListener(customControlEl, eventName, events[eventName]);
+    }
+
+    mapController.addObject('customControls', customControlEl);
+    var position = options.position;
+    mapController.map.controls[google.maps.ControlPosition[position]].push(customControlEl);
+
+    element.bind('$destroy', function() {
+      mapController.deleteObject('customControls', customControlEl);
+    });
+  };
+
+  var customControl =  function(Attr2MapOptions, _$compile_, _NgMap_)  {
+    parser = Attr2MapOptions, $compile = _$compile_, NgMap = _NgMap_;
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+      link: linkFunc
+    }; // return
+  };
+  customControl.$inject = ['Attr2MapOptions', '$compile', 'NgMap'];
+
+  angular.module('ngMap').directive('customControl', customControl);
+})();
+
+/**
+ * @ngdoc directive
+ * @memberof ngmap
+ * @name custom-marker
+ * @param Attr2Options {service} convert html attribute to Gogole map api options
+ * @param $timeout {service} AngularJS $timeout
+ * @description
+ *   Marker with html
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @attr {String} position required, position on map
+ * @attr {Number} z-index optional
+ * @attr {Boolean} visible optional
+ * @example
+ *
+ * Example:
+ *   <map center="41.850033,-87.6500523" zoom="3">
+ *     <custom-marker position="41.850033,-87.6500523">
+ *       <div>
+ *         <b>Home</b>
+ *       </div>
+ *     </custom-marker>
+ *   </map>
+ *
+ */
+/* global document */
+(function() {
+  'use strict';
+  var parser, $timeout, $compile, NgMap;
+
+  var CustomMarker = function(options) {
+    options = options || {};
+
+    this.el = document.createElement('div');
+    this.el.style.display = 'inline-block';
+    this.el.style.visibility = "hidden";
+    this.visible = true;
+    for (var key in options) { /* jshint ignore:line */
+     this[key] = options[key];
+    }
+  };
+
+  var setCustomMarker = function() {
+
+    CustomMarker.prototype = new google.maps.OverlayView();
+
+    CustomMarker.prototype.setContent = function(html, scope) {
+      this.el.innerHTML = html;
+      this.el.style.position = 'absolute';
+      if (scope) {
+        $compile(angular.element(this.el).contents())(scope);
+      }
+    };
+
+    CustomMarker.prototype.getDraggable = function() {
+      return this.draggable;
+    };
+
+    CustomMarker.prototype.setDraggable = function(draggable) {
+      this.draggable = draggable;
+    };
+
+    CustomMarker.prototype.getPosition = function() {
+      return this.position;
+    };
+
+    CustomMarker.prototype.setPosition = function(position) {
+      position && (this.position = position); /* jshint ignore:line */
+
+      if (this.getProjection() && typeof this.position.lng == 'function') {
+        var _this = this;
+        var setPosition = function() {
+          var posPixel = _this.getProjection().fromLatLngToDivPixel(_this.position);
+          var x = Math.round(posPixel.x - (_this.el.offsetWidth/2));
+          var y = Math.round(posPixel.y - _this.el.offsetHeight - 10); // 10px for anchor
+          _this.el.style.left = x + "px";
+          _this.el.style.top = y + "px";
+          _this.el.style.visibility = "visible";
+        };
+        if (_this.el.offsetWidth && _this.el.offsetHeight) { 
+          setPosition();
+        } else {
+          //delayed left/top calculation when width/height are not set instantly
+          $timeout(setPosition, 300);
+        }
+      }
+    };
+
+    CustomMarker.prototype.setZIndex = function(zIndex) {
+      zIndex && (this.zIndex = zIndex); /* jshint ignore:line */
+      this.el.style.zIndex = this.zIndex;
+    };
+
+    CustomMarker.prototype.getVisible = function() {
+      return this.visible;
+    };
+
+    CustomMarker.prototype.setVisible = function(visible) {
+      this.el.style.display = visible ? 'inline-block' : 'none';
+      this.visible = visible;
+    };
+
+    CustomMarker.prototype.addClass = function(className) {
+      var classNames = this.el.className.trim().split(' ');
+      (classNames.indexOf(className) == -1) && classNames.push(className); /* jshint ignore:line */
+      this.el.className = classNames.join(' ');
+    };
+
+    CustomMarker.prototype.removeClass = function(className) {
+      var classNames = this.el.className.split(' ');
+      var index = classNames.indexOf(className);
+      (index > -1) && classNames.splice(index, 1); /* jshint ignore:line */
+      this.el.className = classNames.join(' ');
+    };
+
+    CustomMarker.prototype.onAdd = function() {
+      this.getPanes().overlayMouseTarget.appendChild(this.el);
+    };
+
+    CustomMarker.prototype.draw = function() {
+      this.setPosition();
+      this.setZIndex(this.zIndex);
+      this.setVisible(this.visible);
+    };
+
+    CustomMarker.prototype.onRemove = function() {
+      this.el.parentNode.removeChild(this.el);
+      //this.el = null;
+    };
+  };
+
+  var linkFunc = function(orgHtml, varsToWatch) {
+    //console.log('orgHtml', orgHtml, 'varsToWatch', varsToWatch);
+
+    return function(scope, element, attrs, mapController) {
+      mapController = mapController[0]||mapController[1];
+      var orgAttrs = parser.orgAttributes(element);
+
+      var filtered = parser.filter(attrs);
+      var options = parser.getOptions(filtered, {scope: scope});
+      var events = parser.getEvents(scope, filtered);
+
+      /**
+       * build a custom marker element
+       */
+      element[0].style.display = 'none';
+      void 0;
+      var customMarker = new CustomMarker(options);
+
+      $timeout(function() { //apply contents, class, and location after it is compiled
+
+        scope.$watch('[' + varsToWatch.join(',') + ']', function() {
+          customMarker.setContent(orgHtml, scope);
+        }, true);
+
+        customMarker.setContent(element[0].innerHTML, scope);
+        var classNames = element[0].firstElementChild.className;
+        customMarker.addClass('custom-marker');
+        customMarker.addClass(classNames);
+        void 0;
+
+        if (!(options.position instanceof google.maps.LatLng)) {
+          NgMap.getGeoLocation(options.position).then(
+                function(latlng) {
+                  customMarker.setPosition(latlng);
+                }
+          );
+        }
+
+      });
+
+      void 0;
+      for (var eventName in events) { /* jshint ignore:line */
+        google.maps.event.addDomListener(
+          customMarker.el, eventName, events[eventName]);
+      }
+      mapController.addObject('customMarkers', customMarker);
+
+      //set observers
+      mapController.observeAttrSetObj(orgAttrs, attrs, customMarker);
+
+      element.bind('$destroy', function() {
+        //Is it required to remove event listeners when DOM is removed?
+        mapController.deleteObject('customMarkers', customMarker);
+      });
+
+    }; // linkFunc
+  };
+
+
+  var customMarkerDirective = function(
+      _$timeout_, _$compile_, Attr2MapOptions, _NgMap_
+    )  {
+    parser = Attr2MapOptions;
+    $timeout = _$timeout_;
+    $compile = _$compile_;
+    NgMap = _NgMap_;
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+      compile: function(element) {
+        setCustomMarker();
+        element[0].style.display ='none';
+        var orgHtml = element.html();
+        var matches = orgHtml.match(/{{([^}]+)}}/g);
+        var varsToWatch = [];
+        //filter out that contains '::', 'this.'
+        (matches || []).forEach(function(match) {
+          var toWatch = match.replace('{{','').replace('}}','');
+          if (match.indexOf('::') == -1 &&
+            match.indexOf('this.') == -1 &&
+            varsToWatch.indexOf(toWatch) == -1) {
+            varsToWatch.push(match.replace('{{','').replace('}}',''));
+          }
+        });
+
+        return linkFunc(orgHtml, varsToWatch);
+      }
+    }; // return
+  };// function
+  customMarkerDirective.$inject =
+    ['$timeout', '$compile', 'Attr2MapOptions', 'NgMap'];
+
+  angular.module('ngMap').directive('customMarker', customMarkerDirective);
+})();
+
+/**
+ * @ngdoc directive
+ * @name directions
+ * @description
+ *   Enable directions on map.
+ *   e.g., origin, destination, draggable, waypoints, etc
+ *
+ *   Requires:  map directive
+ *
+ *   Restrict To:  Element
+ *
+ * @attr {String} DirectionsRendererOptions
+ *   [Any DirectionsRendererOptions](https://developers.google.com/maps/documentation/javascript/reference#DirectionsRendererOptions)
+ * @attr {String} DirectionsRequestOptions
+ *   [Any DirectionsRequest options](https://developers.google.com/maps/documentation/javascript/reference#DirectionsRequest)
+ * @example
+ *  <map zoom="14" center="37.7699298, -122.4469157">
+ *    <directions
+ *      draggable="true"
+ *      panel="directions-panel"
+ *      travel-mode="{{travelMode}}"
+ *      waypoints="[{location:'kingston', stopover:true}]"
+ *      origin="{{origin}}"
+ *      destination="{{destination}}">
+ *    </directions>
+ *  </map>
+ */
+/* global document */
+(function() {
+  'use strict';
+  var NgMap, $timeout, NavigatorGeolocation;
+
+  var getDirectionsRenderer = function(options, events) {
+    if (options.panel) {
+      options.panel = document.getElementById(options.panel) ||
+        document.querySelector(options.panel);
+    }
+    var renderer = new google.maps.DirectionsRenderer(options);
+    for (var eventName in events) {
+      google.maps.event.addListener(renderer, eventName, events[eventName]);
+    }
+    return renderer;
+  };
+
+  var updateRoute = function(renderer, options) {
+    var directionsService = new google.maps.DirectionsService();
+
+    /* filter out valid keys only for DirectionsRequest object*/
+    var request = options;
+    request.travelMode = request.travelMode || 'DRIVING';
+    var validKeys = [
+      'origin', 'destination', 'travelMode', 'transitOptions', 'unitSystem',
+      'durationInTraffic', 'waypoints', 'optimizeWaypoints', 
+      'provideRouteAlternatives', 'avoidHighways', 'avoidTolls', 'region'
+    ];
+    for(var key in request){
+      (validKeys.indexOf(key) === -1) && (delete request[key]);
+    }
+
+    if(request.waypoints) {
+      // Check fo valid values
+      if(request.waypoints == "[]" || request.waypoints === "") {
+        delete request.waypoints;
+      }
+    }
+
+    var showDirections = function(request) {
+      directionsService.route(request, function(response, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+          $timeout(function() {
+            renderer.setDirections(response);
+          });
+        }
+      });
+    };
+
+    if (request.origin && request.destination) {
+      if (request.origin == 'current-location') {
+        NavigatorGeolocation.getCurrentPosition().then(function(ll) {
+          request.origin = new google.maps.LatLng(ll.coords.latitude, ll.coords.longitude);
+          showDirections(request);
+        });
+      } else if (request.destination == 'current-location') {
+        NavigatorGeolocation.getCurrentPosition().then(function(ll) {
+          request.destination = new google.maps.LatLng(ll.coords.latitude, ll.coords.longitude);
+          showDirections(request);
+        });
+      } else {
+        showDirections(request);
+      }
+    }
+  };
+
+  var directions = function(
+      Attr2MapOptions, _$timeout_, _NavigatorGeolocation_, _NgMap_) {
+    var parser = Attr2MapOptions;
+    NgMap = _NgMap_;
+    $timeout = _$timeout_;
+    NavigatorGeolocation = _NavigatorGeolocation_;
+
+    var linkFunc = function(scope, element, attrs, mapController) {
+      mapController = mapController[0]||mapController[1];
+
+      var orgAttrs = parser.orgAttributes(element);
+      var filtered = parser.filter(attrs);
+      var options = parser.getOptions(filtered, {scope: scope});
+      var events = parser.getEvents(scope, filtered);
+      var attrsToObserve = parser.getAttrsToObserve(orgAttrs);
+
+      var renderer = getDirectionsRenderer(options, events);
+      mapController.addObject('directionsRenderers', renderer);
+
+      attrsToObserve.forEach(function(attrName) {
+        (function(attrName) {
+          attrs.$observe(attrName, function(val) {
+            if (attrName == 'panel') {
+              $timeout(function(){
+                var panel =
+                  document.getElementById(val) || document.querySelector(val);
+                void 0;
+                panel && renderer.setPanel(panel);
+              });
+            } else if (options[attrName] !== val) { //apply only if changed
+              var optionValue = parser.toOptionValue(val, {key: attrName});
+              void 0;
+              options[attrName] = optionValue;
+              updateRoute(renderer, options);
+            }
+          });
+        })(attrName);
+      });
+
+      NgMap.getMap().then(function() {
+        updateRoute(renderer, options);
+      });
+      element.bind('$destroy', function() {
+        mapController.deleteObject('directionsRenderers', renderer);
+      });
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+      link: linkFunc
+    };
+  }; // var directions
+  directions.$inject =
+    ['Attr2MapOptions', '$timeout', 'NavigatorGeolocation', 'NgMap'];
+
+  angular.module('ngMap').directive('directions', directions);
+})();
+
+
+/**
+ * @ngdoc directive
+ * @name drawing-manager
+ * @param Attr2Options {service} convert html attribute to Gogole map api options
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *
+ *  <map zoom="13" center="37.774546, -122.433523" map-type-id="SATELLITE">
+ *    <drawing-manager
+ *      on-overlaycomplete="onMapOverlayCompleted()"
+ *      position="ControlPosition.TOP_CENTER"
+ *      drawingModes="POLYGON,CIRCLE"
+ *      drawingControl="true"
+ *      circleOptions="fillColor: '#FFFF00';fillOpacity: 1;strokeWeight: 5;clickable: false;zIndex: 1;editable: true;" >
+ *    </drawing-manager>
+ *  </map>
+ *
+ *  TODO: Add remove button.
+ *  currently, for our solution, we have the shapes/markers in our own
+ *  controller, and we use some css classes to change the shape button
+ *  to a remove button (<div>X</div>) and have the remove operation in our own controller.
+ */
+(function() {
+  'use strict';
+  angular.module('ngMap').directive('drawingManager', [
+    'Attr2MapOptions', function(Attr2MapOptions) {
+    var parser = Attr2MapOptions;
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var controlOptions = parser.getControlOptions(filtered);
+        var events = parser.getEvents(scope, filtered);
+
+        /**
+         * set options
+         */
+        var drawingManager = new google.maps.drawing.DrawingManager({
+          drawingMode: options.drawingmode,
+          drawingControl: options.drawingcontrol,
+          drawingControlOptions: controlOptions.drawingControlOptions,
+          circleOptions:options.circleoptions,
+          markerOptions:options.markeroptions,
+          polygonOptions:options.polygonoptions,
+          polylineOptions:options.polylineoptions,
+          rectangleOptions:options.rectangleoptions
+        });
+
+        //Observers
+        attrs.$observe('drawingControlOptions', function (newValue) {
+          drawingManager.drawingControlOptions = parser.getControlOptions({drawingControlOptions: newValue}).drawingControlOptions;
+          drawingManager.setDrawingMode(null);
+          drawingManager.setMap(mapController.map);
+        });
+
+
+        /**
+         * set events
+         */
+        for (var eventName in events) {
+          google.maps.event.addListener(drawingManager, eventName, events[eventName]);
+        }
+
+        mapController.addObject('mapDrawingManager', drawingManager);
+
+        element.bind('$destroy', function() {
+          mapController.deleteObject('mapDrawingManager', drawingManager);
+        });
+      }
+    }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name dynamic-maps-engine-layer
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *   <map zoom="14" center="[59.322506, 18.010025]">
+ *     <dynamic-maps-engine-layer
+ *       layer-id="06673056454046135537-08896501997766553811">
+ *     </dynamic-maps-engine-layer>
+ *    </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('dynamicMapsEngineLayer', [
+    'Attr2MapOptions', function(Attr2MapOptions) {
+    var parser = Attr2MapOptions;
+
+    var getDynamicMapsEngineLayer = function(options, events) {
+      var layer = new google.maps.visualization.DynamicMapsEngineLayer(options);
+
+      for (var eventName in events) {
+        google.maps.event.addListener(layer, eventName, events[eventName]);
+      }
+
+      return layer;
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var events = parser.getEvents(scope, filtered, events);
+
+        var layer = getDynamicMapsEngineLayer(options, events);
+        mapController.addObject('mapsEngineLayers', layer);
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name fusion-tables-layer
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *   <map zoom="11" center="41.850033, -87.6500523">
+ *     <fusion-tables-layer query="{
+ *       select: 'Geocodable address',
+ *       from: '1mZ53Z70NsChnBMm-qEYmSDOvLXgrreLTkQUvvg'}">
+ *     </fusion-tables-layer>
+ *   </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('fusionTablesLayer', [
+    'Attr2MapOptions', function(Attr2MapOptions) {
+    var parser = Attr2MapOptions;
+
+    var getLayer = function(options, events) {
+      var layer = new google.maps.FusionTablesLayer(options);
+
+      for (var eventName in events) {
+        google.maps.event.addListener(layer, eventName, events[eventName]);
+      }
+
+      return layer;
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var events = parser.getEvents(scope, filtered, events);
+        void 0;
+
+        var layer = getLayer(options, events);
+        mapController.addObject('fusionTablesLayers', layer);
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name heatmap-layer
+ * @param Attr2Options {service} convert html attribute to Gogole map api options
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ *
+ * <map zoom="11" center="[41.875696,-87.624207]">
+ *   <heatmap-layer data="taxiData"></heatmap-layer>
+ * </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('heatmapLayer', [
+    'Attr2MapOptions', '$window', function(Attr2MapOptions, $window) {
+    var parser = Attr2MapOptions;
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var filtered = parser.filter(attrs);
+
+        /**
+         * set options
+         */
+        var options = parser.getOptions(filtered, {scope: scope});
+        options.data = $window[attrs.data] || scope[attrs.data];
+        if (options.data instanceof Array) {
+          options.data = new google.maps.MVCArray(options.data);
+        } else {
+          throw "invalid heatmap data";
+        }
+        var layer = new google.maps.visualization.HeatmapLayer(options);
+
+        /**
+         * set events
+         */
+        var events = parser.getEvents(scope, filtered);
+        void 0;
+
+        mapController.addObject('heatmapLayers', layer);
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name info-window
+ * @param Attr2MapOptions {service}
+ *   convert html attribute to Gogole map api options
+ * @param $compile {service} $compile service
+ * @description
+ *  Defines infoWindow and provides compile method
+ *
+ *  Requires:  map directive
+ *
+ *  Restrict To:  Element
+ *
+ *  NOTE: this directive should **NOT** be used with `ng-repeat`
+ *  because InfoWindow itself is a template, and a template must be
+ *  reused by each marker, thus, should not be redefined repeatedly
+ *  by `ng-repeat`.
+ *
+ * @attr {Boolean} visible
+ *   Indicates to show it when map is initialized
+ * @attr {Boolean} visible-on-marker
+ *   Indicates to show it on a marker when map is initialized
+ * @attr {Expression} geo-callback
+ *   if position is an address, the expression is will be performed
+ *   when geo-lookup is successful. e.g., geo-callback="showDetail()"
+ * @attr {String} &lt;InfoWindowOption> Any InfoWindow options,
+ *   https://developers.google.com/maps/documentation/javascript/reference?csw=1#InfoWindowOptions
+ * @attr {String} &lt;InfoWindowEvent> Any InfoWindow events,
+ *   https://developers.google.com/maps/documentation/javascript/reference
+ * @example
+ * Usage:
+ *   <map MAP_ATTRIBUTES>
+ *    <info-window id="foo" ANY_OPTIONS ANY_EVENTS"></info-window>
+ *   </map>
+ *
+ * Example:
+ *  <map center="41.850033,-87.6500523" zoom="3">
+ *    <info-window id="1" position="41.850033,-87.6500523" >
+ *      <div ng-non-bindable>
+ *        Chicago, IL<br/>
+ *        LatLng: {{chicago.lat()}}, {{chicago.lng()}}, <br/>
+ *        World Coordinate: {{worldCoordinate.x}}, {{worldCoordinate.y}}, <br/>
+ *        Pixel Coordinate: {{pixelCoordinate.x}}, {{pixelCoordinate.y}}, <br/>
+ *        Tile Coordinate: {{tileCoordinate.x}}, {{tileCoordinate.y}} at Zoom Level {{map.getZoom()}}
+ *      </div>
+ *    </info-window>
+ *  </map>
+ */
+/* global google */
+(function() {
+  'use strict';
+
+  var infoWindow = function(Attr2MapOptions, $compile, $q, $templateRequest, $timeout, $parse, NgMap)  {
+    var parser = Attr2MapOptions;
+
+    var getInfoWindow = function(options, events, element) {
+      var infoWindow;
+
+      /**
+       * set options
+       */
+      if (options.position && !(options.position instanceof google.maps.LatLng)) {
+        delete options.position;
+      }
+      infoWindow = new google.maps.InfoWindow(options);
+
+      /**
+       * set events
+       */
+      for (var eventName in events) {
+        if (eventName) {
+          google.maps.event.addListener(infoWindow, eventName, events[eventName]);
+        }
+      }
+
+      /**
+       * set template and template-related functions
+       * it must have a container element with ng-non-bindable
+       */
+      var templatePromise = $q(function(resolve) {
+        if (angular.isString(element)) {
+          $templateRequest(element).then(function (requestedTemplate) {
+            resolve(angular.element(requestedTemplate).wrap('<div>').parent());
+          }, function(message) {
+            throw "info-window template request failed: " + message;
+          });
+        }
+        else {
+          resolve(element);
+        }
+      }).then(function(resolvedTemplate) {
+        var template = resolvedTemplate.html().trim();
+        if (angular.element(template).length != 1) {
+          throw "info-window working as a template must have a container";
+        }
+        infoWindow.__template = template.replace(/\s?ng-non-bindable[='"]+/,"");
+      });
+
+      infoWindow.__open = function(map, scope, anchor) {
+        templatePromise.then(function() {
+          $timeout(function() {
+            anchor && (scope.anchor = anchor);
+            var el = $compile(infoWindow.__template)(scope);
+            infoWindow.setContent(el[0]);
+            scope.$apply();
+            if (anchor && anchor.getPosition) {
+              infoWindow.open(map, anchor);
+            } else if (anchor && anchor instanceof google.maps.LatLng) {
+              infoWindow.open(map);
+              infoWindow.setPosition(anchor);
+            } else {
+              infoWindow.open(map);
+            }
+            var infoWindowContainerEl = infoWindow.content.parentElement.parentElement.parentElement;
+            infoWindowContainerEl.className = "ng-map-info-window";
+          });
+        });
+      };
+
+      return infoWindow;
+    };
+
+    var linkFunc = function(scope, element, attrs, mapController) {
+      mapController = mapController[0]||mapController[1];
+
+      element.css('display','none');
+
+      var orgAttrs = parser.orgAttributes(element);
+      var filtered = parser.filter(attrs);
+      var options = parser.getOptions(filtered, {scope: scope});
+      var events = parser.getEvents(scope, filtered);
+
+      var infoWindow = getInfoWindow(options, events, options.template || element);
+      var address;
+      if (options.position && !(options.position instanceof google.maps.LatLng)) {
+        address = options.position;
+      }
+      if (address) {
+        NgMap.getGeoLocation(address).then(function(latlng) {
+          infoWindow.setPosition(latlng);
+          infoWindow.__open(mapController.map, scope, latlng);
+          var geoCallback = attrs.geoCallback;
+          geoCallback && $parse(geoCallback)(scope);
+        });
+      }
+
+      mapController.addObject('infoWindows', infoWindow);
+      mapController.observeAttrSetObj(orgAttrs, attrs, infoWindow);
+
+      mapController.showInfoWindow =
+      mapController.map.showInfoWindow = mapController.showInfoWindow ||
+        function(p1, p2, p3) { //event, id, marker
+          var id = typeof p1 == 'string' ? p1 : p2;
+          var marker = typeof p1 == 'string' ? p2 : p3;
+          if (typeof marker == 'string') {
+            //Check if markers if defined to avoid odd 'undefined' errors
+            if (typeof mapController.map.markers != "undefined"
+                && typeof mapController.map.markers[marker] != "undefined") {
+              marker = mapController.map.markers[marker];
+            } else if (
+                //additionally check if that marker is a custom marker
+            typeof mapController.map.customMarkers
+            && typeof mapController.map.customMarkers[marker] != "undefined") {
+              marker = mapController.map.customMarkers[marker];
+            } else {
+              //Better error output if marker with that id is not defined
+              throw new Error("Cant open info window for id " + marker + ". Marker or CustomMarker is not defined")
+            }
+          }
+
+          var infoWindow = mapController.map.infoWindows[id];
+          var anchor = marker ? marker : (this.getPosition ? this : null);
+          infoWindow.__open(mapController.map, scope, anchor);
+          if(mapController.singleInfoWindow) {
+            if(mapController.lastInfoWindow) {
+              scope.hideInfoWindow(mapController.lastInfoWindow);
+            }
+            mapController.lastInfoWindow = id;
+          }
+        };
+
+      mapController.hideInfoWindow =
+      mapController.map.hideInfoWindow = mapController.hideInfoWindow ||
+        function(p1, p2) {
+          var id = typeof p1 == 'string' ? p1 : p2;
+          var infoWindow = mapController.map.infoWindows[id];
+          infoWindow.close();
+        };
+
+      //TODO DEPRECATED
+      scope.showInfoWindow = mapController.map.showInfoWindow;
+      scope.hideInfoWindow = mapController.map.hideInfoWindow;
+
+      var map = infoWindow.mapId ? {id:infoWindow.mapId} : 0;
+      NgMap.getMap(map).then(function(map) {
+        infoWindow.visible && infoWindow.__open(map, scope);
+        if (infoWindow.visibleOnMarker) {
+          var markerId = infoWindow.visibleOnMarker;
+          infoWindow.__open(map, scope, map.markers[markerId]);
+        }
+      });
+
+    }; //link
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+      link: linkFunc
+    };
+
+  }; // infoWindow
+  infoWindow.$inject =
+    ['Attr2MapOptions', '$compile', '$q', '$templateRequest', '$timeout', '$parse', 'NgMap'];
+
+  angular.module('ngMap').directive('infoWindow', infoWindow);
+})();
+
+/**
+ * @ngdoc directive
+ * @name kml-layer
+ * @param Attr2MapOptions {service} convert html attribute to Gogole map api options
+ * @description
+ *   renders Kml layer on a map
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @attr {Url} url url of the kml layer
+ * @attr {KmlLayerOptions} KmlLayerOptions
+ *   (https://developers.google.com/maps/documentation/javascript/reference#KmlLayerOptions) 
+ * @attr {String} &lt;KmlLayerEvent> Any KmlLayer events,
+ *   https://developers.google.com/maps/documentation/javascript/reference
+ * @example
+ * Usage:
+ *   <map MAP_ATTRIBUTES>
+ *    <kml-layer ANY_KML_LAYER ANY_KML_LAYER_EVENTS"></kml-layer>
+ *   </map>
+ *
+ * Example:
+ *
+ * <map zoom="11" center="[41.875696,-87.624207]">
+ *   <kml-layer url="https://gmaps-samples.googlecode.com/svn/trunk/ggeoxml/cta.kml" >
+ *   </kml-layer>
+ * </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('kmlLayer', [
+    'Attr2MapOptions', function(Attr2MapOptions) {
+    var parser = Attr2MapOptions;
+
+    var getKmlLayer = function(options, events) {
+      var kmlLayer = new google.maps.KmlLayer(options);
+      for (var eventName in events) {
+        google.maps.event.addListener(kmlLayer, eventName, events[eventName]);
+      }
+      return kmlLayer;
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var orgAttrs = parser.orgAttributes(element);
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var events = parser.getEvents(scope, filtered);
+        void 0;
+
+        var kmlLayer = getKmlLayer(options, events);
+        mapController.addObject('kmlLayers', kmlLayer);
+        mapController.observeAttrSetObj(orgAttrs, attrs, kmlLayer);  //observers
+        element.bind('$destroy', function() {
+          mapController.deleteObject('kmlLayers', kmlLayer);
+        });
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name map-data
+ * @param Attr2MapOptions {service}
+ *   convert html attribute to Gogole map api options
+ * @description
+ *   set map data
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @wn {String} method-name, run map.data[method-name] with attribute value
+ * @example
+ * Example:
+ *
+ *  <map zoom="11" center="[41.875696,-87.624207]">
+ *    <map-data load-geo-json="https://storage.googleapis.com/maps-devrel/google.json"></map-data>
+ *   </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('mapData', [
+    'Attr2MapOptions', 'NgMap', function(Attr2MapOptions, NgMap) {
+    var parser = Attr2MapOptions;
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs) {
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var events = parser.getEvents(scope, filtered, events);
+
+        void 0;
+        NgMap.getMap().then(function(map) {
+          //options
+          for (var key in options) {
+            var val = options[key];
+            if (typeof scope[val] === "function") {
+              map.data[key](scope[val]);
+            } else {
+              map.data[key](val);
+            }
+          }
+
+          //events
+          for (var eventName in events) {
+            map.data.addListener(eventName, events[eventName]);
+          }
+        });
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name map-lazy-load
+ * @param Attr2Options {service} convert html attribute to Gogole map api options
+ * @description
+ *  Requires: Delay the initialization of map directive
+ *    until the map is ready to be rendered
+ *  Restrict To: Attribute
+ *
+ * @attr {String} map-lazy-load
+ *    Maps api script source file location.
+ *    Example:
+ *      'https://maps.google.com/maps/api/js'
+ * @attr {String} map-lazy-load-params
+ *   Maps api script source file location via angular scope variable.
+ *   Also requires the map-lazy-load attribute to be present in the directive.
+ *   Example: In your controller, set
+ *     $scope.googleMapsURL = 'https://maps.google.com/maps/api/js?v=3.20&client=XXXXXenter-api-key-hereXXXX'
+ *
+ * @example
+ * Example:
+ *
+ *   <div map-lazy-load="http://maps.google.com/maps/api/js">
+ *     <map center="Brampton" zoom="10">
+ *       <marker position="Brampton"></marker>
+ *     </map>
+ *   </div>
+ *
+ *   <div map-lazy-load="http://maps.google.com/maps/api/js"
+ *        map-lazy-load-params="{{googleMapsUrl}}">
+ *     <map center="Brampton" zoom="10">
+ *       <marker position="Brampton"></marker>
+ *     </map>
+ *   </div>
+ */
+/* global window, document */
+(function() {
+  'use strict';
+  var $timeout, $compile, src, savedHtml = [], elements = [];
+
+  var preLinkFunc = function(scope, element, attrs) {
+    var mapsUrl = attrs.mapLazyLoadParams || attrs.mapLazyLoad;
+
+    if(window.google === undefined || window.google.maps === undefined) {
+      elements.push({
+        scope: scope,
+        element: element,
+        savedHtml: savedHtml[elements.length],
+      });
+
+      window.lazyLoadCallback = function() {
+        void 0;
+        $timeout(function() { /* give some time to load */
+          elements.forEach(function(elm) {
+              elm.element.html(elm.savedHtml);
+              $compile(elm.element.contents())(elm.scope);
+          });
+        }, 100);
+      };
+
+      var scriptEl = document.createElement('script');
+      void 0;
+
+      scriptEl.src = mapsUrl +
+        (mapsUrl.indexOf('?') > -1 ? '&' : '?') +
+        'callback=lazyLoadCallback';
+
+        if (!document.querySelector('script[src="' + scriptEl.src + '"]')) {
+          document.body.appendChild(scriptEl);
+        }
+    } else {
+      element.html(savedHtml);
+      $compile(element.contents())(scope);
+    }
+  };
+
+  var compileFunc = function(tElement, tAttrs) {
+
+    (!tAttrs.mapLazyLoad) && void 0;
+    savedHtml.push(tElement.html());
+    src = tAttrs.mapLazyLoad;
+
+    /**
+     * if already loaded, stop processing it
+     */
+    if(window.google !== undefined && window.google.maps !== undefined) {
+      return false;
+    }
+
+    tElement.html('');  // will compile again after script is loaded
+
+    return {
+      pre: preLinkFunc
+    };
+  };
+
+  var mapLazyLoad = function(_$compile_, _$timeout_) {
+    $compile = _$compile_, $timeout = _$timeout_;
+    return {
+      compile: compileFunc
+    };
+  };
+  mapLazyLoad.$inject = ['$compile','$timeout'];
+
+  angular.module('ngMap').directive('mapLazyLoad', mapLazyLoad);
+})();
+
+/**
+ * @ngdoc directive
+ * @name map-type
+ * @param Attr2MapOptions {service} 
+ *   convert html attribute to Google map api options
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *
+ *   <map zoom="13" center="34.04924594193164, -118.24104309082031">
+ *     <map-type name="coordinate" object="coordinateMapType"></map-type>
+ *   </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('mapType', ['$parse', 'NgMap',
+    function($parse, NgMap) {
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var mapTypeName = attrs.name, mapTypeObject;
+        if (!mapTypeName) {
+          throw "invalid map-type name";
+        }
+        mapTypeObject = $parse(attrs.object)(scope);
+        if (!mapTypeObject) {
+          throw "invalid map-type object";
+        }
+
+        NgMap.getMap().then(function(map) {
+          map.mapTypes.set(mapTypeName, mapTypeObject);
+        });
+        mapController.addObject('mapTypes', mapTypeObject);
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @memberof ngMap
+ * @name ng-map
+ * @param Attr2Options {service}
+ *  convert html attribute to Gogole map api options
+ * @description
+ * Implementation of {@link __MapController}
+ * Initialize a Google map within a `<div>` tag
+ *   with given options and register events
+ *
+ * @attr {Expression} map-initialized
+ *   callback function when map is initialized
+ *   e.g., map-initialized="mycallback(map)"
+ * @attr {Expression} geo-callback if center is an address or current location,
+ *   the expression is will be executed when geo-lookup is successful.
+ *   e.g., geo-callback="showMyStoreInfo()"
+ * @attr {Array} geo-fallback-center
+ *   The center of map incase geolocation failed. i.e. [0,0]
+ * @attr {Object} geo-location-options
+ *  The navigator geolocation options.
+ *  e.g., { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true }.
+ *  If none specified, { timeout: 5000 }.
+ *  If timeout not specified, timeout: 5000 added
+ * @attr {Boolean} zoom-to-include-markers
+ *  When true, map boundary will be changed automatially
+ *  to include all markers when initialized
+ * @attr {Boolean} default-style
+ *  When false, the default styling,
+ *  `display:block;height:300px`, will be ignored.
+ * @attr {String} &lt;MapOption> Any Google map options,
+ *  https://developers.google.com/maps/documentation/javascript/reference?csw=1#MapOptions
+ * @attr {String} &lt;MapEvent> Any Google map events,
+ *  https://rawgit.com/allenhwkim/angularjs-google-maps/master/build/map_events.html
+ * @attr {Boolean} single-info-window
+ *  When true the map will only display one info window at the time,
+ *  if not set or false,
+ *  everytime an info window is open it will be displayed with the othe one.
+ * @attr {Boolean} trigger-resize
+ *  Default to false.  Set to true to trigger resize of the map.  Needs to be done anytime you resize the map
+ * @example
+ * Usage:
+ *   <map MAP_OPTIONS_OR_MAP_EVENTS ..>
+ *     ... Any children directives
+ *   </map>
+ *
+ * Example:
+ *   <map center="[40.74, -74.18]" on-click="doThat()">
+ *   </map>
+ *
+ *   <map geo-fallback-center="[40.74, -74.18]" zoom-to-inlude-markers="true">
+ *   </map>
+ */
+(function () {
+  'use strict';
+
+  var mapDirective = function () {
+    return {
+      restrict: 'AE',
+      controller: '__MapController',
+      controllerAs: 'ngmap'
+    };
+  };
+
+  angular.module('ngMap').directive('map', [mapDirective]);
+  angular.module('ngMap').directive('ngMap', [mapDirective]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name maps-engine-layer
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *  <map zoom="14" center="[59.322506, 18.010025]">
+ *    <maps-engine-layer layer-id="06673056454046135537-08896501997766553811">
+ *    </maps-engine-layer>
+ *  </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('mapsEngineLayer', ['Attr2MapOptions', function(Attr2MapOptions) {
+    var parser = Attr2MapOptions;
+
+    var getMapsEngineLayer = function(options, events) {
+      var layer = new google.maps.visualization.MapsEngineLayer(options);
+
+      for (var eventName in events) {
+        google.maps.event.addListener(layer, eventName, events[eventName]);
+      }
+
+      return layer;
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var events = parser.getEvents(scope, filtered, events);
+        void 0;
+
+        var layer = getMapsEngineLayer(options, events);
+        mapController.addObject('mapsEngineLayers', layer);
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name marker
+ * @param Attr2Options {service} convert html attribute to Gogole map api options
+ * @param NavigatorGeolocation It is used to find the current location
+ * @description
+ *  Draw a Google map marker on a map with given options and register events
+ *
+ *  Requires:  map directive
+ *
+ *  Restrict To:  Element
+ *
+ * @attr {String} position address, 'current', or [latitude, longitude]
+ *  example:
+ *    '1600 Pennsylvania Ave, 20500  Washingtion DC',
+ *    'current position',
+ *    '[40.74, -74.18]'
+ * @attr {Boolean} centered if set, map will be centered with this marker
+ * @attr {Expression} geo-callback if position is an address,
+ *   the expression is will be performed when geo-lookup is successful.
+ *   e.g., geo-callback="showStoreInfo()"
+ * @attr {Boolean} no-watcher if true, no attribute observer is added.
+ *   Useful for many ng-repeat
+ * @attr {String} &lt;MarkerOption>
+ *   [Any Marker options](https://developers.google.com/maps/documentation/javascript/reference?csw=1#MarkerOptions)
+ * @attr {String} &lt;MapEvent>
+ *   [Any Marker events](https://developers.google.com/maps/documentation/javascript/reference)
+ * @example
+ * Usage:
+ *   <map MAP_ATTRIBUTES>
+ *    <marker ANY_MARKER_OPTIONS ANY_MARKER_EVENTS"></MARKER>
+ *   </map>
+ *
+ * Example:
+ *   <map center="[40.74, -74.18]">
+ *    <marker position="[40.74, -74.18]" on-click="myfunc()"></div>
+ *   </map>
+ *
+ *   <map center="the cn tower">
+ *    <marker position="the cn tower" on-click="myfunc()"></div>
+ *   </map>
+ */
+/* global google */
+(function() {
+  'use strict';
+  var parser, $parse, NgMap;
+
+  var getMarker = function(options, events) {
+    var marker;
+
+    if (NgMap.defaultOptions.marker) {
+      for (var key in NgMap.defaultOptions.marker) {
+        if (typeof options[key] == 'undefined') {
+          void 0;
+          options[key] = NgMap.defaultOptions.marker[key];
+        }
+      }
+    }
+
+    if (!(options.position instanceof google.maps.LatLng)) {
+      options.position = new google.maps.LatLng(0,0);
+    }
+    marker = new google.maps.Marker(options);
+
+    /**
+     * set events
+     */
+    if (Object.keys(events).length > 0) {
+      void 0;
+    }
+    for (var eventName in events) {
+      if (eventName) {
+        google.maps.event.addListener(marker, eventName, events[eventName]);
+      }
+    }
+
+    return marker;
+  };
+
+  var linkFunc = function(scope, element, attrs, mapController) {
+    mapController = mapController[0]||mapController[1];
+
+    var orgAttrs = parser.orgAttributes(element);
+    var filtered = parser.filter(attrs);
+    var markerOptions = parser.getOptions(filtered, scope, {scope: scope});
+    var markerEvents = parser.getEvents(scope, filtered);
+    void 0;
+
+    var address;
+    if (!(markerOptions.position instanceof google.maps.LatLng)) {
+      address = markerOptions.position;
+    }
+    var marker = getMarker(markerOptions, markerEvents);
+    mapController.addObject('markers', marker);
+    if (address) {
+      NgMap.getGeoLocation(address).then(function(latlng) {
+        marker.setPosition(latlng);
+        markerOptions.centered && marker.map.setCenter(latlng);
+        var geoCallback = attrs.geoCallback;
+        geoCallback && $parse(geoCallback)(scope);
+      });
+    }
+
+    //set observers
+    mapController.observeAttrSetObj(orgAttrs, attrs, marker); /* observers */
+
+    element.bind('$destroy', function() {
+      mapController.deleteObject('markers', marker);
+    });
+  };
+
+  var marker = function(Attr2MapOptions, _$parse_, _NgMap_) {
+    parser = Attr2MapOptions;
+    $parse = _$parse_;
+    NgMap = _NgMap_;
+
+    return {
+      restrict: 'E',
+      require: ['^?map','?^ngMap'],
+      link: linkFunc
+    };
+  };
+
+  marker.$inject = ['Attr2MapOptions', '$parse', 'NgMap'];
+  angular.module('ngMap').directive('marker', marker);
+
+})();
+
+/**
+ * @ngdoc directive
+ * @name overlay-map-type
+ * @param Attr2MapOptions {service} convert html attribute to Gogole map api options
+ * @param $window {service}
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *
+ * <map zoom="13" center="34.04924594193164, -118.24104309082031">
+ *   <overlay-map-type index="0" object="coordinateMapType"></map-type>
+ * </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('overlayMapType', [
+    'NgMap', function(NgMap) {
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var initMethod = attrs.initMethod || "insertAt";
+        var overlayMapTypeObject = scope[attrs.object];
+
+        NgMap.getMap().then(function(map) {
+          if (initMethod == "insertAt") {
+            var index = parseInt(attrs.index, 10);
+            map.overlayMapTypes.insertAt(index, overlayMapTypeObject);
+          } else if (initMethod == "push") {
+            map.overlayMapTypes.push(overlayMapTypeObject);
+          }
+        });
+        mapController.addObject('overlayMapTypes', overlayMapTypeObject);
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name places-auto-complete
+ * @param Attr2MapOptions {service} convert html attribute to Gogole map api options
+ * @description
+ *   Provides address auto complete feature to an input element
+ *   Requires: input tag
+ *   Restrict To: Attribute
+ *
+ * @attr {AutoCompleteOptions}
+ *   [Any AutocompleteOptions](https://developers.google.com/maps/documentation/javascript/3.exp/reference#AutocompleteOptions)
+ *
+ * @example
+ * Example:
+ *   <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+ *   <input places-auto-complete types="['geocode']" on-place-changed="myCallback(place)" component-restrictions="{country:'au'}"/>
+ */
+/* global google */
+(function() {
+  'use strict';
+
+  var placesAutoComplete = function(Attr2MapOptions, $timeout) {
+    var parser = Attr2MapOptions;
+
+    var linkFunc = function(scope, element, attrs, ngModelCtrl) {
+      if (attrs.placesAutoComplete ==='false') {
+        return false;
+      }
+      var filtered = parser.filter(attrs);
+      var options = parser.getOptions(filtered, {scope: scope});
+      var events = parser.getEvents(scope, filtered);
+      var autocomplete = new google.maps.places.Autocomplete(element[0], options);
+      for (var eventName in events) {
+        google.maps.event.addListener(autocomplete, eventName, events[eventName]);
+      }
+
+      var updateModel = function() {
+        $timeout(function(){
+          ngModelCtrl && ngModelCtrl.$setViewValue(element.val());
+        },100);
+      };
+      google.maps.event.addListener(autocomplete, 'place_changed', updateModel);
+      element[0].addEventListener('change', updateModel);
+
+      attrs.$observe('types', function(val) {
+        if (val) {
+          var optionValue = parser.toOptionValue(val, {key: 'types'});
+          autocomplete.setTypes(optionValue);
+        }
+      });
+	  
+	  attrs.$observe('componentRestrictions', function (val) {
+		 if (val) {
+		   autocomplete.setComponentRestrictions(scope.$eval(val));
+		 }
+	   });
+    };
+	
+    return {
+      restrict: 'A',
+      require: '?ngModel',
+      link: linkFunc
+    };
+  };
+
+  placesAutoComplete.$inject = ['Attr2MapOptions', '$timeout'];
+  angular.module('ngMap').directive('placesAutoComplete', placesAutoComplete);
+})();
+
+/**
+ * @ngdoc directive
+ * @name shape
+ * @param Attr2MapOptions {service} convert html attribute to Gogole map api options
+ * @description
+ *   Initialize a Google map shape in map with given options and register events
+ *   The shapes are:
+ *     . circle
+ *     . polygon
+ *     . polyline
+ *     . rectangle
+ *     . groundOverlay(or image)
+ *
+ *   Requires:  map directive
+ *
+ *   Restrict To:  Element
+ *
+ * @attr {Boolean} centered if set, map will be centered with this marker
+ * @attr {Expression} geo-callback if shape is a circle and the center is
+ *   an address, the expression is will be performed when geo-lookup
+ *   is successful. e.g., geo-callback="showDetail()"
+ * @attr {String} &lt;OPTIONS>
+ *   For circle, [any circle options](https://developers.google.com/maps/documentation/javascript/reference#CircleOptions)
+ *   For polygon, [any polygon options](https://developers.google.com/maps/documentation/javascript/reference#PolygonOptions)
+ *   For polyline, [any polyline options](https://developers.google.com/maps/documentation/javascript/reference#PolylineOptions)
+ *   For rectangle, [any rectangle options](https://developers.google.com/maps/documentation/javascript/reference#RectangleOptions)
+ *   For image, [any groundOverlay options](https://developers.google.com/maps/documentation/javascript/reference#GroundOverlayOptions)
+ * @attr {String} &lt;MapEvent> [Any Shape events](https://developers.google.com/maps/documentation/javascript/reference)
+ * @example
+ * Usage:
+ *   <map MAP_ATTRIBUTES>
+ *    <shape name=SHAPE_NAME ANY_SHAPE_OPTIONS ANY_SHAPE_EVENTS"></MARKER>
+ *   </map>
+ *
+ * Example:
+ *
+ *   <map zoom="11" center="[40.74, -74.18]">
+ *     <shape id="polyline" name="polyline" geodesic="true"
+ *       stroke-color="#FF0000" stroke-opacity="1.0" stroke-weight="2"
+ *       path="[[40.74,-74.18],[40.64,-74.10],[40.54,-74.05],[40.44,-74]]" >
+ *     </shape>
+ *   </map>
+ *
+ *   <map zoom="11" center="[40.74, -74.18]">
+ *     <shape id="polygon" name="polygon" stroke-color="#FF0000"
+ *       stroke-opacity="1.0" stroke-weight="2"
+ *       paths="[[40.74,-74.18],[40.64,-74.18],[40.84,-74.08],[40.74,-74.18]]" >
+ *     </shape>
+ *   </map>
+ *
+ *   <map zoom="11" center="[40.74, -74.18]">
+ *     <shape id="rectangle" name="rectangle" stroke-color='#FF0000'
+ *       stroke-opacity="0.8" stroke-weight="2"
+ *       bounds="[[40.74,-74.18], [40.78,-74.14]]" editable="true" >
+ *     </shape>
+ *   </map>
+ *
+ *   <map zoom="11" center="[40.74, -74.18]">
+ *     <shape id="circle" name="circle" stroke-color='#FF0000'
+ *       stroke-opacity="0.8"stroke-weight="2"
+ *       center="[40.70,-74.14]" radius="4000" editable="true" >
+ *     </shape>
+ *   </map>
+ *
+ *   <map zoom="11" center="[40.74, -74.18]">
+ *     <shape id="image" name="image"
+ *       url="https://www.lib.utexas.edu/maps/historical/newark_nj_1922.jpg"
+ *       bounds="[[40.71,-74.22],[40.77,-74.12]]" opacity="0.7"
+ *       clickable="true">
+ *     </shape>
+ *   </map>
+ *
+ *  For full-working example, please visit
+ *    [shape example](https://rawgit.com/allenhwkim/angularjs-google-maps/master/build/shape.html)
+ */
+/* global google */
+(function() {
+  'use strict';
+
+  var getShape = function(options, events) {
+    var shape;
+
+    var shapeName = options.name;
+    delete options.name;  //remove name bcoz it's not for options
+    void 0;
+
+    /**
+     * set options
+     */
+    switch(shapeName) {
+      case "circle":
+        if (!(options.center instanceof google.maps.LatLng)) {
+          options.center = new google.maps.LatLng(0,0);
+        } 
+        shape = new google.maps.Circle(options);
+        break;
+      case "polygon":
+        shape = new google.maps.Polygon(options);
+        break;
+      case "polyline":
+        shape = new google.maps.Polyline(options);
+        break;
+      case "rectangle":
+        shape = new google.maps.Rectangle(options);
+        break;
+      case "groundOverlay":
+      case "image":
+        var url = options.url;
+        var opts = {opacity: options.opacity, clickable: options.clickable, id:options.id};
+        shape = new google.maps.GroundOverlay(url, options.bounds, opts);
+        break;
+    }
+
+    /**
+     * set events
+     */
+    for (var eventName in events) {
+      if (events[eventName]) {
+        google.maps.event.addListener(shape, eventName, events[eventName]);
+      }
+    }
+    return shape;
+  };
+
+  var shape = function(Attr2MapOptions, $parse, NgMap) {
+    var parser = Attr2MapOptions;
+
+    var linkFunc = function(scope, element, attrs, mapController) {
+      mapController = mapController[0]||mapController[1];
+
+      var orgAttrs = parser.orgAttributes(element);
+      var filtered = parser.filter(attrs);
+      var shapeOptions = parser.getOptions(filtered, {scope: scope});
+      var shapeEvents = parser.getEvents(scope, filtered);
+
+      var address, shapeType;
+      shapeType = shapeOptions.name;
+      if (!(shapeOptions.center instanceof google.maps.LatLng)) {
+        address = shapeOptions.center;
+      }
+      var shape = getShape(shapeOptions, shapeEvents);
+      mapController.addObject('shapes', shape);
+
+      if (address && shapeType == 'circle') {
+        NgMap.getGeoLocation(address).then(function(latlng) {
+          shape.setCenter(latlng);
+          shape.centered && shape.map.setCenter(latlng);
+          var geoCallback = attrs.geoCallback;
+          geoCallback && $parse(geoCallback)(scope);
+        });
+      }
+
+      //set observers
+      mapController.observeAttrSetObj(orgAttrs, attrs, shape);
+      element.bind('$destroy', function() {
+        mapController.deleteObject('shapes', shape);
+      });
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+      link: linkFunc
+     }; // return
+  };
+  shape.$inject = ['Attr2MapOptions', '$parse', 'NgMap'];
+
+  angular.module('ngMap').directive('shape', shape);
+
+})();
+
+/**
+ * @ngdoc directive
+ * @name streetview-panorama
+ * @param Attr2MapOptions {service} convert html attribute to Gogole map api options
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @attr container Optional, id or css selector, if given, streetview will be in the given html element
+ * @attr {String} &lt;StreetViewPanoramaOption>
+ *   [Any Google StreetViewPanorama options](https://developers.google.com/maps/documentation/javascript/reference?csw=1#StreetViewPanoramaOptions)
+ * @attr {String} &lt;StreetViewPanoramaEvent>
+ *   [Any Google StreetViewPanorama events](https://developers.google.com/maps/documentation/javascript/reference#StreetViewPanorama)
+ *
+ * @example
+ *   <map zoom="11" center="[40.688738,-74.043871]" >
+ *     <street-view-panorama
+ *       click-to-go="true"
+ *       disable-default-ui="true"
+ *       disable-double-click-zoom="true"
+ *       enable-close-button="true"
+ *       pano="my-pano"
+ *       position="40.688738,-74.043871"
+ *       pov="{heading:0, pitch: 90}"
+ *       scrollwheel="false"
+ *       visible="true">
+ *     </street-view-panorama>
+ *   </map>
+ */
+/* global google, document */
+(function() {
+  'use strict';
+
+  var streetViewPanorama = function(Attr2MapOptions, NgMap) {
+    var parser = Attr2MapOptions;
+
+    var getStreetViewPanorama = function(map, options, events) {
+      var svp, container;
+      if (options.container) {
+        container = document.getElementById(options.container);
+        container = container || document.querySelector(options.container);
+      }
+      if (container) {
+        svp = new google.maps.StreetViewPanorama(container, options);
+      } else {
+        svp = map.getStreetView();
+        svp.setOptions(options);
+      }
+
+      for (var eventName in events) {
+        eventName &&
+          google.maps.event.addListener(svp, eventName, events[eventName]);
+      }
+      return svp;
+    };
+
+    var linkFunc = function(scope, element, attrs) {
+      var filtered = parser.filter(attrs);
+      var options = parser.getOptions(filtered, {scope: scope});
+      var controlOptions = parser.getControlOptions(filtered);
+      var svpOptions = angular.extend(options, controlOptions);
+
+      var svpEvents = parser.getEvents(scope, filtered);
+      void 0;
+
+      NgMap.getMap().then(function(map) {
+        var svp = getStreetViewPanorama(map, svpOptions, svpEvents);
+
+        map.setStreetView(svp);
+        (!svp.getPosition()) && svp.setPosition(map.getCenter());
+        google.maps.event.addListener(svp, 'position_changed', function() {
+          if (svp.getPosition() !== map.getCenter()) {
+            map.setCenter(svp.getPosition());
+          }
+        });
+        //needed for geo-callback
+        var listener =
+          google.maps.event.addListener(map, 'center_changed', function() {
+            svp.setPosition(map.getCenter());
+            google.maps.event.removeListener(listener);
+          });
+      });
+
+    }; //link
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+      link: linkFunc
+    };
+
+  };
+  streetViewPanorama.$inject = ['Attr2MapOptions', 'NgMap'];
+
+  angular.module('ngMap').directive('streetViewPanorama', streetViewPanorama);
+})();
+
+/**
+ * @ngdoc directive
+ * @name traffic-layer
+ * @param Attr2MapOptions {service} convert html attribute to Gogole map api options
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *
+ *   <map zoom="13" center="34.04924594193164, -118.24104309082031">
+ *     <traffic-layer></traffic-layer>
+ *    </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('trafficLayer', [
+    'Attr2MapOptions', function(Attr2MapOptions) {
+    var parser = Attr2MapOptions;
+
+    var getLayer = function(options, events) {
+      var layer = new google.maps.TrafficLayer(options);
+      for (var eventName in events) {
+        google.maps.event.addListener(layer, eventName, events[eventName]);
+      }
+      return layer;
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var orgAttrs = parser.orgAttributes(element);
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var events = parser.getEvents(scope, filtered);
+        void 0;
+
+        var layer = getLayer(options, events);
+        mapController.addObject('trafficLayers', layer);
+        mapController.observeAttrSetObj(orgAttrs, attrs, layer);  //observers
+        element.bind('$destroy', function() {
+          mapController.deleteObject('trafficLayers', layer);
+        });
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc directive
+ * @name transit-layer
+ * @param Attr2MapOptions {service} convert html attribute to Gogole map api options
+ * @description
+ *   Requires:  map directive
+ *   Restrict To:  Element
+ *
+ * @example
+ * Example:
+ *
+ *  <map zoom="13" center="34.04924594193164, -118.24104309082031">
+ *    <transit-layer></transit-layer>
+ *  </map>
+ */
+(function() {
+  'use strict';
+
+  angular.module('ngMap').directive('transitLayer', [
+    'Attr2MapOptions', function(Attr2MapOptions) {
+    var parser = Attr2MapOptions;
+
+    var getLayer = function(options, events) {
+      var layer = new google.maps.TransitLayer(options);
+      for (var eventName in events) {
+        google.maps.event.addListener(layer, eventName, events[eventName]);
+      }
+      return layer;
+    };
+
+    return {
+      restrict: 'E',
+      require: ['?^map','?^ngMap'],
+
+      link: function(scope, element, attrs, mapController) {
+        mapController = mapController[0]||mapController[1];
+
+        var orgAttrs = parser.orgAttributes(element);
+        var filtered = parser.filter(attrs);
+        var options = parser.getOptions(filtered, {scope: scope});
+        var events = parser.getEvents(scope, filtered);
+        void 0;
+
+        var layer = getLayer(options, events);
+        mapController.addObject('transitLayers', layer);
+        mapController.observeAttrSetObj(orgAttrs, attrs, layer);  //observers
+        element.bind('$destroy', function() {
+          mapController.deleteObject('transitLayers', layer);
+        });
+      }
+     }; // return
+  }]);
+})();
+
+/**
+ * @ngdoc filter
+ * @name camel-case
+ * @description
+ *   Converts string to camel cased
+ */
+(function() {
+  'use strict';
+
+  var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
+  var MOZ_HACK_REGEXP = /^moz([A-Z])/;
+
+  var camelCaseFilter = function() {
+    return function(name) {
+      return name.
+        replace(SPECIAL_CHARS_REGEXP,
+          function(_, separator, letter, offset) {
+            return offset ? letter.toUpperCase() : letter;
+        }).
+        replace(MOZ_HACK_REGEXP, 'Moz$1');
+    };
+  };
+
+  angular.module('ngMap').filter('camelCase', camelCaseFilter);
+})();
+
+/**
+ * @ngdoc filter
+ * @name jsonize
+ * @description
+ *   Converts json-like string to json string
+ */
+(function() {
+  'use strict';
+
+  var jsonizeFilter = function() {
+    return function(str) {
+      try {       // if parsable already, return as it is
+        JSON.parse(str);
+        return str;
+      } catch(e) { // if not parsable, change little
+        return str
+          // wrap keys without quote with valid double quote
+          .replace(/([\$\w]+)\s*:/g,
+            function(_, $1) {
+              return '"'+$1+'":';
+            }
+          )
+          // replacing single quote wrapped ones to double quote
+          .replace(/'([^']+)'/g,
+            function(_, $1) {
+              return '"'+$1+'"';
+            }
+          );
+      }
+    };
+  };
+
+  angular.module('ngMap').filter('jsonize', jsonizeFilter);
+})();
+
+/**
+ * @ngdoc service
+ * @name Attr2MapOptions
+ * @description
+ *   Converts tag attributes to options used by google api v3 objects
+ */
+/* global google */
+(function() {
+  'use strict';
+
+  //i.e. "2015-08-12T06:12:40.858Z"
+  var isoDateRE =
+    /^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*)?)([zZ]|([+\-])(\d\d):?(\d\d))?$/;
+
+  var Attr2MapOptions = function(
+      $parse, $timeout, $log, NavigatorGeolocation, GeoCoder,
+      camelCaseFilter, jsonizeFilter
+    ) {
+
+    /**
+     * Returns the attributes of an element as hash
+     * @memberof Attr2MapOptions
+     * @param {HTMLElement} el html element
+     * @returns {Hash} attributes
+     */
+    var orgAttributes = function(el) {
+      (el.length > 0) && (el = el[0]);
+      var orgAttributes = {};
+      for (var i=0; i<el.attributes.length; i++) {
+        var attr = el.attributes[i];
+        orgAttributes[attr.name] = attr.value;
+      }
+      return orgAttributes;
+    };
+
+    var getJSON = function(input) {
+      var re =/^[\+\-]?[0-9\.]+,[ ]*\ ?[\+\-]?[0-9\.]+$/; //lat,lng
+      if (input.match(re)) {
+        input = "["+input+"]";
+      }
+      return JSON.parse(jsonizeFilter(input));
+    };
+
+    var getLatLng = function(input) {
+      var output = input;
+      if (input[0].constructor == Array) { // [[1,2],[3,4]]
+        output = input.map(function(el) {
+          return new google.maps.LatLng(el[0], el[1]);
+        });
+      } else if(!isNaN(parseFloat(input[0])) && isFinite(input[0])) {
+        output = new google.maps.LatLng(output[0], output[1]);
+      }
+      return output;
+    };
+
+    var toOptionValue = function(input, options) {
+      var output;
+      try { // 1. Number?
+        output = getNumber(input);
+      } catch(err) {
+        try { // 2. JSON?
+          var output = getJSON(input);
+          if (output instanceof Array) {
+            // [{a:1}] : not lat/lng ones
+            if (output[0].constructor == Object) {
+              output = output;
+            } else { // [[1,2],[3,4]] or [1,2]
+              output = getLatLng(output);
+            }
+          }
+          // JSON is an object (not array or null)
+          else if (output === Object(output)) {
+            // check for nested hashes and convert to Google API options
+            var newOptions = options;
+            newOptions.doNotConverStringToNumber = true;
+            output = getOptions(output, newOptions);
+          }
+        } catch(err2) {
+          // 3. Google Map Object function Expression. i.e. LatLng(80,-49)
+          if (input.match(/^[A-Z][a-zA-Z0-9]+\(.*\)$/)) {
+            try {
+              var exp = "new google.maps."+input;
+              output = eval(exp); /* jshint ignore:line */
+            } catch(e) {
+              output = input;
+            }
+          // 4. Google Map Object constant Expression. i.e. MayTypeId.HYBRID
+          } else if (input.match(/^([A-Z][a-zA-Z0-9]+)\.([A-Z]+)$/)) {
+            try {
+              var matches = input.match(/^([A-Z][a-zA-Z0-9]+)\.([A-Z]+)$/);
+              output = google.maps[matches[1]][matches[2]];
+            } catch(e) {
+              output = input;
+            }
+          // 5. Google Map Object constant Expression. i.e. HYBRID
+          } else if (input.match(/^[A-Z]+$/)) {
+            try {
+              var capitalizedKey = options.key.charAt(0).toUpperCase() +
+                options.key.slice(1);
+              if (options.key.match(/temperatureUnit|windSpeedUnit|labelColor/)) {
+                capitalizedKey = capitalizedKey.replace(/s$/,"");
+                output = google.maps.weather[capitalizedKey][input];
+              } else {
+                output = google.maps[capitalizedKey][input];
+              }
+            } catch(e) {
+              output = input;
+            }
+          // 6. Date Object as ISO String
+          } else if (input.match(isoDateRE)) {
+            try {
+              output = new Date(input);
+            } catch(e) {
+              output = input;
+            }
+          // 7. evaluate dynamically bound values
+          } else if (input.match(/^{/) && options.scope) {
+            try {
+              var expr = input.replace(/{{/,'').replace(/}}/g,'');
+              output = options.scope.$eval(expr);
+            } catch (err) {
+              output = input;
+            }
+          } else {
+            output = input;
+          }
+        } // catch(err2)
+      } // catch(err)
+
+      // convert output more for center and position
+      if (
+        (options.key == 'center' || options.key == 'position') &&
+        output instanceof Array
+      ) {
+        output = new google.maps.LatLng(output[0], output[1]);
+      }
+
+      // convert output more for shape bounds
+      if (options.key == 'bounds' && output instanceof Array) {
+        output = new google.maps.LatLngBounds(output[0], output[1]);
+      }
+
+      // convert output more for shape icons
+      if (options.key == 'icons' && output instanceof Array) {
+
+        for (var i=0; i<output.length; i++) {
+          var el = output[i];
+          if (el.icon.path.match(/^[A-Z_]+$/)) {
+            el.icon.path =  google.maps.SymbolPath[el.icon.path];
+          }
+        }
+      }
+
+      // convert output more for marker icon
+      if (options.key == 'icon' && output instanceof Object) {
+        if ((""+output.path).match(/^[A-Z_]+$/)) {
+          output.path = google.maps.SymbolPath[output.path];
+        }
+        for (var key in output) { //jshint ignore:line
+          var arr = output[key];
+          if (key == "anchor" || key == "origin" || key == "labelOrigin") {
+            output[key] = new google.maps.Point(arr[0], arr[1]);
+          } else if (key == "size" || key == "scaledSize") {
+            output[key] = new google.maps.Size(arr[0], arr[1]);
+          }
+        }
+      }
+
+      return output;
+    };
+
+    var getAttrsToObserve = function(attrs) {
+      var attrsToObserve = [];
+
+      if (!attrs.noWatcher) {
+        for (var attrName in attrs) { //jshint ignore:line
+          var attrValue = attrs[attrName];
+          if (attrValue && attrValue.match(/\{\{.*\}\}/)) { // if attr value is {{..}}
+            attrsToObserve.push(camelCaseFilter(attrName));
+          }
+        }
+      }
+
+      return attrsToObserve;
+    };
+
+    /**
+     * filters attributes by skipping angularjs methods $.. $$..
+     * @memberof Attr2MapOptions
+     * @param {Hash} attrs tag attributes
+     * @returns {Hash} filterd attributes
+     */
+    var filter = function(attrs) {
+      var options = {};
+      for(var key in attrs) {
+        if (key.match(/^\$/) || key.match(/^ng[A-Z]/)) {
+          void(0);
+        } else {
+          options[key] = attrs[key];
+        }
+      }
+      return options;
+    };
+
+    /**
+     * converts attributes hash to Google Maps API v3 options
+     * ```
+     *  . converts numbers to number
+     *  . converts class-like string to google maps instance
+     *    i.e. `LatLng(1,1)` to `new google.maps.LatLng(1,1)`
+     *  . converts constant-like string to google maps constant
+     *    i.e. `MapTypeId.HYBRID` to `google.maps.MapTypeId.HYBRID`
+     *    i.e. `HYBRID"` to `google.maps.MapTypeId.HYBRID`
+     * ```
+     * @memberof Attr2MapOptions
+     * @param {Hash} attrs tag attributes
+     * @param {Hash} options
+     * @returns {Hash} options converted attributess
+     */
+    var getOptions = function(attrs, params) {
+      params = params || {};
+      var options = {};
+      for(var key in attrs) {
+        if (attrs[key] || attrs[key] === 0) {
+          if (key.match(/^on[A-Z]/)) { //skip events, i.e. on-click
+            continue;
+          } else if (key.match(/ControlOptions$/)) { // skip controlOptions
+            continue;
+          } else {
+            // nested conversions need to be typechecked
+            // (non-strings are fully converted)
+            if (typeof attrs[key] !== 'string') {
+              options[key] = attrs[key];
+            } else {
+              if (params.doNotConverStringToNumber &&
+                attrs[key].match(/^[0-9]+$/)
+              ) {
+                options[key] = attrs[key];
+              } else {
+                options[key] = toOptionValue(attrs[key], {key: key, scope: params.scope});
+              }
+            }
+          }
+        } // if (attrs[key])
+      } // for(var key in attrs)
+      return options;
+    };
+
+    /**
+     * converts attributes hash to scope-specific event function 
+     * @memberof Attr2MapOptions
+     * @param {scope} scope angularjs scope
+     * @param {Hash} attrs tag attributes
+     * @returns {Hash} events converted events
+     */
+    var getEvents = function(scope, attrs) {
+      var events = {};
+      var toLowercaseFunc = function($1){
+        return "_"+$1.toLowerCase();
+      };
+      var EventFunc = function(attrValue) {
+        // funcName(argsStr)
+        var matches = attrValue.match(/([^\(]+)\(([^\)]*)\)/);
+        var funcName = matches[1];
+        var argsStr = matches[2].replace(/event[ ,]*/,'');  //remove string 'event'
+        var argsExpr = $parse("["+argsStr+"]"); //for perf when triggering event
+        return function(event) {
+          var args = argsExpr(scope); //get args here to pass updated model values
+          function index(obj,i) {return obj[i];}
+          var f = funcName.split('.').reduce(index, scope);
+          f && f.apply(this, [event].concat(args));
+          $timeout( function() {
+            scope.$apply();
+          });
+        };
+      };
+
+      for(var key in attrs) {
+        if (attrs[key]) {
+          if (!key.match(/^on[A-Z]/)) { //skip if not events
+            continue;
+          }
+
+          //get event name as underscored. i.e. zoom_changed
+          var eventName = key.replace(/^on/,'');
+          eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
+          eventName = eventName.replace(/([A-Z])/g, toLowercaseFunc);
+
+          var attrValue = attrs[key];
+          events[eventName] = new EventFunc(attrValue);
+        }
+      }
+      return events;
+    };
+
+    /**
+     * control means map controls, i.e streetview, pan, etc, not a general control
+     * @memberof Attr2MapOptions
+     * @param {Hash} filtered filtered tag attributes
+     * @returns {Hash} Google Map options
+     */
+    var getControlOptions = function(filtered) {
+      var controlOptions = {};
+      if (typeof filtered != 'object') {
+        return false;
+      }
+
+      for (var attr in filtered) {
+        if (filtered[attr]) {
+          if (!attr.match(/(.*)ControlOptions$/)) {
+            continue; // if not controlOptions, skip it
+          }
+
+          //change invalid json to valid one, i.e. {foo:1} to {"foo": 1}
+          var orgValue = filtered[attr];
+          var newValue = orgValue.replace(/'/g, '"');
+          newValue = newValue.replace(/([^"]+)|("[^"]+")/g, function($0, $1, $2) {
+            if ($1) {
+              return $1.replace(/([a-zA-Z0-9]+?):/g, '"$1":');
+            } else {
+              return $2;
+            }
+          });
+          try {
+            var options = JSON.parse(newValue);
+            for (var key in options) { //assign the right values
+              if (options[key]) {
+                var value = options[key];
+                if (typeof value === 'string') {
+                  value = value.toUpperCase();
+                } else if (key === "mapTypeIds") {
+                  value = value.map( function(str) {
+                    if (str.match(/^[A-Z]+$/)) { // if constant
+                      return google.maps.MapTypeId[str.toUpperCase()];
+                    } else { // else, custom map-type
+                      return str;
+                    }
+                  });
+                }
+
+                if (key === "style") {
+                  var str = attr.charAt(0).toUpperCase() + attr.slice(1);
+                  var objName = str.replace(/Options$/,'')+"Style";
+                  options[key] = google.maps[objName][value];
+                } else if (key === "position") {
+                  options[key] = google.maps.ControlPosition[value];
+                } else {
+                  options[key] = value;
+                }
+              }
+            }
+            controlOptions[attr] = options;
+          } catch (e) {
+            void 0;
+          }
+        }
+      } // for
+
+      return controlOptions;
+    };
+
+    return {
+      filter: filter,
+      getOptions: getOptions,
+      getEvents: getEvents,
+      getControlOptions: getControlOptions,
+      toOptionValue: toOptionValue,
+      getAttrsToObserve: getAttrsToObserve,
+      orgAttributes: orgAttributes
+    }; // return
+
+  };
+  Attr2MapOptions.$inject= [
+    '$parse', '$timeout', '$log', 'NavigatorGeolocation', 'GeoCoder',
+    'camelCaseFilter', 'jsonizeFilter'
+  ];
+
+  angular.module('ngMap').service('Attr2MapOptions', Attr2MapOptions);
+})();
+
+/**
+ * @ngdoc service
+ * @name GeoCoder
+ * @description
+ *   Provides [defered/promise API](https://docs.angularjs.org/api/ng/service/$q)
+ *   service for Google Geocoder service
+ */
+(function() {
+  'use strict';
+  var $q;
+  /**
+   * @memberof GeoCoder
+   * @param {Hash} options
+   *   https://developers.google.com/maps/documentation/geocoding/#geocoding
+   * @example
+   * ```
+   *   GeoCoder.geocode({address: 'the cn tower'}).then(function(result) {
+   *     //... do something with result
+   *   });
+   * ```
+   * @returns {HttpPromise} Future object
+   */
+  var geocodeFunc = function(options) {
+    var deferred = $q.defer();
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode(options, function (results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        deferred.resolve(results);
+      } else {
+        deferred.reject(status);
+      }
+    });
+    return deferred.promise;
+  };
+
+  var GeoCoder = function(_$q_) {
+    $q = _$q_;
+    return {
+      geocode : geocodeFunc
+    };
+  };
+  GeoCoder.$inject = ['$q'];
+
+  angular.module('ngMap').service('GeoCoder', GeoCoder);
+})();
+
+/**
+ * @ngdoc service
+ * @name NavigatorGeolocation
+ * @description
+ *  Provides [defered/promise API](https://docs.angularjs.org/api/ng/service/$q)
+ *  service for navigator.geolocation methods
+ */
+/* global google */
+(function() {
+  'use strict';
+  var $q;
+
+  /**
+   * @memberof NavigatorGeolocation
+   * @param {Object} geoLocationOptions the navigator geolocations options.
+   *  i.e. { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true }.
+   *  If none specified, { timeout: 5000 }. 
+   *  If timeout not specified, timeout: 5000 added
+   * @param {function} success success callback function
+   * @param {function} failure failure callback function
+   * @example
+   * ```
+   *  NavigatorGeolocation.getCurrentPosition()
+   *    .then(function(position) {
+   *      var lat = position.coords.latitude, lng = position.coords.longitude;
+   *      .. do something lat and lng
+   *    });
+   * ```
+   * @returns {HttpPromise} Future object
+   */
+  var getCurrentPosition = function(geoLocationOptions) {
+    var deferred = $q.defer();
+    if (navigator.geolocation) {
+
+      if (geoLocationOptions === undefined) {
+        geoLocationOptions = { timeout: 5000 };
+      }
+      else if (geoLocationOptions.timeout === undefined) {
+        geoLocationOptions.timeout = 5000;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          deferred.resolve(position);
+        }, function(evt) {
+          void 0;
+          deferred.reject(evt);
+        },
+        geoLocationOptions
+      );
+    } else {
+      deferred.reject("Browser Geolocation service failed.");
+    }
+    return deferred.promise;
+  };
+
+  var NavigatorGeolocation = function(_$q_) {
+    $q = _$q_;
+    return {
+      getCurrentPosition: getCurrentPosition
+    };
+  };
+  NavigatorGeolocation.$inject = ['$q'];
+
+  angular.module('ngMap').
+    service('NavigatorGeolocation', NavigatorGeolocation);
+})();
+
+/**
+ * @ngdoc factory
+ * @name NgMapPool
+ * @description
+ *   Provide map instance to avoid memory leak
+ */
+(function() {
+  'use strict';
+  /**
+   * @memberof NgMapPool
+   * @desc map instance pool
+   */
+  var mapInstances = [];
+  var $window, $document, $timeout;
+
+  var add = function(el) {
+    var mapDiv = $document.createElement("div");
+    mapDiv.style.width = "100%";
+    mapDiv.style.height = "100%";
+    el.appendChild(mapDiv);
+    var map = new $window.google.maps.Map(mapDiv, {});
+    mapInstances.push(map);
+    return map;
+  };
+
+  var findById = function(el, id) {
+    var notInUseMap;
+    for (var i=0; i<mapInstances.length; i++) {
+      var map = mapInstances[i];
+      if (map.id == id && !map.inUse) {
+        var mapDiv = map.getDiv();
+        el.appendChild(mapDiv);
+        notInUseMap = map;
+        break;
+      }
+    }
+    return notInUseMap;
+  };
+
+  var findUnused = function(el) { //jshint ignore:line
+    var notInUseMap;
+    for (var i=0; i<mapInstances.length; i++) {
+      var map = mapInstances[i];
+      if (map.id) {
+        continue;
+      }
+      if (!map.inUse) {
+        var mapDiv = map.getDiv();
+        el.appendChild(mapDiv);
+        notInUseMap = map;
+        break;
+      }
+    }
+    return notInUseMap;
+  };
+
+  /**
+   * @memberof NgMapPool
+   * @function getMapInstance
+   * @param {HtmlElement} el map container element
+   * @return map instance for the given element
+   */
+  var getMapInstance = function(el) {
+    var map = findById(el, el.id) || findUnused(el);
+    if (!map) {
+      map = add(el);
+    } else {
+      /* firing map idle event, which is used by map controller */
+      $timeout(function() {
+        google.maps.event.trigger(map, 'idle');
+      }, 100);
+    }
+    map.inUse = true;
+    return map;
+  };
+
+  /**
+   * @memberof NgMapPool
+   * @function returnMapInstance
+   * @param {Map} an instance of google.maps.Map
+   * @desc sets the flag inUse of the given map instance to false, so that it 
+   * can be reused later
+   */
+  var returnMapInstance = function(map) {
+    map.inUse = false;
+  };
+  
+  /**
+   * @memberof NgMapPool
+   * @function resetMapInstances
+   * @desc resets mapInstance array
+   */
+  var resetMapInstances = function() {
+    for(var i = 0;i < mapInstances.length;i++) {
+        mapInstances[i] = null;
+    }
+    mapInstances = [];
+  };
+
+  var NgMapPool = function(_$document_, _$window_, _$timeout_) {
+    $document = _$document_[0], $window = _$window_, $timeout = _$timeout_;
+
+    return {
+	  mapInstances: mapInstances,
+      resetMapInstances: resetMapInstances,
+      getMapInstance: getMapInstance,
+      returnMapInstance: returnMapInstance
+    };
+  };
+  NgMapPool.$inject = [ '$document', '$window', '$timeout'];
+
+  angular.module('ngMap').factory('NgMapPool', NgMapPool);
+
+})();
+
+/**
+ * @ngdoc provider
+ * @name NgMap
+ * @description
+ *  common utility service for ng-map
+ */
+(function() {
+  'use strict';
+  var $window, $document, $q;
+  var NavigatorGeolocation, Attr2MapOptions, GeoCoder, camelCaseFilter;
+
+  var mapControllers = {};
+
+  var getStyle = function(el, styleProp) {
+    var y;
+    if (el.currentStyle) {
+      y = el.currentStyle[styleProp];
+    } else if ($window.getComputedStyle) {
+      y = $document.defaultView.
+        getComputedStyle(el, null).
+        getPropertyValue(styleProp);
+    }
+    return y;
+  };
+
+  /**
+   * @memberof NgMap
+   * @function initMap
+   * @param id optional, id of the map. default 0
+   */
+  var initMap = function(id) {
+    var ctrl = mapControllers[id || 0];
+    if (!(ctrl.map instanceof google.maps.Map)) {
+      ctrl.initializeMap();
+      return ctrl.map;
+    } else {
+      void 0;
+    }
+  };
+
+  /**
+   * @memberof NgMap
+   * @function getMap
+   * @param {String} optional, id e.g., 'foo'
+   * @returns promise
+   */
+  var getMap = function(id) {
+    id = typeof id === 'object' ? id.id : id;
+    id = id || 0;
+
+    var deferred = $q.defer();
+    var timeout = 2000;
+
+    function waitForMap(timeElapsed){
+      if(mapControllers[id]){
+        deferred.resolve(mapControllers[id].map);
+      } else if (timeElapsed > timeout) {
+        deferred.reject('could not find map');
+      } else {
+        $window.setTimeout( function(){
+          waitForMap(timeElapsed+100);
+        }, 100);
+      }
+    }
+    waitForMap(0);
+
+    return deferred.promise;
+  };
+
+  /**
+   * @memberof NgMap
+   * @function addMap
+   * @param mapController {__MapContoller} a map controller
+   * @returns promise
+   */
+  var addMap = function(mapCtrl) {
+    if (mapCtrl.map) {
+      var len = Object.keys(mapControllers).length;
+      mapControllers[mapCtrl.map.id || len] = mapCtrl;
+    }
+  };
+
+  /**
+   * @memberof NgMap
+   * @function deleteMap
+   * @param mapController {__MapContoller} a map controller
+   */
+  var deleteMap = function(mapCtrl) {
+    var len = Object.keys(mapControllers).length - 1;
+    var mapId = mapCtrl.map.id || len;
+    if (mapCtrl.map) {
+      for (var eventName in mapCtrl.eventListeners) {
+        void 0;
+        var listener = mapCtrl.eventListeners[eventName];
+        google.maps.event.removeListener(listener);
+      }
+      if (mapCtrl.map.controls) {
+        mapCtrl.map.controls.forEach(function(ctrl) {
+          ctrl.clear();
+        });
+      }
+    }
+
+    //Remove Heatmap Layers
+    if (mapCtrl.map.heatmapLayers) {
+      Object.keys(mapCtrl.map.heatmapLayers).forEach(function (layer) {
+        mapCtrl.deleteObject('heatmapLayers', mapCtrl.map.heatmapLayers[layer]);
+      });
+    }
+
+    delete mapControllers[mapId];
+  };
+
+  /**
+   * @memberof NgMap
+   * @function getGeoLocation
+   * @param {String} address
+   * @param {Hash} options geo options
+   * @returns promise
+   */
+  var getGeoLocation = function(string, options) {
+    var deferred = $q.defer();
+    if (!string || string.match(/^current/i)) { // current location
+      NavigatorGeolocation.getCurrentPosition(options).then(
+        function(position) {
+          var lat = position.coords.latitude;
+          var lng = position.coords.longitude;
+          var latLng = new google.maps.LatLng(lat,lng);
+          deferred.resolve(latLng);
+        },
+        function(error) {
+          deferred.reject(error);
+        }
+      );
+    } else {
+      GeoCoder.geocode({address: string}).then(
+        function(results) {
+          deferred.resolve(results[0].geometry.location);
+        },
+        function(error) {
+          deferred.reject(error);
+        }
+      );
+      // var geocoder = new google.maps.Geocoder();
+      // geocoder.geocode(options, function (results, status) {
+      //   if (status == google.maps.GeocoderStatus.OK) {
+      //     deferred.resolve(results);
+      //   } else {
+      //     deferred.reject(status);
+      //   }
+      // });
+    }
+
+    return deferred.promise;
+  };
+
+  /**
+   * @memberof NgMap
+   * @function observeAndSet
+   * @param {String} attrName attribute name
+   * @param {Object} object A Google maps object to be changed
+   * @returns attribue observe function
+   */
+  var observeAndSet = function(attrName, object) {
+    void 0;
+    return function(val) {
+      if (val) {
+        var setMethod = camelCaseFilter('set-'+attrName);
+        var optionValue = Attr2MapOptions.toOptionValue(val, {key: attrName});
+        if (object[setMethod]) { //if set method does exist
+          void 0;
+          /* if an location is being observed */
+          if (attrName.match(/center|position/) &&
+            typeof optionValue == 'string') {
+            getGeoLocation(optionValue).then(function(latlng) {
+              object[setMethod](latlng);
+            });
+          } else {
+            object[setMethod](optionValue);
+          }
+        }
+      }
+    };
+  };
+
+  /**
+   * @memberof NgMap
+   * @function setStyle
+   * @param {HtmlElement} map contriner element
+   * @desc set display, width, height of map container element
+   */
+  var setStyle = function(el) {
+    //if style is not given to the map element, set display and height
+    var defaultStyle = el.getAttribute('default-style');
+    if (defaultStyle == "true") {
+      el.style.display = 'block';
+      el.style.height = '300px';
+    } else {
+      if (getStyle(el, 'display') != "block") {
+        el.style.display = 'block';
+      }
+      if (getStyle(el, 'height').match(/^(0|auto)/)) {
+        el.style.height = '300px';
+      }
+    }
+  };
+
+  angular.module('ngMap').provider('NgMap', function() {
+    var defaultOptions = {};
+
+    /**
+     * @memberof NgMap
+     * @function setDefaultOptions
+     * @param {Hash} options
+     * @example
+     *  app.config(function(NgMapProvider) {
+     *    NgMapProvider.setDefaultOptions({
+     *      marker: {
+     *        optimized: false
+     *      }
+     *    });
+     *  });
+     */
+    this.setDefaultOptions = function(options) {
+      defaultOptions = options;
+    };
+
+    var NgMap = function(
+        _$window_, _$document_, _$q_,
+        _NavigatorGeolocation_, _Attr2MapOptions_,
+        _GeoCoder_, _camelCaseFilter_
+      ) {
+      $window = _$window_;
+      $document = _$document_[0];
+      $q = _$q_;
+      NavigatorGeolocation = _NavigatorGeolocation_;
+      Attr2MapOptions = _Attr2MapOptions_;
+      GeoCoder = _GeoCoder_;
+      camelCaseFilter = _camelCaseFilter_;
+
+      return {
+        defaultOptions: defaultOptions,
+        addMap: addMap,
+        deleteMap: deleteMap,
+        getMap: getMap,
+        initMap: initMap,
+        setStyle: setStyle,
+        getGeoLocation: getGeoLocation,
+        observeAndSet: observeAndSet
+      };
+    };
+    NgMap.$inject = [
+      '$window', '$document', '$q',
+      'NavigatorGeolocation', 'Attr2MapOptions',
+      'GeoCoder', 'camelCaseFilter'
+    ];
+
+    this.$get = NgMap;
+  });
+})();
+
+/**
+ * @ngdoc service
+ * @name StreetView
+ * @description
+ *  Provides [defered/promise API](https://docs.angularjs.org/api/ng/service/$q)
+ *  service for [Google StreetViewService]
+ *  (https://developers.google.com/maps/documentation/javascript/streetview)
+ */
+(function() {
+  'use strict';
+  var $q;
+
+  /**
+   * Retrieves panorama id from the given map (and or position)
+   * @memberof StreetView
+   * @param {map} map Google map instance
+   * @param {LatLng} latlng Google LatLng instance
+   *   default: the center of the map
+   * @example
+   *   StreetView.getPanorama(map).then(function(panoId) {
+   *     $scope.panoId = panoId;
+   *   });
+   * @returns {HttpPromise} Future object
+   */
+  var getPanorama = function(map, latlng) {
+    latlng = latlng || map.getCenter();
+    var deferred = $q.defer();
+    var svs = new google.maps.StreetViewService();
+    svs.getPanoramaByLocation( (latlng||map.getCenter), 100,
+      function (data, status) {
+        // if streetView available
+        if (status === google.maps.StreetViewStatus.OK) {
+          deferred.resolve(data.location.pano);
+        } else {
+          // no street view available in this range, or some error occurred
+          deferred.resolve(false);
+          //deferred.reject('Geocoder failed due to: '+ status);
+        }
+      }
+    );
+    return deferred.promise;
+  };
+
+  /**
+   * Set panorama view on the given map with the panorama id
+   * @memberof StreetView
+   * @param {map} map Google map instance
+   * @param {String} panoId Panorama id fro getPanorama method
+   * @example
+   *   StreetView.setPanorama(map, panoId);
+   */
+  var setPanorama = function(map, panoId) {
+    var svp = new google.maps.StreetViewPanorama(
+      map.getDiv(), {enableCloseButton: true}
+    );
+    svp.setPano(panoId);
+  };
+
+  var StreetView = function(_$q_) {
+    $q = _$q_;
+
+    return {
+      getPanorama: getPanorama,
+      setPanorama: setPanorama
+    };
+  };
+  StreetView.$inject = ['$q'];
+
+  angular.module('ngMap').service('StreetView', StreetView);
+})();
+
+return 'ngMap';
+}));
 /*!
  * ngCordova
  * v0.1.27-alpha

@@ -18,7 +18,8 @@
     "robotodraft": "^1.1.0",
     "angular-translate": "^2.14.0",
     "angular-translate-loader-static-files": "^2.14.0",
-    "angular-sails": "^1.1.4"
+    "angular-sails": "^1.1.4",
+    "ngmap": "^1.17.8"
   },
   "resolutions": {
     "angular": "1.5.3",

@@ -1,10 +1,21 @@
-<ion-view view-title="Usuarios">
+<ion-view view-title="Usuarios" class="users">
   <ion-content>
-      <div id="map_canvas" data-tap-disabled="true"></div>
+      <ng-map center="current-position" id="map_canvas" zoom="15">
+                     <custom-marker ng-repeat="p in groups track by $index"
+      id="custom-marker-{{$index}}"
+      on-click="gotoGroup('{{p.id}}')"
+      position="{{p.location[1]}},{{p.location[0]}}">
+      <div>
+        position {{p.description}}: {{p.location[1]}}, {{p.location[0]}}
+      </div>
+    </custom-marker>
+      </ng-map>
+      <!--<ngmap id="map_canvas" data-tap-disabled="true"></div>-->
     <ion-list>
-      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="user in users | filter: {id:'!'+$root.user.id}" type="item-text-wrap" href="#/app/users/{{user.id}}">
-        <h2>{{user.name}}</h2>
-        <p>{{user.email}}</p>
+      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="group in groups" type="item-text-wrap" href="#/app/users/{{group.id}}">
+        <h2>{{group.description}}</h2>
+        <p>{{group.location}}</p>
+        <p>{{group.users}}</p>
         <i class="icon ion-chevron-right icon-accessory"></i>
       </ion-item>
     </ion-list>

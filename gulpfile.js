@@ -49,7 +49,8 @@ var bower = {
 //        'bower_components/sails.io-client/dist/socket.io.js',
         'bower_components/angular-sails/dist/angular-sails.js',
         'bower_components/ionic-material/dist/ionic.material.min.js',
-        'www/lib/ionic.cloud.min.js',
+        'bower_components/ngmap/build/scripts/ng-map.js',
+//        'www/lib/ionic.cloud.min.js',
 //    'bower_components/angular-directive.g-signin/google-plus-signin.js',
 
         'www/js/ng-cordova.min.js',

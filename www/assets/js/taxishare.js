@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-app = angular.module('starter', ['ionic',  'ionic-material', 'trans','starter.users', 'starter.chat', 'ngCordova', 'ngSails',  'constants.server', 'directive.g+signin']);
+app = angular.module('starter', ['ionic', 'ionic-material', 'trans','ngMap', 'starter.users', 'starter.chat', 'starter.groups', 'ngCordova', 'ngSails', 'constants.server', 'directive.g+signin']);
 
 app.run(function ($ionicPlatform) {
     $ionicPlatform.ready(function () {
@@ -304,45 +304,23 @@ app.controller('UserDetailCtrl', function ($scope, $ionicScrollDelegate, $timeou
     };
     _loadUser();
 })
-app.controller('UsersCtrl', function ($rootScope,$ionicNavBarDelegate, $scope, $cordovaGeolocation, Users) {
-    $scope.loadUsers = function () {
+app.controller('UsersCtrl', function ($rootScope,$state, $ionicNavBarDelegate, $scope, $cordovaGeolocation, Groups) {
+    _loadGroups = function () {
         $ionicNavBarDelegate.showBackButton(true);
-        $scope.users = [];
+        $scope.groups = [];
         $cordovaGeolocation.getCurrentPosition().then(function (pos) {
-            var latLng = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-            console.log($rootScope);
-            var mapOptions = {
-                center: latLng,
-                zoom: 15,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            };
-
-            $scope.map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-
-            Users.getNear({lat: pos.coords.latitude, lng: pos.coords.longitude}).$promise.then(function (results) {
-                results.forEach(function (user) {
-                    user=user.obj;
-                    if (user._id != $rootScope.user.id) {
-                        $scope.users.push(user);
-                        var marker = new google.maps.Marker({
-                            position: {lat: user.location[1], lng: user.location[0]},
-                            label: user.name,
-                            map: $scope.map,
-                            url: '#/app/users/' + user.id
-                        });
-                        google.maps.event.addListener(marker, 'click', function () {
-                            window.location.href = this.url;
-                        });
-                    }
-                });
+            $scope.location = pos;
+            Groups.getNear({lat: pos.coords.latitude, lng: pos.coords.longitude}).$promise.then(function (results) {
+                $scope.groups = results;
             });
         });
     };
-    $scope.remove = function (user) {
-        console.debug(user);
-        return user.$delete().then($scope.loadUsers);
-    };
-    $scope.loadUsers();
+    $scope.gotoGroup=function(event,group){
+        // TODO: Meter al usuario en el grupo 
+        // TODO: Generar vista de usuario
+        $state.go('app.users-detail',{userId:group});
+    }
+    _loadGroups();
 });
 'use strict';
 
@@ -441,6 +419,26 @@ angular.module('starter.chat', ['ngResource', 'constants.server'])
             }
         ])
         ;
+angular.module('starter.groups', ['ngResource', 'constants.server'])
+        .factory('Groups', [
+            '$resource', 'server', function ($resource, server) {
+                return $resource('http://' + server.host() + ':' + server.port + '/group/', {
+                    id: '@id',
+                    description: '@description',
+                }, {
+                    'update': {
+                        method: 'PUT',
+                        url: 'http://' + server.host() + ':' + server.port + '/group/:id',
+                    },
+                    getNear: {
+                        method: 'get',
+                        url: 'http://' + server.host() + ':' + server.port + '/group/near/',
+                        params: {lat: '@lat', lng: '@lng'},
+                        isArray: true
+                    },
+                });
+            }
+        ]);
 angular.module('starter.users', ['ngResource', 'constants.server'])
         .factory('Users', [
             '$resource', 'server', function ($resource, server) {
