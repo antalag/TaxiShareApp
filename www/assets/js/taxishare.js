@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-app = angular.module('starter', ['ionic', 'ionic-material', 'trans','ngMap', 'starter.users', 'starter.chat', 'starter.groups', 'ngCordova', 'ngSails', 'constants.server', 'directive.g+signin']);
+app = angular.module('starter', ['ionic', 'ionic-material','monospaced.elastic', 'trans', 'ngMap', 'starter.users', 'starter.chat', 'starter.groups', 'ngCordova', 'ngSails', 'constants.server', 'directive.g+signin','emojiApp','ngSanitize']);
 
 app.run(function ($ionicPlatform) {
     $ionicPlatform.ready(function () {
@@ -26,8 +26,8 @@ app.run(function ($ionicPlatform) {
                 $sailsProvider.url = 'http://localhost:1337/';
                 $sailsProvider.useCORSRouteToGetCookie = true;
             }])
-        .config(function ($stateProvider, $urlRouterProvider) {
-
+        .config(function ($stateProvider, $urlRouterProvider,$ionicConfigProvider) {
+            $ionicConfigProvider.views.maxCache(0);
             // Ionic uses AngularUI Router which uses the concept of states
             // Learn more here: https://github.com/angular-ui/ui-router
             // Set up the various states which the app can be in.
@@ -64,6 +64,15 @@ app.run(function ($ionicPlatform) {
                             'menuContent': {
                                 templateUrl: 'templates/users.html',
                                 controller: 'UsersCtrl'
+                            }
+                        }
+                    })
+                    .state('app.group', {
+                        url: '/group/:groupId',
+                        views: {
+                            'menuContent': {
+                                templateUrl: 'templates/group.html',
+                                controller: 'GroupCtrl'
                             }
                         }
                     })
@@ -120,12 +129,12 @@ app.controller('AccountCtrl', function ($scope) {
     };
 });
 
-app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat, $translate, messageFormatter, $state, $cordovaGeolocation, Users) {
+app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope, Chat, $translate, messageFormatter, $state, $cordovaGeolocation, Users) {
     _initController = function () {
         $rootScope.mensajeria = {};
         $rootScope.mensajeria.messageLog = [];
         $rootScope.mensajeria.newMessage = 0;
-        $rootScope.mensajeria.message = '';
+        $rootScope.mensajeria.message = {};
         if (!window.localStorage.userTaxi && !$rootScope.user) {
             $state.go('login');
         } else if (!$rootScope.user) {
@@ -135,9 +144,12 @@ app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat
 //            }).then(function (t) {
 //                console.log('Token saved:', t.token);
 //            });
-            $rootScope.user = Users.get({id: localStorage.userTaxi}, function () {
+            $rootScope.user = Users.get({id: localStorage.userTaxi}, function (res) {
                 _updatePosition();
                 _initListen();
+            },function(error){
+                localStorage.removeItem('userTaxi');
+                $state.go('login')
             });
         } else {
             _initListen();
@@ -153,21 +165,30 @@ app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat
         });
     }
     _initListen = function () {
-        Chat.getUser({user:$rootScope.user.email}, function (result) {
-            angular.forEach(result,function(msg){
-                $rootScope.mensajeria.messageLog.push(messageFormatter(msg));
-            });
-            $sails.get('/chat/addconv');
-            $sails.on("chat", function (message) {
-                console.log(message);
-                if (message.verb === "created") {
+        if ($rootScope.user.group) {
+        console.log($rootScope.user.group);
+            Chat.getGroup({group: $rootScope.user.group.id}, function (result) {
+                angular.forEach(result, function (msg) {
+                    $rootScope.mensajeria.messageLog.push(messageFormatter(msg));
+                    $rootScope.$broadcast('mensajes.cargados');
+                });
+                $sails.get('/chat/connect', {group: $rootScope.user.group.id});
+                $sails.on($rootScope.user.group.id, function (message) {
+                    console.log(message);
+                    if (message.verb === "created") {
+                        $rootScope.newMessage += 1;
+                        $rootScope.mensajeria.messageLog.push(messageFormatter(
+                                new Date(), message.data.from,
+                                message.data.message, message.data.to));
+                    }
+                });
+                $sails.on('chat', function (message) {
                     $rootScope.newMessage += 1;
-                    $rootScope.mensajeria.messageLog.push(messageFormatter(
-                            new Date(), message.data.from,
-                            message.data.message));
-                }
+                    $rootScope.mensajeria.messageLog.push(messageFormatter(message));
+                    $rootScope.$broadcast('nuevo.mensaje.chat');
+                });
             });
-        });
+        }
 //        chatSocket.on('broadcast:' + $rootScope.user.email, function (data) {
 //            if (!data.payload) {
 //                $log.error('invalid message',
@@ -216,6 +237,30 @@ app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat
 app.controller('DashCtrl', function ($scope, $rootScope) {
     
 });
+app.controller('GroupCtrl', function ($scope, $ionicScrollDelegate, $timeout, $stateParams, $sails, Groups, $rootScope) {
+    _loadUser = function () {
+            Groups.get({id: $stateParams.groupId}).$promise.then(function (group) {
+                $scope.group = group;
+                $rootScope.user.group=group;
+                $timeout(function () {
+                    $ionicScrollDelegate.scrollBottom();
+                },100);
+            });
+//            $scope.message={}
+            $rootScope.mensajeria.message=''
+    }
+    $scope.$on('mensajes.cargados',function(){
+        $ionicScrollDelegate.scrollBottom();
+    })
+    $scope.$on('nuevo.mensaje.chat',function(){
+        $ionicScrollDelegate.scrollBottom(true);
+    })
+    $scope.sendMessage = function (message, to) {
+        $sails.post('/chat/addconv/', {from: $rootScope.user.id, message: $rootScope.mensajeria.message, to: $scope.group.id});
+        $rootScope.mensajeria.message=''
+    };
+    _loadUser();
+})
 
 app.controller('loginCtrl', function ($scope, $rootScope, Users, $state, $ionicPopup, $cordovaGooglePlus, server) {
     $scope.data = {email: '', password: '', hostname: server.hostname}
@@ -304,21 +349,118 @@ app.controller('UserDetailCtrl', function ($scope, $ionicScrollDelegate, $timeou
     };
     _loadUser();
 })
-app.controller('UsersCtrl', function ($rootScope,$state, $ionicNavBarDelegate, $scope, $cordovaGeolocation, Groups) {
+app.controller('UsersCtrl', function ($rootScope, $state,$sails, Users, $ionicNavBarDelegate,Chat,messageFormatter, $ionicPopup, $translate, $scope, $cordovaGeolocation, Groups) {
     _loadGroups = function () {
         $ionicNavBarDelegate.showBackButton(true);
         $scope.groups = [];
+        $scope.join = $translate.instant('join_text')
+        $scope.newgroup={}
         $cordovaGeolocation.getCurrentPosition().then(function (pos) {
-            $scope.location = pos;
+            $scope.location = pos.coords.latitude+','+ pos.coords.longitude;
             Groups.getNear({lat: pos.coords.latitude, lng: pos.coords.longitude}).$promise.then(function (results) {
                 $scope.groups = results;
             });
+        },function(err){
+            var pos = {coords:{latitude:37.3962732,longitude:-5.9686537}};
+            $scope.location = '37.3962732,-5.9686537';
+            Groups.getNear({lat: pos.coords.latitude, lng: pos.coords.longitude}).$promise.then(function (results) {
+                $scope.groups = results;
+            });
+            console.log(err);
         });
     };
-    $scope.gotoGroup=function(event,group){
+    $scope.gotoGroup = function (group) {
         // TODO: Meter al usuario en el grupo 
         // TODO: Generar vista de usuario
-        $state.go('app.users-detail',{userId:group});
+        if (!$rootScope.user.group) {
+            _joinGroup(group);
+        } else if ($rootScope.user.group.id != group) {
+            $ionicPopup.confirm({
+                title: $translate.instant('title_change_group'),
+                template: $translate.instant('text_change_group')
+            }).then(function (res) {
+                if (res) {
+                    _joinGroup(group);
+                }
+            })
+        } else {
+            $state.go('app.group', {groupId: group});
+
+        }
+    }
+    $scope.newGroup=function(){
+        if (!$rootScope.user.group) {
+            _createGroup();
+        } else if ($rootScope.user.group) {
+            $ionicPopup.confirm({
+                title: $translate.instant('title_change_group'),
+                template: $translate.instant('text_change_group')
+            }).then(function (res) {
+                if (res) {
+                    var oldGroup=$rootScope.user.group.id;
+                    $rootScope.user.group = null;
+                    Users.update({id: $rootScope.user.id}, $rootScope.user).$promise.then(function (user) {
+                        $sails.off(oldGroup);
+                        _createGroup();
+                    });
+                }
+            })
+        }
+    }
+    _createGroup = function () {
+        var myPopup = $ionicPopup.show({
+            template: '<input type="text" id="newgroup_description" ng-model="newgroup.description">',
+            title: $translate.instant('title_newgroup'),
+            subTitle: $translate.instant('text_newgroup'),
+            scope: $scope,
+            buttons: [
+                {text: $translate.instant('btn_cancel')},
+                {
+                    text: $translate.instant('btn_create'),
+                    type: 'button-positive',
+                    onTap: function (e) {
+                        console.log($scope);
+                        if (!$scope.newgroup.description) {
+                            //don't allow the user to close unless he enters wifi password
+                            e.preventDefault();
+                        } else {
+                            return $scope.newgroup.description;
+                        }
+                    }
+                }
+            ]
+        }).then(function (res) {
+            Groups.save({'description':res,'location':$rootScope.user.location}).$promise.then(function(group){
+                _joinGroup(group);
+            });
+        });
+    }
+    _joinGroup = function (group) {
+        $rootScope.user.group = group;
+        Users.update({id: $rootScope.user.id}, $rootScope.user).$promise.then(function (user) {
+            $rootScope.user=user;
+            Chat.getGroup({group: $rootScope.user.group.id}, function (result) {
+                angular.forEach(result, function (msg) {
+                    $rootScope.mensajeria.messageLog.push(messageFormatter(msg));
+                });
+                $sails.get('/chat/connect', {group: $rootScope.user.group.id});
+                $sails.on($rootScope.user.group.id, function (message) {
+                    console.log(message);
+                    if (message.verb === "created") {
+                        $rootScope.newMessage += 1;
+                        $rootScope.mensajeria.messageLog.push(messageFormatter(
+                                new Date(), message.data.from,
+                                message.data.message, message.data.to));
+                    }
+                });
+                $sails.on('chat', function (message) {
+                    $rootScope.newMessage += 1;
+                    $rootScope.mensajeria.messageLog.push(messageFormatter(message));
+                    $rootScope.$broadcast('nuevo.mensaje.chat');
+                });
+                $state.go('app.group', {groupId: $rootScope.user.group.id});
+            });
+        })
     }
     _loadGroups();
 });
@@ -413,6 +555,13 @@ angular.module('starter.chat', ['ngResource', 'constants.server'])
                             user: '@user',
                         },
                         isArray: true
+                    },
+                    getGroup:{
+                        url: 'http://' + server.host() + ':' + server.port + '/chat/group/',
+                        params: {
+                            group: '@group',
+                        },
+                        isArray: true
                     }
                 }
                 );
@@ -447,7 +596,7 @@ angular.module('starter.users', ['ngResource', 'constants.server'])
                 }, {
                     'update': {
                         method: 'PUT',
-                        url: 'http://' + server.host() + ':' + server.port + '/user/:id',
+                        url: 'http://' + server.host() + ':' + server.port + '/user/update/:id',
                     },
                     getNear: {
                         method: 'get',

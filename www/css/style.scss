@@ -1,26 +1,140 @@
-/* Empty. Add your own CSS if you like */
-.scroll {
-    height: 100%;
+/*  INCLUDE */
+@import 'https://fonts.googleapis.com/css?family=Hammersmith+One|Droid+Sans:400,700|Ubuntu:400,700';
+/*
+    font-family: 'Droid Sans', sans-serif;
+    font-family: 'Ubuntu', sans-serif;
+    font-family: 'Hammersmith One', sans-serif;
+*/
+
+/* FUNCTIONS */
+
+// ----
+// Sass (v3.4.7)
+// Compass (v1.0.1)
+// ----
+
+/// Convert angle
+/// @author Chris Eppstein
+/// @param {Number} $value - Value to convert
+/// @param {String} $unit - Unit to convert to
+/// @return {Number} Converted angle
+@function convert-angle($value, $unit) {
+    $convertable-units: deg grad turn rad;
+    $conversion-factors: 1 (10grad/9deg) (1turn/360deg) (3.1415926rad/180deg);
+    @if index($convertable-units, unit($value)) and index($convertable-units, $unit) {
+        @return $value
+        / nth($conversion-factors, index($convertable-units, unit($value)))
+        * nth($conversion-factors, index($convertable-units, $unit));
+    }
+
+    @warn "Cannot convert `#{unit($value)}` to `#{$unit}`.";
 }
 
-.button .abcRioButtonLightBlue{
-    background: transparent;
-    color: #fff;
-	float: none;
-	display: inline-block;
-	border: none;
-	box-shadow: none;
+/// Test if `$value` is an angle
+/// @param {*} $value - Value to test
+/// @return {Bool}
+@function is-direction($value) {
+    $is-direction: index((to top, to top right, to right top, to right, to bottom right, to right bottom, to bottom, to bottom left, to left bottom, to left, to left top, to top left), $value);
+    $is-angle: type-of($value) == 'number' and index('deg' 'grad' 'turn' 'rad', unit($value));
+
+    @return $is-direction or $is-angle;
 }
-.button .abcRioButtonLightBlue{
-    float: none;
-    display: inline-block;
+
+/// Convert a direction to legacy syntax
+/// @param {Keyword | Angle} $value - Value to convert
+/// @require {function} is-direction
+/// @require {function} convert-angle
+@function legacy-direction($value) {
+    @if is-direction($value) == false {
+        @warn "Cannot convert `#{$value}` to legacy syntax because it doesn't seem to be an angle or a direction";
+    }
+
+    $conversion-map: ( 
+        to top          : bottom,
+        to top right    : bottom left,
+        to right top    : left bottom,
+        to right        : left,
+        to bottom right : top left,
+        to right bottom : left top,
+        to bottom       : top,
+        to bottom left  : top right,
+        to left bottom  : right top,
+        to left         : right,
+        to left top     : right bottom,
+        to top left     : bottom right
+        );
+
+    @if map-has-key($conversion-map, $value) {
+        @return map-get($conversion-map, $value);
+    }
+
+    @return 90deg - convert-angle($value, 'deg');
 }
-.button .abcRioButtonLightBlue .abcRioButtonSvg{
-    display: inline;
+
+/// Mixin printing a linear-gradient 
+/// as well as a plain color fallback 
+/// and the `-webkit-` prefixed declaration
+/// @access public
+/// @param {String | List | Angle} $direction - Linear gradient direction
+/// @param {Arglist} $color-stops - List of color-stops composing the gradient
+@mixin linear-gradient($direction, $color-stops...) {
+    @if is-direction($direction) == false {
+        $color-stops: ($direction, $color-stops);
+        $direction: 180deg;
+    }
+
+    background: nth(nth($color-stops, 1), 1);
+    background: -webkit-linear-gradient(legacy-direction($direction), $color-stops);
+    background: linear-gradient($direction, $color-stops);
 }
-.button .abcRioButtonLightBlue .abcRioButtonContents{
-    font-family: inherit;
-    font-size: inherit;
+@mixin linear-gradient-border($direction, $color-stops...) {
+    @if is-direction($direction) == false {
+        $color-stops: ($direction, $color-stops);
+        $direction: 180deg;
+    }
+
+    border-color: nth(nth($color-stops, 1), 1);
+    border-color: -webkit-linear-gradient(legacy-direction($direction), $color-stops);
+    border-color: linear-gradient($direction, $color-stops);
+}
+
+
+/* Empty. Add your own CSS if you like */
+*{
+    font-family: 'Ubuntu', sans-serif;
+}
+h1,h2,h3,h4,h5,h6,h7{
+    font-family: 'Droid Sans', sans-serif;
+}
+.scroll {
+    min-height: 100%;
+}
+.ng-invalid{
+    border: 1px solid red;
+}
+/* Header*/
+.bar.bar-header{
+    @include linear-gradient(to right,#f1da36 0%, #626345 100%);
+}
+.bar.bar-header.bar-subheader{
+    @include linear-gradient(to right,#333 0%, #000 100%);
+    color:#fff;
+    text-align: left;
+    .title{
+        text-align: left;
+    }
+    .buttons{
+        .icon{
+            height: 100%;
+            border-radius: 100%;
+        }
+        i.icon{
+            background: #fff;
+            font-size: 22px;
+            color: #000;
+            padding: 2px;
+        }
+    }
 }
 ion-header-bar .item-avatar-left .icon{
     font-size: 45px;
@@ -33,161 +147,270 @@ ion-header-bar .item-avatar-left .icon{
 .popup-container .popup{
     width: 300px;
 }
+/* LOGIN */
+.login{
+    /*background: #000 url('../../img/bg_login.png') no-repeat center center;*/
+    @include linear-gradient(to top,#f1da36 0%, #626345 100%);
+    background-size: cover;
+    .list-inset{
+        background: none;
+        border: none;
+        .item-input{
+            input{
+                padding: 5px;
+                background:#f1da36;
+                border:1px solid #000;
+            }
+        }
+    }
+    h2{
+        font-family: 'Hammersmith One', sans-serif;
+        font-size: 4rem;
+        text-shadow:0 0 1px #000;
+        color:#f1da36;
+    }
+}
 /* CHAT */
+.emoji-menu{
+    top:auto !important;
+    bottom: 45px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    .emoji-items-wrap{
+        height: 120px;
+    }
+}
 .chatPageFooter{
     min-height: 44px;
     height: auto;
+    background:transparent;
+    box-shadow: none;
+    border: none;
     .item{
         padding: 0;
         border: 0;
+        margin: 0 40px 5px 5px;
     }
     textarea{
-        width: 100%;
+        width: 97%;
+        margin: 0 5px;
+        border-radius: 5px;
+        padding: 0 5px;
+    }
+    .emoji-wysiwyg-editor{
+        width: 80%;
+        margin: 0 5px;
+        border-radius: 5px;
+        padding: 5px;
+        padding-left: 40px;
+    }
+    #emojibtn{
+        position: absolute;
+        left: 0;
+        bottom: 5px;
+        background: none;
+        border: none;
+    }
+    .buttons.right{
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        z-index: 2;
+        border: none;
     }
     i{
         font-size: 30px;
         margin: 0 10px;
     }
 }
-.chatBubble{
-    background: #ddd;
-  span.profile-pic {
-    position: absolute;
-    bottom: 10px;
-    overflow: hidden;
-    text-align: center;
-  }
-  span.profile-pic img{
-    border-radius: 50%;
-        width: 40px;
-        height: 40px;
-  }
-  span.profile-pic i{
-    font-size: 30px;
-        width: 40px;
-        height: 40px;
-    border-radius: 50%;
-    background: #fff;
-    display: inline-block;
-  }
+.chat{
+    background: transparent url(../img/bg_chat.png) fixed;
+    background-size: cover ;
+    .chatBubble{
+        span.profile-pic {
+            position: absolute;
+            bottom: 10px;
+            overflow: hidden;
+            text-align: center;
+        }
+        span.profile-pic img{
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+        span.profile-pic i{
+            font-size: 30px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: inline-block;
+        }
 
-  span.profile-pic.left {
-    left: 10px;
-  }
+        span.profile-pic.left {
+            left: 10px;
+        }
 
-  span.profile-pic.right {
-    right: 10px;
-  }
+        span.profile-pic.right {
+            right: 10px;
+        }
 
-  .message {
-    font-size: medium;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-  }
+        .message {
+            font-size: medium;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
 
-  .message-detail {
-    white-space: nowrap;
-    font-size: 14px;
-  }
+        .message-detail {
+            white-space: nowrap;
+            font-size: 14px;
+        }
 
-  .chat-bubble {
-    border-radius: 5px;
-    display: inline-block;
-    padding: 10px 18px;
-    position: relative;
-    margin: 10px;
-    max-width: 80%;
-  }
+        .chat-bubble {
+            border-radius: 5px;
+            display: inline-block;
+            padding: 10px 18px;
+            position: relative;
+            margin: 10px;
+            max-width: 80%;
+        }
 
-  .chat-bubble:before {
-    content: "\00a0";
-    display: block;
-    height: 16px;
-    width: 9px;
-    position: absolute;
-    bottom: -7.5px;
-  }
+        .chat-bubble:before {
+            content: "\00a0";
+            display: block;
+            height: 16px;
+            width: 9px;
+            position: absolute;
+            bottom: -7.5px;
+        }
 
-  .chat-bubble.left {
-    background-color: #fff;
-    float: left;
-    margin-left: 45px;
-  }
+        .chat-bubble.left {
+            background-color: #fff;
+            float: left;
+            margin-left: 45px;
+        }
 
-  .chat-bubble.left:before {
-    background-color: #fff;
-    left: 10px;
-    -webkit-transform: rotate(70deg) skew(5deg);
-  }
+        .chat-bubble.left:before {
+            background-color: #fff;
+            left: 10px;
+            -webkit-transform: rotate(70deg) skew(5deg);
+        }
 
-  .chat-bubble.right {
-    background-color: #009689;
-    color: #000;
-    float: right;
-    margin-right: 45px;
-  }
+        .chat-bubble.right {
+            background-color: #009689;
+            color: #000;
+            float: right;
+            margin-right: 45px;
+        }
 
-  .chat-bubble.right:before {
-    background-color: #009689;
-    right: 10px;
-    -webkit-transform: rotate(118deg) skew(-5deg);
-  }
+        .chat-bubble.right:before {
+            background-color: #009689;
+            right: 10px;
+            -webkit-transform: rotate(118deg) skew(-5deg);
+        }
 
-  .chat-bubble.right a.autolinker {
-    color: #000;
-    font-weight: bold;
-  }
+        .chat-bubble.right a.autolinker {
+            color: #000;
+            font-weight: bold;
+        }
+    }
 }
 /* DASHBOARD */
 .dashboard{
-    background: transparent url('../../img/main_bg.jpg') no-repeat center center;
+    background: transparent url('../img/main_bg.jpg') no-repeat center center;
     background-size: cover;
-    h2{
+    h2,h4{
         color:#fff;
     }
 }
 /* MAP */
 .users{
-#map_canvas {
-    width: 100%;
-    height: 70%;
-}
-.custom-marker {
-  font-size: 2em;
-  padding: 10px;
-  background: #fff;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-  border: #7F7F7F solid 1px;
-  text-align: center;
-}
+    #map_canvas {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .custom-marker {
+        font-size: 2em;
+        padding: 5px;
+        background: #fff;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        border: #7F7F7F solid 1px;
+        text-align: center;
+        @include linear-gradient(to bottom,#f1da36 0%, #626345 100%);
+        .item-avatar{
+            display: inline-block;
+            padding: 0;
+            min-width: 40px;
+            min-height:40px;
+            position:relative;
+            .item-image{
+                left:0;
+                top:0;
+            }
+        }
+        .item-avatar.icon{
+            background: #000;
+            border-radius: 50%;
+            i{
+                color: #fff;
+                font-size: 22px;
+                border-radius: 100%;
+                position: absolute;
+                left: 0;
+                top: 0;
+                right: 0;
+                text-align: center;
+                padding: 4px;
+            }
+            i.ion-person{
+                font-size: 26px;
+            }
+            i.icon-text{
+                color: #fff;
+                font-size: 9px;
+                position: absolute;
+                bottom: 2px;
+                top:20px;
+                left: 0;
+                right: 0;
+                text-align: center;
+            }
+        }
+    }
 
-.custom-marker:after {
-  content: '';
-  position: absolute;
-  border-style: solid;
-  border-width: 7px 6px 0;
-  border-color: #fff transparent;
-  display: block;
-  width: 0;
-  z-index: 1;
-  margin-left: -6px;
-  bottom: -6px;
-  left: 50%;
-}
+    .custom-marker:after {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 7px 6px 0;
+        border-color: #626345 transparent;
+        display: block;
+        width: 0;
+        z-index: 1;
+        margin-left: -6px;
+        bottom: -6px;
+        left: 50%;
+    }
 
-.custom-marker:before {
-  content: '';
-  position: absolute;
-  border-style: solid;
-  border-width: 7px 6px 0;
-  border-color: #7F7F7F transparent;
-  display: block;
-  width: 0;
-  z-index: 0;
-  margin-left: -6px;
-  bottom: -7px;
-  left: 50%;
-}
+    .custom-marker:before {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 7px 6px 0;
+        border-color: #7F7F7F transparent;
+        display: block;
+        width: 0;
+        z-index: 0;
+        margin-left: -6px;
+        bottom: -7px;
+        left: 50%;
+    }
 }

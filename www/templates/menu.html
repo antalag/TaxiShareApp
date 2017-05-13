@@ -1,6 +1,6 @@
 <ion-side-menus enable-menu-with-back-views="true">
-    <ion-side-menu-content>
-        <ion-nav-bar class="bar-assertive-900" ng-class="{expanded: isExpanded, 'has-header-fab-left': hasHeaderFabLeft, 'has-header-fab-right': hasHeaderFabRight}" align-title="left">
+    <ion-side-menu-content edge-drag-threshold="50">
+        <ion-nav-bar ng-class="{expanded: isExpanded, 'has-header-fab-left': hasHeaderFabLeft, 'has-header-fab-right': hasHeaderFabRight}" align-title="left">
             <ion-nav-back-button class="no-text">
             </ion-nav-back-button>
             <ion-nav-buttons side="right">
@@ -21,17 +21,21 @@
         </ion-header-bar>
         <ion-content class="stable-bg has-expanded-header">
             <ion-list>
-                <ion-item nav-clear menu-close ui-sref="app.dash">
+                <ion-item nav-clear menu-close ui-sref-active='active' ui-sref="app.dash">
                     {{'menu_home' | translate}}
                 </ion-item>
-                <ion-item nav-clear menu-close ui-sref="app.users">
+                <ion-item nav-clear menu-close ui-sref-active='active' ui-sref="app.users">
                     {{'menu_users' | translate}}
                 </ion-item>
-                <ion-item nav-clear menu-close ui-sref="app.profile">
-                    Profile
+                <ion-item nav-clear menu-close ui-sref-active='active' ui-sref="app.group({groupId:user.group.id})" ng-if="user.group">
+                    {{'menu_group' | translate }}
                 </ion-item>
-                <ion-item nav-clear menu-close ng-click='logOut()'>
+<!--                <ion-item nav-clear menu-close ui-sref-active='active' ui-sref="app.profile">
+                    Profile
+                </ion-item>-->
+                <ion-item nav-clear menu-close ng-click='logOut()' class='icon-right'>
                     {{'menu_logout' | translate}}
+                    <i class='icon ion-log-out'></i>
                 </ion-item>
             </ion-list>
         </ion-content>

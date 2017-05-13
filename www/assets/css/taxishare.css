@@ -1,25 +1,46 @@
+/*  INCLUDE */
+@import 'https://fonts.googleapis.com/css?family=Hammersmith+One|Droid+Sans:400,700|Ubuntu:400,700';
+/*
+    font-family: 'Droid Sans', sans-serif;
+    font-family: 'Ubuntu', sans-serif;
+    font-family: 'Hammersmith One', sans-serif;
+*/
+/* FUNCTIONS */
 /* Empty. Add your own CSS if you like */
+* {
+  font-family: 'Ubuntu', sans-serif; }
+
+h1, h2, h3, h4, h5, h6, h7 {
+  font-family: 'Droid Sans', sans-serif; }
+
 .scroll {
-  height: 100%; }
+  min-height: 100%; }
 
-.button .abcRioButtonLightBlue {
-  background: transparent;
+.ng-invalid {
+  border: 1px solid red; }
+
+/* Header*/
+.bar.bar-header {
+  background: #f1da36;
+  background: -webkit-linear-gradient(left, #f1da36 0%, #626345 100%);
+  background: linear-gradient(to right, #f1da36 0%, #626345 100%); }
+
+.bar.bar-header.bar-subheader {
+  background: #333;
+  background: -webkit-linear-gradient(left, #333 0%, #000 100%);
+  background: linear-gradient(to right, #333 0%, #000 100%);
   color: #fff;
-  float: none;
-  display: inline-block;
-  border: none;
-  box-shadow: none; }
-
-.button .abcRioButtonLightBlue {
-  float: none;
-  display: inline-block; }
-
-.button .abcRioButtonLightBlue .abcRioButtonSvg {
-  display: inline; }
-
-.button .abcRioButtonLightBlue .abcRioButtonContents {
-  font-family: inherit;
-  font-size: inherit; }
+  text-align: left; }
+  .bar.bar-header.bar-subheader .title {
+    text-align: left; }
+  .bar.bar-header.bar-subheader .buttons .icon {
+    height: 100%;
+    border-radius: 100%; }
+  .bar.bar-header.bar-subheader .buttons i.icon {
+    background: #fff;
+    font-size: 22px;
+    color: #000;
+    padding: 2px; }
 
 ion-header-bar .item-avatar-left .icon {
   font-size: 45px;
@@ -32,111 +53,207 @@ ion-header-bar .item-avatar-left .icon {
 .popup-container .popup {
   width: 300px; }
 
+/* LOGIN */
+.login {
+  /*background: #000 url('../../img/bg_login.png') no-repeat center center;*/
+  background: #f1da36;
+  background: -webkit-linear-gradient(bottom, #f1da36 0%, #626345 100%);
+  background: linear-gradient(to top, #f1da36 0%, #626345 100%);
+  background-size: cover; }
+  .login .list-inset {
+    background: none;
+    border: none; }
+    .login .list-inset .item-input input {
+      padding: 5px;
+      background: #f1da36;
+      border: 1px solid #000; }
+  .login h2 {
+    font-family: 'Hammersmith One', sans-serif;
+    font-size: 4rem;
+    text-shadow: 0 0 1px #000;
+    color: #f1da36; }
+
 /* CHAT */
+.emoji-menu {
+  top: auto !important;
+  bottom: 45px !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important; }
+  .emoji-menu .emoji-items-wrap {
+    height: 120px; }
+
 .chatPageFooter {
   min-height: 44px;
-  height: auto; }
+  height: auto;
+  background: transparent;
+  box-shadow: none;
+  border: none; }
   .chatPageFooter .item {
     padding: 0;
-    border: 0; }
+    border: 0;
+    margin: 0 40px 5px 5px; }
   .chatPageFooter textarea {
-    width: 100%; }
+    width: 97%;
+    margin: 0 5px;
+    border-radius: 5px;
+    padding: 0 5px; }
+  .chatPageFooter .emoji-wysiwyg-editor {
+    width: 80%;
+    margin: 0 5px;
+    border-radius: 5px;
+    padding: 5px;
+    padding-left: 40px; }
+  .chatPageFooter #emojibtn {
+    position: absolute;
+    left: 0;
+    bottom: 5px;
+    background: none;
+    border: none; }
+  .chatPageFooter .buttons.right {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 2;
+    border: none; }
   .chatPageFooter i {
     font-size: 30px;
     margin: 0 10px; }
 
-.chatBubble {
-  background: #ddd; }
-  .chatBubble span.profile-pic {
+.chat {
+  background: transparent url(../img/bg_chat.png) fixed;
+  background-size: cover; }
+  .chat .chatBubble span.profile-pic {
     position: absolute;
     bottom: 10px;
     overflow: hidden;
     text-align: center; }
-  .chatBubble span.profile-pic img {
+  .chat .chatBubble span.profile-pic img {
     border-radius: 50%;
     width: 40px;
     height: 40px; }
-  .chatBubble span.profile-pic i {
+  .chat .chatBubble span.profile-pic i {
     font-size: 30px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
     background: #fff;
     display: inline-block; }
-  .chatBubble span.profile-pic.left {
+  .chat .chatBubble span.profile-pic.left {
     left: 10px; }
-  .chatBubble span.profile-pic.right {
+  .chat .chatBubble span.profile-pic.right {
     right: 10px; }
-  .chatBubble .message {
+  .chat .chatBubble .message {
     font-size: medium;
     word-wrap: break-word;
     white-space: pre-wrap; }
-  .chatBubble .message-detail {
+  .chat .chatBubble .message-detail {
     white-space: nowrap;
     font-size: 14px; }
-  .chatBubble .chat-bubble {
+  .chat .chatBubble .chat-bubble {
     border-radius: 5px;
     display: inline-block;
     padding: 10px 18px;
     position: relative;
     margin: 10px;
     max-width: 80%; }
-  .chatBubble .chat-bubble:before {
+  .chat .chatBubble .chat-bubble:before {
     content: "\00a0";
     display: block;
     height: 16px;
     width: 9px;
     position: absolute;
     bottom: -7.5px; }
-  .chatBubble .chat-bubble.left {
+  .chat .chatBubble .chat-bubble.left {
     background-color: #fff;
     float: left;
     margin-left: 45px; }
-  .chatBubble .chat-bubble.left:before {
+  .chat .chatBubble .chat-bubble.left:before {
     background-color: #fff;
     left: 10px;
     -webkit-transform: rotate(70deg) skew(5deg); }
-  .chatBubble .chat-bubble.right {
+  .chat .chatBubble .chat-bubble.right {
     background-color: #009689;
     color: #000;
     float: right;
     margin-right: 45px; }
-  .chatBubble .chat-bubble.right:before {
+  .chat .chatBubble .chat-bubble.right:before {
     background-color: #009689;
     right: 10px;
     -webkit-transform: rotate(118deg) skew(-5deg); }
-  .chatBubble .chat-bubble.right a.autolinker {
+  .chat .chatBubble .chat-bubble.right a.autolinker {
     color: #000;
     font-weight: bold; }
 
 /* DASHBOARD */
 .dashboard {
-  background: transparent url("../../img/main_bg.jpg") no-repeat center center;
+  background: transparent url("../img/main_bg.jpg") no-repeat center center;
   background-size: cover; }
-  .dashboard h2 {
+  .dashboard h2, .dashboard h4 {
     color: #fff; }
 
 /* MAP */
 .users #map_canvas {
   width: 100%;
-  height: 70%; }
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0; }
 
 .users .custom-marker {
   font-size: 2em;
-  padding: 10px;
+  padding: 5px;
   background: #fff;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   border-radius: 4px;
   border: #7F7F7F solid 1px;
-  text-align: center; }
+  text-align: center;
+  background: #f1da36;
+  background: -webkit-linear-gradient(top, #f1da36 0%, #626345 100%);
+  background: linear-gradient(to bottom, #f1da36 0%, #626345 100%); }
+  .users .custom-marker .item-avatar {
+    display: inline-block;
+    padding: 0;
+    min-width: 40px;
+    min-height: 40px;
+    position: relative; }
+    .users .custom-marker .item-avatar .item-image {
+      left: 0;
+      top: 0; }
+  .users .custom-marker .item-avatar.icon {
+    background: #000;
+    border-radius: 50%; }
+    .users .custom-marker .item-avatar.icon i {
+      color: #fff;
+      font-size: 22px;
+      border-radius: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      text-align: center;
+      padding: 4px; }
+    .users .custom-marker .item-avatar.icon i.ion-person {
+      font-size: 26px; }
+    .users .custom-marker .item-avatar.icon i.icon-text {
+      color: #fff;
+      font-size: 9px;
+      position: absolute;
+      bottom: 2px;
+      top: 20px;
+      left: 0;
+      right: 0;
+      text-align: center; }
 
 .users .custom-marker:after {
   content: '';
   position: absolute;
   border-style: solid;
   border-width: 7px 6px 0;
-  border-color: #fff transparent;
+  border-color: #626345 transparent;
   display: block;
   width: 0;
   z-index: 1;

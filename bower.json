@@ -19,12 +19,15 @@
     "angular-translate": "^2.14.0",
     "angular-translate-loader-static-files": "^2.14.0",
     "angular-sails": "^1.1.4",
-    "ngmap": "^1.17.8"
+    "ngmap": "^1.17.8",
+    "material-design-icons": "^3.0.1",
+    "angular-emoji-popup": "^1.1.0",
+    "angular-sanitize": "^1.6.2"
   },
   "resolutions": {
-    "angular": "1.5.3",
+    "angular": "1.6.2",
     "ionic": "1.3.2",
     "angular-animate": "1.5.3",
-    "angular-sanitize": "1.5.3"
+    "angular-sanitize": "^1.6.2"
   }
 }

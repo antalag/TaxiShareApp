@@ -1,23 +1,32 @@
 <ion-view view-title="Usuarios" class="users">
-  <ion-content>
-      <ng-map center="current-position" id="map_canvas" zoom="15">
-                     <custom-marker ng-repeat="p in groups track by $index"
-      id="custom-marker-{{$index}}"
-      on-click="gotoGroup('{{p.id}}')"
-      position="{{p.location[1]}},{{p.location[0]}}">
-      <div>
-        position {{p.description}}: {{p.location[1]}}, {{p.location[0]}}
-      </div>
-    </custom-marker>
-      </ng-map>
-      <!--<ngmap id="map_canvas" data-tap-disabled="true"></div>-->
-    <ion-list>
-      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="group in groups" type="item-text-wrap" href="#/app/users/{{group.id}}">
-        <h2>{{group.description}}</h2>
-        <p>{{group.location}}</p>
-        <p>{{group.users}}</p>
-        <i class="icon ion-chevron-right icon-accessory"></i>
-      </ion-item>
-    </ion-list>
-  </ion-content>
+    <ion-content>
+        <ng-map default-style="false" center="{{location}}" id="map_canvas" zoom="15">
+            <custom-marker ng-repeat="group in groups track by $index" id="custom-marker-{{$index}}" position="{{group.location[1]}},{{group.location[0]}}">
+                <div>
+                    <div class="item-avatar" ng-repeat="user in group.users" ng-class="{'icon':!user.image}">
+                        <img class="item-image" ng-src="{{user.image}}">
+                        <i class="ion-person" ng-if='!user.image'></i>
+                    </div>
+                    <div class="item-avatar icon" ng-click="gotoGroup('{{group.id}}')">
+                        <i class="ion-person-add"></i>
+                        <i class='icon-text'>{{join}}</i>
+                    </div>
+                </div>
+            </custom-marker>
+        </ng-map>
+    </ion-content>
+    <ion-footer-bar align-title="justify" class="bar-dark" ng-click="newGroup()">
+        <h1 class="title">{{'text_create_group' | translate}}</h1>
+        <div class="buttons">
+            <i class="material-icons">add_circle</i>
+        </div>
+<!--            <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="group in groups" type="item-text-wrap" href="#/app/users/{{group.id}}">
+                <h2>{{group.description}}</h2>
+                <p>{{group.location}}</p>
+                <div class="item-avatar" ng-repeat="user in group.users">
+                    <img ng-src="{{user.image}}">
+                </div>
+                <i class="icon ion-chevron-right icon-accessory"></i>
+            </ion-item>-->
+    </ion-footer-bar>
 </ion-view>

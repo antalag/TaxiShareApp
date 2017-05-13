@@ -2,5 +2,22 @@
     "cancel_text":"cancelar",
     "ok_text":"ok",
     "exit_title":"Cerrar session",
-    "exit_body":"¿Seguro que deseas cerrar la sesión y volver a la página de login?"
+    "exit_body":"¿Seguro que deseas cerrar la sesión y volver a la página de login?",
+    
+    "login_btn" : "Iniciar sessión",
+    "login_google_btn" : "Iniciar sessión con Google",
+    
+    "intro_text":"Bienvenido a TaxiShare",
+    "home_text":"¿Vas a cojer un taxi? No lo hagas solo, encuentra gente cerca tuyo para compartirlo.",
+    "find_btn":"Encuentra un taxi",
+    
+    "text_create_group":"Crear un grupo nuevo",
+    "join_text":"unirse",
+    
+    "header_group":"Tu grupo",
+    
+    "menu_home":"Inicio",
+    "menu_users":"Buscar un taxi",
+    "menu_group":"Ver tu grupo de búsqueda",
+    "menu_logout":"Salir"
 }

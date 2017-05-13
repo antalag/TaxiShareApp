@@ -11,6 +11,13 @@ angular.module('starter.chat', ['ngResource', 'constants.server'])
                             user: '@user',
                         },
                         isArray: true
+                    },
+                    getGroup:{
+                        url: 'http://' + server.host() + ':' + server.port + '/chat/group/',
+                        params: {
+                            group: '@group',
+                        },
+                        isArray: true
                     }
                 }
                 );

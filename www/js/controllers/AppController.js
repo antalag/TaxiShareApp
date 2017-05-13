@@ -1,9 +1,9 @@
-app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat, $translate, messageFormatter, $state, $cordovaGeolocation, Users) {
+app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope, Chat, $translate, messageFormatter, $state, $cordovaGeolocation, Users) {
     _initController = function () {
         $rootScope.mensajeria = {};
         $rootScope.mensajeria.messageLog = [];
         $rootScope.mensajeria.newMessage = 0;
-        $rootScope.mensajeria.message = '';
+        $rootScope.mensajeria.message = {};
         if (!window.localStorage.userTaxi && !$rootScope.user) {
             $state.go('login');
         } else if (!$rootScope.user) {
@@ -13,9 +13,12 @@ app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat
 //            }).then(function (t) {
 //                console.log('Token saved:', t.token);
 //            });
-            $rootScope.user = Users.get({id: localStorage.userTaxi}, function () {
+            $rootScope.user = Users.get({id: localStorage.userTaxi}, function (res) {
                 _updatePosition();
                 _initListen();
+            },function(error){
+                localStorage.removeItem('userTaxi');
+                $state.go('login')
             });
         } else {
             _initListen();
@@ -31,21 +34,30 @@ app.controller('AppCtrl', function ($scope, $ionicPopup, $sails, $rootScope,Chat
         });
     }
     _initListen = function () {
-        Chat.getUser({user:$rootScope.user.email}, function (result) {
-            angular.forEach(result,function(msg){
-                $rootScope.mensajeria.messageLog.push(messageFormatter(msg));
-            });
-            $sails.get('/chat/addconv');
-            $sails.on("chat", function (message) {
-                console.log(message);
-                if (message.verb === "created") {
+        if ($rootScope.user.group) {
+        console.log($rootScope.user.group);
+            Chat.getGroup({group: $rootScope.user.group.id}, function (result) {
+                angular.forEach(result, function (msg) {
+                    $rootScope.mensajeria.messageLog.push(messageFormatter(msg));
+                    $rootScope.$broadcast('mensajes.cargados');
+                });
+                $sails.get('/chat/connect', {group: $rootScope.user.group.id});
+                $sails.on($rootScope.user.group.id, function (message) {
+                    console.log(message);
+                    if (message.verb === "created") {
+                        $rootScope.newMessage += 1;
+                        $rootScope.mensajeria.messageLog.push(messageFormatter(
+                                new Date(), message.data.from,
+                                message.data.message, message.data.to));
+                    }
+                });
+                $sails.on('chat', function (message) {
                     $rootScope.newMessage += 1;
-                    $rootScope.mensajeria.messageLog.push(messageFormatter(
-                            new Date(), message.data.from,
-                            message.data.message));
-                }
+                    $rootScope.mensajeria.messageLog.push(messageFormatter(message));
+                    $rootScope.$broadcast('nuevo.mensaje.chat');
+                });
             });
-        });
+        }
 //        chatSocket.on('broadcast:' + $rootScope.user.email, function (data) {
 //            if (!data.payload) {
 //                $log.error('invalid message',

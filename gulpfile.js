@@ -31,6 +31,9 @@ var source = {
     ],
     sass: [
         'www/css/*.scss'
+    ],
+    image:[
+        'www/img/*'
     ]
 }
 
@@ -43,13 +46,17 @@ var bower = {
         'bower_components/angular-resource/angular-resource.min.js',
         'bower_components/angular-translate/angular-translate.min.js',
         'bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js',
-        'bower_components/socket.io-client/dist/socket.io.js',
+        'bower_components/angular-elastic/elastic.js',
+        'bower_components/angular-sanitize/angular-sanitize.min.js',
+//        'bower_components/socket.io-client/dist/socket.io.js',
 //        'bower_components/angular-socket-io/socket.js',
         'bower_components/sails.io.js/dist/sails.io.js',
 //        'bower_components/sails.io-client/dist/socket.io.js',
         'bower_components/angular-sails/dist/angular-sails.js',
         'bower_components/ionic-material/dist/ionic.material.min.js',
         'bower_components/ngmap/build/scripts/ng-map.js',
+        'bower_components/angular-emoji-popup/dist/js/config.js',
+        'bower_components/angular-emoji-popup/dist/js/emoji.min.js',
 //        'www/lib/ionic.cloud.min.js',
 //    'bower_components/angular-directive.g-signin/google-plus-signin.js',
 
@@ -62,7 +69,10 @@ var bower = {
         'bower_components/ionic/release/css/ionic.css',
         'bower_components/bootstrap/dist/css/bootstrap.css',
         'bower_components/robotodraft/robotodraft.css',
-        'bower_components/ionic-material/dist/ionic.material.min.css'
+        'bower_components/material-design-icons/iconfont/',
+        'bower_components/material-design-icons/iconfont/material-icons.css',
+        'bower_components/ionic-material/dist/ionic.material.min.css',
+        'bower_components/angular-emoji-popup/dist/css/emoji.min.css'
     ],
     robodraft:[
         'bower_components/robotodraft/fonts/**/*'
@@ -70,7 +80,13 @@ var bower = {
 
     fonts: [
         'bower_components/bootstrap/dist/fonts/*',
-        'bower_components/ionic/release/fonts/*'
+        'bower_components/ionic/release/fonts/*',
+    ],
+    iconfonts: [
+        'bower_components/material-design-icons/iconfont/*'
+    ],
+    image: [
+        'bower_components/angular-emoji-popup/dist/img/*'
     ]
 };
 
@@ -107,6 +123,10 @@ gulp.task('styl', function () {
 
 });
 
+gulp.task('images', function () {
+    gulp.src(source.image)
+            .pipe(gulp.dest(assets+'/img'))
+})
 gulp.task('components', function () {
     gulp.src(bower.js)
             .pipe(concat(pkg.name + '.components.js'))
@@ -123,16 +143,21 @@ gulp.task('components', function () {
             .pipe(gulp.dest(assets + '/css/fonts'));
     gulp.src(bower.fonts)
             .pipe(gulp.dest(assets + '/fonts'));
+    gulp.src(bower.iconfonts)
+            .pipe(gulp.dest(assets + '/css'));
+    gulp.src(bower.image)
+            .pipe(gulp.dest(assets + '/../img'));
 });
 
 gulp.task('init', function () {
-    gulp.run(['js', 'components', 'styl']);
+    gulp.run(['js', 'components', 'styl','images']);
 });
 
 gulp.task('default', function () {
     gulp.watch(source.js, ['js']);
     gulp.watch(source.styl, ['styl']);
     gulp.watch(source.sass, ['styl']);
+    gulp.watch(source.image, ['images']);
 
 });
 

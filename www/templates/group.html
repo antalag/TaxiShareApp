@@ -1,0 +1,71 @@
+<!--
+  This template loads for the 'tab.friend-detail' state (app.js)
+  'friend' is a $scope variable created in the FriendsCtrl controller (controllers.js)
+  The FriendsCtrl pulls data from the Friends service (service.js)
+  The Friends service returns an array of friend data
+-->
+<ion-view view-title="{{'header_group'| translate}}" class='chat' ng-controller="GroupCtrl">
+    <ion-header-bar class='bar-subheader'>
+        <h1 class="title">{{group.description}}</h1>
+        <div class="buttons list">
+            <button class="button button-clear button-icon" ng-repeat="usu in group.users" ng-class="{'icon':!usu.image}">
+                <img class="item-image icon" ng-src="{{usu.image}}">
+                <i class="icon ion-person" ng-if='!usu.image'></i>
+            </button>
+        </div>
+    </ion-header-bar>
+    <ion-content class="has-header has-footer has-subheader " delegate-handler="chat-scroll">
+        <ion-list>
+            <div class="chatBubble">
+                <ion-item ng-repeat="item in $root.mensajeria.messageLog">
+                    <div class="chatBubble">
+                        <span class="profile-pic" ng-class="{'left':item.from.id != $root.user.id,'right':item.from.id == $root.user.id}">
+                            <img ng-src='{{item.from.image}}' ng-if="item.from.image">
+                            <i class="icon ion-person" ng-if="!item.from.image"></i>
+                        </span>
+                        <div class="chat-bubble" ng-class="{'left':item.from.id != $root.user.id,'right':item.from.id == $root.user.id}">
+                            <div class="message-detail">
+                                <small style="font-weight:bold;">{{item.from.name}} </small>:
+                                <small>{{item.hora}}</small>
+                            </div>
+                            <div class="message">{{item.message}}</div>
+                        </div>
+                    </div>
+                </ion-item>
+            </div>
+        </ion-list>
+    </ion-content>
+    <div class="bar bar-footer chatPageFooter">
+        <ion-item>
+            <!--                <div emoji-form emoji-message="message" class="textarea">
+                <textarea id="messageInput" ng-model="message.messagetext"></textarea>
+            
+                <button id="emojibtn">
+                    <i class="icon icon-emoji"></i>
+                </button>
+            </div>-->
+            <textarea msd-elastic placeholder="Type to compose" ng-model='$root.mensajeria.message' focus></textarea>
+        </ion-item>
+        <div class="buttons right">
+            <i ng-click="sendMessage(message)" class="icon ion-android-send"></i>
+        </div>
+    </div>
+    <!--    <div class='row'>
+          <div class='col-xs-12'>
+            <form role='form' class='form-inline' novalidate name='form'>
+              <div class='form-group col-xs-10'>
+                  <input class="form-control" type='text' style='width: 80%' 
+                required
+                ng-max='50' 
+                ng-model='mensajeria.message' 
+                focus>
+              </div>
+              <div class='form-group col-xs-2'>
+                <button class='btn btn-sm btn-primary' 
+                  ng-enable='form.$valid'
+                  ng-click="sendMessage(message,group.email)">Send!</button>
+              </div>
+            </form>
+          </div>
+        </div>-->
+</ion-view>

@@ -1,5 +1,9 @@
 <ion-view view-title="Dashboard" class="dashboard">
   <ion-content class="padding has-header">
-    <h2>Welcome to TaxiShare {{user.email}}</h2>
+    <h2>{{"intro_text" | translate}} {{user.email}}</h2>
+    <h4>{{"home_text" | translate}}</h4>
+    <div class="list">
+        <button class="button button-full button-dark" ui-sref="app.users">{{"find_btn" | translate}}</button>
+    </div>
   </ion-content>
 </ion-view>

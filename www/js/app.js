@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-app = angular.module('starter', ['ionic', 'ionic-material', 'trans','ngMap', 'starter.users', 'starter.chat', 'starter.groups', 'ngCordova', 'ngSails', 'constants.server', 'directive.g+signin']);
+app = angular.module('starter', ['ionic', 'ionic-material','monospaced.elastic', 'trans', 'ngMap', 'starter.users', 'starter.chat', 'starter.groups', 'ngCordova', 'ngSails', 'constants.server', 'directive.g+signin','emojiApp','ngSanitize']);
 
 app.run(function ($ionicPlatform) {
     $ionicPlatform.ready(function () {
@@ -26,8 +26,8 @@ app.run(function ($ionicPlatform) {
                 $sailsProvider.url = 'http://localhost:1337/';
                 $sailsProvider.useCORSRouteToGetCookie = true;
             }])
-        .config(function ($stateProvider, $urlRouterProvider) {
-
+        .config(function ($stateProvider, $urlRouterProvider,$ionicConfigProvider) {
+            $ionicConfigProvider.views.maxCache(0);
             // Ionic uses AngularUI Router which uses the concept of states
             // Learn more here: https://github.com/angular-ui/ui-router
             // Set up the various states which the app can be in.
@@ -64,6 +64,15 @@ app.run(function ($ionicPlatform) {
                             'menuContent': {
                                 templateUrl: 'templates/users.html',
                                 controller: 'UsersCtrl'
+                            }
+                        }
+                    })
+                    .state('app.group', {
+                        url: '/group/:groupId',
+                        views: {
+                            'menuContent': {
+                                templateUrl: 'templates/group.html',
+                                controller: 'GroupCtrl'
                             }
                         }
                     })

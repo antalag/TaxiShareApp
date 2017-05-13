@@ -1,20 +1,23 @@
 <ion-view view-title="Login">
-    <ion-content class="padding">
+    <ion-content class="padding login">
         <form name="formLogin" ng-model="formLogin" ng-submit="login(formLogin)">
             <div class="list list-inset">
-                <div clas="list-item">
+                <div class="list-item text-center">
+                    <h2>TaxiShare App</h2>
+                </div>
+                <div class="list-item">
                     <label class="item item-input">
                         <input type="email" placeholder="Email" ng-model="data.email" required>
                     </label>
                 </div>
-                <div clas="list-item">
+                <div class="list-item">
                     <label class="item item-input">
                         <input type="password" placeholder="Password" ng-model="data.password" required>
                     </label>
                 </div>
                 <!--<div clas="list-item" ng-if="data.hostname!='angeltalaveron.no-ip.org'">-->
-                <div clas="list-item">
-                    <button ng-click="googlePlusLogin()" type="button" class="button button-block button-calm"><i class="icon ion-social-googleplus button-icon left"></i>Login with google</button>
+                <div class="list-item">
+                    <button ng-click="googlePlusLogin()" type="button" class="button button-block button-dark"><i class="icon ion-social-googleplus button-icon left"></i>{{"login_google_btn" | translate}}</button>
                 </div>
 <!--                <div clas="list-item" ng-if="data.hostname=='angeltalaveron.no-ip.org'">
                     <google-plus-signin scope="profile email" clientid="129724507560-59g6g7k81ml4f4fhvdv5m5bm1cejlkt2.apps.googleusercontent.com"/>
@@ -23,7 +26,7 @@
                     <button ng-click="googlePlusLogin()" type="button" class="button button-block button-assertive"><i class="icon ion-social-googleplus button-icon left"></i>Login with google</button>
                 </div>-->
                 <div clas="list-item">
-                    <button class="button button-block button-calm">Login</button>
+                    <button class="button button-block button-dark">{{"login_btn" | translate}}</button>
                 </div>
             </div>
         </form>

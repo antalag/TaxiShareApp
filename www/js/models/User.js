@@ -6,7 +6,7 @@ angular.module('starter.users', ['ngResource', 'constants.server'])
                 }, {
                     'update': {
                         method: 'PUT',
-                        url: 'http://' + server.host() + ':' + server.port + '/user/:id',
+                        url: 'http://' + server.host() + ':' + server.port + '/user/update/:id',
                     },
                     getNear: {
                         method: 'get',
